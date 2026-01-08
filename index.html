@@ -841,11 +841,226 @@
                 font-size: 24px;
             }
         }
+
+        /* ========================================
+           ROUTINES TIMER STYLES
+           Morning & Evening countdown timers
+           ======================================== */
+
+        .routine-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 24px;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .routine-icon {
+            font-size: 80px;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .routine-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .routine-timer {
+            margin: 30px 0;
+        }
+
+        .routine-minutes {
+            font-size: 140px;
+            font-weight: 800;
+            line-height: 1;
+            display: block;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .routine-label {
+            font-size: 32px;
+            opacity: 0.9;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .routine-target {
+            font-size: 18px;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .routine-message {
+            font-size: 24px;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+
+        /* Morning theme - urgency based colors */
+        .routine-container.morning {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.2) 100%);
+            border: 2px solid rgba(34, 197, 94, 0.4);
+        }
+        .routine-container.morning .routine-minutes { color: #22c55e; }
+
+        .routine-container.morning-aware {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.2) 100%);
+            border: 2px solid rgba(234, 179, 8, 0.4);
+        }
+        .routine-container.morning-aware .routine-minutes { color: #eab308; }
+
+        .routine-container.morning-hurry {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(234, 88, 12, 0.2) 100%);
+            border: 2px solid rgba(249, 115, 22, 0.4);
+        }
+        .routine-container.morning-hurry .routine-minutes { color: #f97316; }
+
+        .routine-container.morning-urgent {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(220, 38, 38, 0.3) 100%);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            animation: urgentPulse 0.5s ease-in-out infinite;
+        }
+        .routine-container.morning-urgent .routine-minutes { color: #ef4444; }
+
+        @keyframes urgentPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 0 50px rgba(239, 68, 68, 0.5); }
+        }
+
+        /* Evening themes */
+        .routine-container.dinner {
+            background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+            border: 2px solid rgba(251, 191, 36, 0.5);
+        }
+        .routine-container.dinner .routine-minutes { color: #fff; }
+        .routine-container.dinner .routine-title { color: #fff; }
+
+        .routine-container.shower {
+            background: linear-gradient(135deg, #3b82f6 0%, #22d3d8 100%);
+            border: 2px solid rgba(34, 211, 216, 0.5);
+        }
+        .routine-container.shower .routine-minutes { color: #fff; }
+        .routine-container.shower .routine-title { color: #fff; }
+
+        .routine-container.bed {
+            background: linear-gradient(135deg, #1e1b4b 0%, #8b5cf6 50%, #4c1d95 100%);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            position: relative;
+        }
+        .routine-container.bed .routine-minutes { color: #c4b5fd; }
+        .routine-container.bed .routine-title { color: #e9d5ff; }
+
+        /* Stars animation for bedtime */
+        .routine-container.bed::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, white, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, white, transparent),
+                radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 160px 30px, white, transparent),
+                radial-gradient(2px 2px at 200px 60px, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 250px 20px, white, transparent),
+                radial-gradient(2px 2px at 300px 50px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 350px 70px, white, transparent),
+                radial-gradient(2px 2px at 400px 30px, rgba(255,255,255,0.6), transparent);
+            animation: twinkle 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Off-hours relaxed state */
+        .routine-container.off-hours {
+            background: linear-gradient(135deg, rgba(100, 116, 139, 0.2) 0%, rgba(71, 85, 105, 0.15) 100%);
+            border: 2px solid rgba(100, 116, 139, 0.3);
+        }
+        .routine-container.off-hours .routine-icon { animation: none; }
+        .routine-container.off-hours .routine-minutes { color: #94a3b8; font-size: 60px; }
+        .routine-container.off-hours .routine-label { display: none; }
+
+        /* Pulse animations for active timers */
+        .routine-container.morning .routine-icon,
+        .routine-container.dinner .routine-icon,
+        .routine-container.shower .routine-icon,
+        .routine-container.bed .routine-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .routine-container.morning-hurry .routine-icon {
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .routine-container.morning-urgent .routine-icon {
+            animation: shake 0.3s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Chime notification flash - loops 5 times for ~3 seconds total */
+        .routine-container.chime-flash {
+            animation: chimeFlash 0.6s ease-in-out 5;
+        }
+
+        @keyframes chimeFlash {
+            0%, 100% { filter: brightness(1); transform: scale(1); }
+            50% { filter: brightness(1.4); transform: scale(1.03); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .routine-container {
+                padding: 30px 15px;
+                margin: 0 10px;
+            }
+            .routine-icon { font-size: 60px; }
+            .routine-title { font-size: 22px; }
+            .routine-minutes { font-size: 100px; }
+            .routine-label { font-size: 24px; }
+            .routine-message { font-size: 18px; padding: 15px; }
+        }
+
+        @media (max-width: 380px) {
+            .routine-minutes { font-size: 80px; }
+            .routine-label { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
     <nav class="tabs">
         <button class="tab active" data-page="grandma">👵 Grandma Countdown</button>
+        <button class="tab" data-page="routines">⏰ Routines</button>
         <button class="tab" data-page="todos">📋 TODOs</button>
         <button class="tab" data-page="game">🎮 Capybara Game</button>
         <button class="tab" data-page="warmup">🏋️ Warm-Up</button>
@@ -875,6 +1090,20 @@
                     <div class="countdown-label">days to go</div>
                     <div class="countdown-date">April 16, 2026</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Routines Timer Page -->
+        <div id="routines" class="page">
+            <div class="routine-container" id="routine-container">
+                <div class="routine-icon" id="routine-icon">⏰</div>
+                <h2 class="routine-title" id="routine-title">Loading...</h2>
+                <div class="routine-timer">
+                    <span class="routine-minutes" id="routine-minutes">--</span>
+                    <span class="routine-label" id="routine-label">minutes</span>
+                </div>
+                <div class="routine-target" id="routine-target"></div>
+                <div class="routine-message" id="routine-message" style="display: none;"></div>
             </div>
         </div>
 
@@ -2278,6 +2507,251 @@
         WarmUp.init();
 
         // Run tests in console: WarmUp.runTests()
+
+        // ========================================
+        // ROUTINES TIMER
+        // Morning & Evening countdown system
+        // ========================================
+        const RoutineTimer = {
+            // Milestones configuration
+            milestones: {
+                morning: { hour: 7, minute: 20, icon: '🏫', title: 'Time to Leave for School', target: 'Leave by 7:20 AM' },
+                dinner:  { hour: 18, minute: 0, icon: '🍽️', title: 'Dinner Time!', target: 'Dinner at 6:00 PM' },
+                shower:  { hour: 18, minute: 45, icon: '🚿', title: 'Shower Time!', target: 'Showers at 6:45 PM' },
+                bed:     { hour: 19, minute: 30, icon: '🌙', title: 'Bedtime!', target: 'Bed at 7:30 PM' }
+            },
+
+            // Time windows
+            morningStart: 6,    // 6:00 AM
+            morningEnd: 7,      // 7:20 AM (use milestone time)
+            eveningStart: 17.5, // 5:30 PM
+            eveningEnd: 19.5,   // 7:30 PM
+
+            // State
+            audioCtx: null,
+            audioEnabled: false,
+            lastChimeMinute: null,
+            currentRoutine: null,
+
+            init() {
+                this.update();
+                // Update every second
+                setInterval(() => this.update(), 1000);
+
+                // Enable audio on first user interaction
+                const enableAudio = () => {
+                    if (!this.audioEnabled) {
+                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        this.audioEnabled = true;
+                        console.log('🔊 Audio enabled!');
+                        // Play a tiny test sound to confirm
+                        this.playChime('dinner', false);
+                    }
+                };
+
+                document.addEventListener('click', enableAudio, { once: true });
+                document.addEventListener('touchstart', enableAudio, { once: true });
+                document.addEventListener('keydown', enableAudio, { once: true });
+            },
+
+            initAudio() {
+                // Audio is now initialized on user gesture in init()
+                if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+            },
+
+            // Play themed chime based on current routine - plays 3 beeps
+            playChime(routine, isUrgent = false) {
+                if (!this.audioEnabled || !this.audioCtx) return;
+                this.initAudio();
+                const ctx = this.audioCtx;
+
+                // Different sounds for different routines
+                const sounds = {
+                    morning: { freq: 880, type: 'sine', duration: 0.2 },      // Bright bell
+                    dinner:  { freq: 660, type: 'triangle', duration: 0.25 }, // Warm dinner bell
+                    shower:  { freq: 523, type: 'sine', duration: 0.2 },      // Water-like
+                    bed:     { freq: 392, type: 'sine', duration: 0.3 }       // Soft, low
+                };
+
+                const sound = sounds[routine] || sounds.morning;
+                const volume = isUrgent ? 0.25 : 0.15;
+                const beepGap = 0.3; // Gap between beeps
+
+                // Play 3 consecutive beeps
+                for (let i = 0; i < 3; i++) {
+                    const startTime = ctx.currentTime + (i * (sound.duration + beepGap));
+
+                    const oscillator = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+
+                    oscillator.type = sound.type;
+
+                    // For urgent, each beep is higher pitched
+                    const freqMultiplier = isUrgent ? 1 + (i * 0.15) : 1;
+                    oscillator.frequency.setValueAtTime(sound.freq * freqMultiplier, startTime);
+
+                    gainNode.gain.setValueAtTime(volume, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + sound.duration);
+
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + sound.duration);
+                }
+
+                // Visual flash (animation loops 5x at 0.6s = 3 seconds)
+                const container = document.getElementById('routine-container');
+                container.classList.remove('chime-flash'); // Reset if already playing
+                void container.offsetWidth; // Force reflow to restart animation
+                container.classList.add('chime-flash');
+                setTimeout(() => container.classList.remove('chime-flash'), 3000);
+            },
+
+            getCurrentRoutineType() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const timeDecimal = hours + minutes / 60;
+
+                // Morning: 6:00 AM - 7:20 AM
+                if (timeDecimal >= this.morningStart && timeDecimal < 7 + 20/60) {
+                    return 'morning';
+                }
+
+                // Evening: 5:30 PM - 7:30 PM
+                if (timeDecimal >= this.eveningStart && timeDecimal < this.eveningEnd) {
+                    // Determine which evening milestone
+                    const dinnerTime = this.milestones.dinner.hour + this.milestones.dinner.minute/60;
+                    const showerTime = this.milestones.shower.hour + this.milestones.shower.minute/60;
+                    const bedTime = this.milestones.bed.hour + this.milestones.bed.minute/60;
+
+                    if (timeDecimal < dinnerTime) return 'dinner';
+                    if (timeDecimal < showerTime) return 'shower';
+                    if (timeDecimal < bedTime) return 'bed';
+                }
+
+                return 'off-hours';
+            },
+
+            getMinutesRemaining(milestone) {
+                const now = new Date();
+                const target = new Date();
+                target.setHours(milestone.hour, milestone.minute, 0, 0);
+
+                // If target is in the past (shouldn't happen during active window), return 0
+                if (target <= now) return 0;
+
+                const diffMs = target - now;
+                return Math.ceil(diffMs / (1000 * 60));
+            },
+
+            getMorningUrgencyClass(minutes) {
+                if (minutes > 30) return 'morning';
+                if (minutes > 15) return 'morning-aware';
+                if (minutes > 5) return 'morning-hurry';
+                return 'morning-urgent';
+            },
+
+            getOffHoursMessage() {
+                const now = new Date();
+                const hours = now.getHours();
+
+                if (hours < this.morningStart) {
+                    return { icon: '😴', title: 'Still sleeping time...', message: 'Go back to sleep!' };
+                }
+                if (hours >= 7 && hours < 12) {
+                    return { icon: '📚', title: 'Have a great day!', message: 'Learning time at school!' };
+                }
+                if (hours >= 12 && hours < this.eveningStart) {
+                    return { icon: '☀️', title: 'Enjoy your day!', message: 'See you at dinner time!' };
+                }
+                // After 7:30 PM
+                return { icon: '🌟', title: 'Good night!', message: 'Sweet dreams!' };
+            },
+
+            update() {
+                const routineType = this.getCurrentRoutineType();
+                const container = document.getElementById('routine-container');
+                const iconEl = document.getElementById('routine-icon');
+                const titleEl = document.getElementById('routine-title');
+                const minutesEl = document.getElementById('routine-minutes');
+                const labelEl = document.getElementById('routine-label');
+                const targetEl = document.getElementById('routine-target');
+                const messageEl = document.getElementById('routine-message');
+
+                // Remove all theme classes
+                container.className = 'routine-container';
+
+                if (routineType === 'off-hours') {
+                    const offHours = this.getOffHoursMessage();
+                    container.classList.add('off-hours');
+                    iconEl.textContent = offHours.icon;
+                    titleEl.textContent = offHours.title;
+                    minutesEl.textContent = offHours.message;
+                    labelEl.style.display = 'none';
+                    targetEl.textContent = '';
+                    messageEl.style.display = 'none';
+                    this.lastChimeMinute = null;
+                    return;
+                }
+
+                // Active routine
+                const milestone = this.milestones[routineType];
+                const minutes = this.getMinutesRemaining(milestone);
+
+                // Apply theme class
+                if (routineType === 'morning') {
+                    container.classList.add(this.getMorningUrgencyClass(minutes));
+                } else {
+                    container.classList.add(routineType);
+                }
+
+                // Update display
+                iconEl.textContent = milestone.icon;
+                titleEl.textContent = milestone.title;
+                minutesEl.textContent = minutes;
+                labelEl.textContent = minutes === 1 ? 'minute' : 'minutes';
+                labelEl.style.display = 'block';
+                targetEl.textContent = milestone.target;
+
+                // Show message at milestone time (0 minutes)
+                if (minutes === 0) {
+                    messageEl.textContent = routineType === 'morning' ? 'Time to go! 🏃‍♀️' :
+                                           routineType === 'dinner' ? 'Food is ready! 🍽️' :
+                                           routineType === 'shower' ? 'Get in the shower! 🚿' :
+                                           'Time for bed! 🌙';
+                    messageEl.style.display = 'block';
+                } else {
+                    messageEl.style.display = 'none';
+                }
+
+                // Check for 5-minute mark chime
+                this.checkChime(routineType, minutes);
+            },
+
+            checkChime(routineType, minutes) {
+                // Chime at 5-minute intervals
+                const chimeMinutes = [60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0];
+
+                if (chimeMinutes.includes(minutes) && this.lastChimeMinute !== minutes) {
+                    this.lastChimeMinute = minutes;
+                    // More urgent chime for lower minutes
+                    const isUrgent = minutes <= 10;
+                    this.playChime(routineType, isUrgent);
+                }
+
+                // Reset lastChimeMinute when routine changes
+                if (this.currentRoutine !== routineType) {
+                    this.currentRoutine = routineType;
+                    this.lastChimeMinute = null;
+                }
+            }
+        };
+
+        // Initialize routines timer
+        RoutineTimer.init();
     </script>
 </body>
 </html>
