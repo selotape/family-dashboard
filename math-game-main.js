@@ -8,16 +8,31 @@ const MathGame = {
     activeProfile: null,
 
     init() {
-        this.canvas = document.getElementById('math-game-canvas');
-        this.ctx = this.canvas.getContext('2d');
+        console.log('MathGame.init called');
+        try {
+            this.canvas = document.getElementById('math-game-canvas');
+            if (!this.canvas) {
+                console.error('Canvas not found!');
+                return;
+            }
+            this.ctx = this.canvas.getContext('2d');
 
-        StorageManager.init();
-        ProfileSystem.init();
-        AudioManager.init();
-        this.initScratchPad();
+            console.log('Initializing StorageManager...');
+            StorageManager.init();
+            console.log('Initializing ProfileSystem...');
+            ProfileSystem.init();
+            console.log('Initializing AudioManager...');
+            AudioManager.init();
+            console.log('Initializing ScratchPad...');
+            this.initScratchPad();
 
-        // Show profile selection screen
-        this.showProfileSelect();
+            // Show profile selection screen
+            console.log('Showing profile selection...');
+            this.showProfileSelect();
+            console.log('Init complete');
+        } catch (error) {
+            console.error('Error during init:', error);
+        }
     },
 
     initScratchPad() {
