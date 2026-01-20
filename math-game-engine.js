@@ -478,7 +478,9 @@ const GameEngine = {
     },
 
     completeLevel() {
+        console.log('Level complete! Stopping game loop...');
         cancelAnimationFrame(this.animationId);
+        MathGame.state = 'celebration'; // Ensure state is set
 
         const elapsedTime = Math.floor((Date.now() - this.levelStartTime) / 1000);
         const accuracy = this.gameStats.totalProblems > 0
@@ -496,8 +498,13 @@ const GameEngine = {
             totalProblems: this.gameStats.totalProblems
         };
 
+        console.log('Updating stats:', stats);
         ProfileSystem.updateStats(LevelManager.currentLevel.id, stats);
+
+        console.log('Playing level complete sound...');
         AudioManager.playSound('levelComplete');
+
+        console.log('Showing celebration screen...');
         MathGame.showCelebration();
     },
 

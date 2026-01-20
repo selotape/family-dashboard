@@ -95,8 +95,11 @@ const MathGame = {
     },
 
     showCelebration() {
+        console.log('MathGame.showCelebration called');
         this.state = 'celebration';
+        console.log('Calling UIManager.renderCelebration...');
         UIManager.renderCelebration();
+        console.log('Celebration screen rendered');
     }
 };
 

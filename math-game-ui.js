@@ -119,11 +119,24 @@ const UIManager = {
     },
 
     renderCelebration() {
+        console.log('UIManager.renderCelebration called');
         const ui = document.getElementById('math-game-ui');
         const profile = MathGame.activeProfile;
         const stats = GameEngine.gameStats;
         const levelId = LevelManager.currentLevel.id;
-        const levelStats = profile.levelStats[levelId];
+
+        console.log('Level ID:', levelId);
+        console.log('Profile levelStats:', profile.levelStats);
+        console.log('Stats for this level:', profile.levelStats[levelId]);
+
+        // Ensure levelStats exists (should have been set by updateStats)
+        const levelStats = profile.levelStats[levelId] || {
+            stars: 0,
+            accuracy: 0,
+            bestTime: 0
+        };
+
+        console.log('Using levelStats:', levelStats);
 
         ui.innerHTML = `
             <div class="celebration-screen">
