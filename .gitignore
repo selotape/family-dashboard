@@ -1,2 +1,4 @@
 .claude/
 tasks.md
+.idea/
+__pycache__/
