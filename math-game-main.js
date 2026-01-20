@@ -115,6 +115,7 @@ const MathGame = {
 
     startLevel(levelId) {
         this.state = 'gameplay';
+        this.isPracticeMode = false;
 
         // Clear UI and show canvas
         const ui = document.getElementById('math-game-ui');
@@ -122,6 +123,19 @@ const MathGame = {
         this.canvas.style.display = 'block';
 
         LevelManager.loadLevel(levelId);
+        GameEngine.start();
+    },
+
+    startPracticeLevel() {
+        this.state = 'gameplay';
+        this.isPracticeMode = true;
+
+        // Clear UI and show canvas
+        const ui = document.getElementById('math-game-ui');
+        ui.innerHTML = '';
+        this.canvas.style.display = 'block';
+
+        LevelManager.loadPracticeLevel();
         GameEngine.start();
     },
 

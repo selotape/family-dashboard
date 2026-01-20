@@ -1,6 +1,78 @@
 // ============================================================================
-// LEVEL DATA - 7 Worlds
+// LEVEL DATA - 7 Worlds + Practice Level
 // ============================================================================
+
+// Practice Level - No pressure, just platforming!
+const PRACTICE_LEVEL = {
+    id: 'practice',
+    name: 'Practice Playground',
+    theme: 'practice',
+    mathTopic: 'none',
+    playerMode: 'walking',
+    gravity: 0.7,
+    jumpStrength: -14,
+    levelWidth: 2400,
+
+    platforms: [
+        // Starting area - easy jumps
+        { x: 0, y: 360, width: 200, height: 20, type: 'rock' },
+        { x: 250, y: 360, width: 150, height: 20, type: 'rock' },
+        { x: 450, y: 360, width: 150, height: 20, type: 'rock' },
+
+        // Low jumps - practice timing
+        { x: 650, y: 330, width: 120, height: 20, type: 'rock' },
+        { x: 820, y: 300, width: 120, height: 20, type: 'rock' },
+        { x: 990, y: 330, width: 120, height: 20, type: 'rock' },
+
+        // Medium height platforms
+        { x: 200, y: 260, width: 140, height: 20, type: 'rock' },
+        { x: 400, y: 240, width: 130, height: 20, type: 'rock' },
+        { x: 600, y: 260, width: 140, height: 20, type: 'rock' },
+
+        // Higher platforms - more challenging
+        { x: 100, y: 180, width: 120, height: 20, type: 'rock' },
+        { x: 300, y: 160, width: 120, height: 20, type: 'rock' },
+        { x: 500, y: 180, width: 120, height: 20, type: 'rock' },
+
+        // Tall stack - practice precision
+        { x: 800, y: 240, width: 100, height: 20, type: 'rock' },
+        { x: 820, y: 200, width: 80, height: 20, type: 'rock' },
+        { x: 840, y: 160, width: 60, height: 20, type: 'rock' },
+        { x: 860, y: 120, width: 40, height: 20, type: 'rock' },
+
+        // Long jump section
+        { x: 1200, y: 300, width: 100, height: 20, type: 'rock' },
+        { x: 1450, y: 300, width: 100, height: 20, type: 'rock' },
+        { x: 1700, y: 300, width: 100, height: 20, type: 'rock' },
+
+        // Stairs up
+        { x: 1900, y: 330, width: 100, height: 20, type: 'rock' },
+        { x: 2000, y: 290, width: 100, height: 20, type: 'rock' },
+        { x: 2100, y: 250, width: 100, height: 20, type: 'rock' },
+        { x: 2200, y: 210, width: 100, height: 20, type: 'rock' },
+
+        // Victory platform
+        { x: 2100, y: 360, width: 300, height: 20, type: 'rock' }
+    ],
+
+    fruits: [], // No fruits in practice mode!
+
+    decorations: [
+        { x: 150, y: 280, emoji: '🎯', size: 30 },
+        { x: 450, y: 200, emoji: '🎨', size: 30 },
+        { x: 750, y: 250, emoji: '⚡', size: 30 },
+        { x: 1000, y: 260, emoji: '🌟', size: 30 },
+        { x: 1300, y: 260, emoji: '🎪', size: 30 },
+        { x: 1600, y: 260, emoji: '🎭', size: 30 },
+        { x: 2000, y: 180, emoji: '🏆', size: 35 },
+        { x: 2250, y: 310, emoji: '🎉', size: 35 }
+    ],
+
+    background: {
+        sky: '#B8E6F5',
+        ground: '#98D8C8'
+    }
+};
 
 const LEVELS = [
     {
@@ -506,7 +578,7 @@ const LEVELS = [
             { x: 1410, y: 250, emoji: '🎭', size: 40 },
             { x: 1860, y: 240, emoji: '🎨', size: 40 },
             { x: 2310, y: 200, emoji: '🎉', size: 45 },
-            { x: 2900, y: 200, type: 'image', image: 'images/noga-photo.jpg', width: 120, height: 120 }
+            { x: 2900, y: 200, type: 'image', image: 'images/noga_photo.jpg', width: 120, height: 120 }
         ],
 
         background: {

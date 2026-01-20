@@ -20,6 +20,15 @@ const GameEngine = {
     },
 
     initLevel(level, problems) {
+        // Adjust speed based on grade level for easier gameplay
+        const gradeLevel = MathGame.activeProfile.gradeLevel;
+        let playerSpeed = 5; // Default speed for grade 3
+        if (gradeLevel === 0) {
+            playerSpeed = 3; // Ella (Pre-K): slowest
+        } else if (gradeLevel === 1) {
+            playerSpeed = 4; // Dana (1st grade): medium
+        }
+
         // Initialize player
         this.player = {
             x: 50,
@@ -28,7 +37,7 @@ const GameEngine = {
             height: 40,
             vx: 0,
             vy: 0,
-            speed: 5,
+            speed: playerSpeed,
             jumpStrength: level.jumpStrength,
             gravity: level.gravity,
             onGround: false,
@@ -450,21 +459,33 @@ const GameEngine = {
         ctx.fillText(topicLabels[level.mathTopic] || level.mathTopic, canvas.width / 2, 45);
         ctx.textAlign = 'left';
 
-        // Draw hearts (unless Ella)
-        if (MathGame.activeProfile.gradeLevel !== 0) {
-            ctx.font = '20px Arial';
-            ctx.fillStyle = '#FF1493';
-            for (let i = 0; i < this.gameStats.hearts; i++) {
-                ctx.fillText('❤️', 10 + i * 30, 75);
+        // Practice mode display
+        if (MathGame.isPracticeMode) {
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#6366f1';
+            ctx.fillText('🎯 PRACTICE MODE', 10, 50);
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#818cf8';
+            ctx.fillText('Just have fun jumping! Press ESC to exit.', 10, 75);
+        } else {
+            // Draw hearts (unless Ella)
+            if (MathGame.activeProfile.gradeLevel !== 0) {
+                ctx.font = '20px Arial';
+                ctx.fillStyle = '#FF1493';
+                for (let i = 0; i < this.gameStats.hearts; i++) {
+                    ctx.fillText('❤️', 10 + i * 30, 75);
+                }
             }
+
+            // Draw fruit counter
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#000';
+            ctx.fillText(`🍎 ${this.gameStats.fruitsCollected}/${this.fruits.length}`, canvas.width - 100, 75);
         }
 
-        // Draw fruit counter
+        // Draw profile name
         ctx.font = '18px Arial';
         ctx.fillStyle = '#000';
-        ctx.fillText(`🍎 ${this.gameStats.fruitsCollected}/${this.fruits.length}`, canvas.width - 100, 75);
-
-        // Draw profile name
         ctx.fillText(`${MathGame.activeProfile.avatar} ${MathGame.activeProfile.name}`, 10, canvas.height - 10);
     },
 
@@ -512,14 +533,23 @@ const GameEngine = {
         cancelAnimationFrame(this.animationId);
 
         const ui = document.getElementById('math-game-ui');
+        const levelId = LevelManager.currentLevel.id;
         ui.innerHTML = `
             <div class="game-over-screen">
                 <h1>Game Over!</h1>
                 <p>Don't give up! Try again!</p>
-                <button onclick="MathGame.showWorldMap()">Back to World Map</button>
-                <button onclick="MathGame.startLevel(${LevelManager.currentLevel.id})">Try Again</button>
+                <button id="back-to-map-btn">Back to World Map</button>
+                <button id="try-again-btn">Try Again</button>
             </div>
         `;
+
+        // Add event listeners after rendering
+        document.getElementById('back-to-map-btn').addEventListener('click', () => {
+            MathGame.showWorldMap();
+        });
+        document.getElementById('try-again-btn').addEventListener('click', () => {
+            MathGame.startLevel(levelId);
+        });
     },
 
     exitToWorldMap() {

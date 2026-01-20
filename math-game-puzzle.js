@@ -6,41 +6,70 @@ const PuzzleSystem = {
     currentFruit: null,
     currentProblem: null,
     attempts: 0,
+    keyboardHandler: null,
 
     show(fruit) {
         this.currentFruit = fruit;
-        this.currentProblem = fruit.problem;
+        this.currentProblem = this.shuffleProblem(fruit.problem);
         this.attempts = 0;
 
         const dialog = document.getElementById('math-puzzle-dialog');
         dialog.className = 'puzzle-dialog';
+        const formattedQuestion = this.formatQuestionWithLargeClocks(this.currentProblem.question);
         dialog.innerHTML = `
             <div class="puzzle-content">
                 <h2>Math Challenge!</h2>
-                <p class="puzzle-question">${this.currentProblem.question}</p>
+                <p class="puzzle-question">${formattedQuestion}</p>
                 <div class="puzzle-choices">
                     ${this.currentProblem.choices.map((choice, i) => `
-                        <button class="puzzle-choice" onclick="PuzzleSystem.checkAnswer(${i})">${choice}</button>
+                        <button class="puzzle-choice" data-choice-index="${i}">${choice}</button>
                     `).join('')}
                 </div>
+                <div class="puzzle-hint">Press 1-4 or click to answer</div>
                 <div class="puzzle-feedback" id="puzzle-feedback"></div>
             </div>
         `;
 
-        // Add ESC key listener to close puzzle
-        this.setupEscapeKey();
+        // Add click listeners to buttons
+        document.querySelectorAll('.puzzle-choice').forEach((btn, i) => {
+            btn.addEventListener('click', () => this.checkAnswer(i));
+        });
+
+        // Add keyboard support
+        this.setupKeyboardHandlers();
     },
 
-    setupEscapeKey() {
-        this.escapeHandler = (e) => {
-            if (e.key === 'Escape' && MathGame.state === 'puzzle') {
+    setupKeyboardHandlers() {
+        // Remove old handler if exists
+        if (this.keyboardHandler) {
+            document.removeEventListener('keydown', this.keyboardHandler);
+        }
+
+        // Create new handler
+        this.keyboardHandler = (e) => {
+            if (MathGame.state !== 'puzzle') return;
+
+            // ESC key to exit
+            if (e.key === 'Escape') {
                 e.preventDefault();
                 if (confirm('Exit puzzle without answering?')) {
                     this.close();
                 }
+                return;
+            }
+
+            // Number keys 1-4 to select answer
+            const key = e.key;
+            if (key >= '1' && key <= '4') {
+                e.preventDefault();
+                const choiceIndex = parseInt(key) - 1;
+                if (choiceIndex < this.currentProblem.choices.length) {
+                    this.checkAnswer(choiceIndex);
+                }
             }
         };
-        document.addEventListener('keydown', this.escapeHandler);
+
+        document.addEventListener('keydown', this.keyboardHandler);
     },
 
     checkAnswer(choiceIndex) {
@@ -122,14 +151,50 @@ const PuzzleSystem = {
         }
     },
 
+    shuffleProblem(problem) {
+        // Create a copy of the problem to avoid mutating the original
+        const correctAnswer = problem.choices[problem.correctIndex];
+
+        // Create array of choice-index pairs for shuffling
+        const choicesWithIndices = problem.choices.map((choice, i) => ({ choice, originalIndex: i }));
+
+        // Shuffle using Fisher-Yates algorithm (better than sort with random)
+        for (let i = choicesWithIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [choicesWithIndices[i], choicesWithIndices[j]] = [choicesWithIndices[j], choicesWithIndices[i]];
+        }
+
+        // Extract shuffled choices and find new correct index
+        const shuffledChoices = choicesWithIndices.map(item => item.choice);
+        const newCorrectIndex = shuffledChoices.indexOf(correctAnswer);
+
+        return {
+            question: problem.question,
+            choices: shuffledChoices,
+            correctIndex: newCorrectIndex
+        };
+    },
+
+    formatQuestionWithLargeClocks(question) {
+        // Clock emojis: 🕐 🕑 🕒 🕓 🕔 🕕 🕖 🕗 🕘 🕙 🕚 🕛
+        // and half-hour versions: 🕜 🕝 🕞 🕟 🕠 🕡 🕢 🕣 🕤 🕥 🕦 🕧
+        const clockEmojis = /[\u{1F550}-\u{1F567}]/gu;
+        return question.replace(clockEmojis, '<span class="large-clock">$&</span>');
+    },
+
     renderProblem() {
         const questionEl = document.querySelector('.puzzle-question');
         const choicesEl = document.querySelector('.puzzle-choices');
 
-        questionEl.textContent = this.currentProblem.question;
+        questionEl.innerHTML = this.formatQuestionWithLargeClocks(this.currentProblem.question);
         choicesEl.innerHTML = this.currentProblem.choices.map((choice, i) => `
-            <button class="puzzle-choice" onclick="PuzzleSystem.checkAnswer(${i})">${choice}</button>
+            <button class="puzzle-choice" data-choice-index="${i}">${choice}</button>
         `).join('');
+
+        // Re-add click listeners to new buttons
+        document.querySelectorAll('.puzzle-choice').forEach((btn, i) => {
+            btn.addEventListener('click', () => this.checkAnswer(i));
+        });
     },
 
     generateSimilarProblem(originalProblem) {
@@ -222,6 +287,12 @@ const PuzzleSystem = {
     },
 
     close() {
+        // Clean up keyboard handler
+        if (this.keyboardHandler) {
+            document.removeEventListener('keydown', this.keyboardHandler);
+            this.keyboardHandler = null;
+        }
+
         const dialog = document.getElementById('math-puzzle-dialog');
         dialog.className = 'hidden';
         MathGame.state = 'gameplay';
