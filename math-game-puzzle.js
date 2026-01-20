@@ -26,6 +26,21 @@ const PuzzleSystem = {
                 <div class="puzzle-feedback" id="puzzle-feedback"></div>
             </div>
         `;
+
+        // Add ESC key listener to close puzzle
+        this.setupEscapeKey();
+    },
+
+    setupEscapeKey() {
+        this.escapeHandler = (e) => {
+            if (e.key === 'Escape' && MathGame.state === 'puzzle') {
+                e.preventDefault();
+                if (confirm('Exit puzzle without answering?')) {
+                    this.close();
+                }
+            }
+        };
+        document.addEventListener('keydown', this.escapeHandler);
     },
 
     checkAnswer(choiceIndex) {

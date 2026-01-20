@@ -197,17 +197,8 @@ const UIManager = {
 
     toggleSkipLevels() {
         if (!this.skipLevelsUnlocked) {
-            const password = prompt('🔒 Enter password to unlock Skip Levels:');
-            if (password === 'Limonit2017') {
-                this.skipLevelsUnlocked = true;
-                alert('✅ Skip Levels unlocked!');
-                const container = document.getElementById('skip-levels-container');
-                if (container) {
-                    container.classList.remove('hidden');
-                }
-            } else if (password !== null) {
-                alert('❌ Incorrect password!');
-            }
+            // Show password modal
+            this.showPasswordModal();
         } else {
             const container = document.getElementById('skip-levels-container');
             if (container) {
@@ -216,13 +207,67 @@ const UIManager = {
         }
     },
 
+    showPasswordModal() {
+        const modal = document.getElementById('password-modal');
+        const input = document.getElementById('password-input');
+        const submitBtn = document.getElementById('password-submit');
+        const cancelBtn = document.getElementById('password-cancel');
+
+        if (!modal || !input || !submitBtn || !cancelBtn) return;
+
+        // Show modal
+        modal.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+
+        // Handle submit
+        const handleSubmit = () => {
+            if (input.value === 'Limonit2017') {
+                this.skipLevelsUnlocked = true;
+                modal.classList.add('hidden');
+                alert('✅ Skip Levels unlocked!');
+                const container = document.getElementById('skip-levels-container');
+                if (container) {
+                    container.classList.remove('hidden');
+                }
+            } else {
+                alert('❌ Incorrect password!');
+                input.value = '';
+                input.focus();
+            }
+        };
+
+        // Handle cancel
+        const handleCancel = () => {
+            modal.classList.add('hidden');
+            input.value = '';
+        };
+
+        // Add event listeners
+        submitBtn.onclick = handleSubmit;
+        cancelBtn.onclick = handleCancel;
+        input.onkeypress = (e) => {
+            if (e.key === 'Enter') handleSubmit();
+        };
+    },
+
     skipToLevel(level) {
         const levelNum = parseInt(level);
         if (levelNum >= 1 && levelNum <= 7) {
             if (confirm(`Skip to Level ${levelNum}?\n\nThis will update ${MathGame.activeProfile.name}'s progress.`)) {
-                MathGame.activeProfile.currentLevel = levelNum;
-                ProfileSystem.saveProfiles();
-                alert(`✅ Jumped to Level ${levelNum}!`);
+                // Update the profile's current level
+                const profile = MathGame.activeProfile;
+                profile.currentLevel = levelNum;
+
+                // Save to localStorage
+                const profiles = ProfileSystem.profiles;
+                const profileIndex = profiles.findIndex(p => p.id === profile.id);
+                if (profileIndex !== -1) {
+                    profiles[profileIndex] = profile;
+                    localStorage.setItem('mathGame_profiles', JSON.stringify(profiles));
+                }
+
+                // Reload the world map to show the new level
                 MathGame.showWorldMap();
             }
         }

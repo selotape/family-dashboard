@@ -93,6 +93,13 @@ const GameEngine = {
             if (e.key === ' ' || e.key === 'ArrowUp') {
                 e.preventDefault();
             }
+            // ESC key: Return to world map
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (confirm('Exit level and return to world map?')) {
+                    this.exitToWorldMap();
+                }
+            }
         };
 
         this.handleKeyUp = (e) => {
@@ -452,6 +459,15 @@ const GameEngine = {
                 <button onclick="MathGame.startLevel(${LevelManager.currentLevel.id})">Try Again</button>
             </div>
         `;
+    },
+
+    exitToWorldMap() {
+        // Stop game loop
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+        // Return to world map
+        MathGame.showWorldMap();
     }
 };
 
