@@ -4,3 +4,6 @@ tasks.md
 __pycache__/
 .env
 reading-game-backend.log
+server.log
+venv/
+*.pyc
