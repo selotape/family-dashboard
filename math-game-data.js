@@ -506,7 +506,7 @@ const LEVELS = [
             { x: 1410, y: 250, emoji: '🎭', size: 40 },
             { x: 1860, y: 240, emoji: '🎨', size: 40 },
             { x: 2310, y: 200, emoji: '🎉', size: 45 },
-            { x: 2690, y: 240, emoji: '👧', size: 50 }
+            { x: 2900, y: 200, type: 'image', image: 'images/noga-photo.jpg', width: 120, height: 120 }
         ],
 
         background: {

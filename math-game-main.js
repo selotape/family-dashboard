@@ -14,9 +14,57 @@ const MathGame = {
         StorageManager.init();
         ProfileSystem.init();
         AudioManager.init();
+        this.initScratchPad();
 
         // Show profile selection screen
         this.showProfileSelect();
+    },
+
+    initScratchPad() {
+        const scratchPad = document.getElementById('scratch-pad');
+        const scratchClear = document.getElementById('scratch-clear');
+        const scratchToggle = document.getElementById('scratch-toggle');
+        const scratchContainer = document.getElementById('scratch-pad-container');
+
+        if (!scratchPad || !scratchClear || !scratchToggle) return;
+
+        // Clear button
+        scratchClear.addEventListener('click', () => {
+            scratchPad.value = '';
+            scratchPad.focus();
+        });
+
+        // Toggle show/hide
+        let isHidden = false;
+        scratchToggle.addEventListener('click', () => {
+            isHidden = !isHidden;
+            if (isHidden) {
+                scratchContainer.classList.add('hidden-pad');
+                scratchToggle.textContent = 'Show';
+            } else {
+                scratchContainer.classList.remove('hidden-pad');
+                scratchToggle.textContent = 'Hide';
+            }
+        });
+
+        // Auto-show for Noga (3rd grade), hide for Pre-K by default
+        setTimeout(() => {
+            if (this.activeProfile) {
+                if (this.activeProfile.gradeLevel === 0) {
+                    // Pre-K: hide by default
+                    scratchContainer.classList.add('hidden-pad');
+                    scratchToggle.textContent = 'Show';
+                    isHidden = true;
+                }
+            }
+        }, 500);
+    },
+
+    clearScratchPad() {
+        const scratchPad = document.getElementById('scratch-pad');
+        if (scratchPad) {
+            scratchPad.value = '';
+        }
     },
 
     showProfileSelect() {

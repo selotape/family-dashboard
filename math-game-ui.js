@@ -56,9 +56,25 @@ const UIManager = {
                     ${this.renderLevelPath()}
                 </div>
 
-                <button class="debug-reset-btn" onclick="UIManager.resetProgress()">
-                    🔧 Debug: Reset All Progress
-                </button>
+                <div class="debug-controls">
+                    <button class="debug-reset-btn" onclick="UIManager.resetProgress()">
+                        🔧 Debug: Reset All Progress
+                    </button>
+                    <button class="debug-skip-btn" onclick="UIManager.toggleSkipLevels()">
+                        🔓 Skip Levels
+                    </button>
+                </div>
+
+                <div id="skip-levels-container" class="skip-levels-container hidden">
+                    <label for="skip-level-select">Jump to Level:</label>
+                    <select id="skip-level-select" onchange="UIManager.skipToLevel(this.value)">
+                        ${[1,2,3,4,5,6,7].map(level => `
+                            <option value="${level}" ${level === currentLevel ? 'selected' : ''}>
+                                Level ${level}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
             </div>
         `;
 
@@ -174,6 +190,41 @@ const UIManager = {
             ProfileSystem.init();
             alert('✅ Progress reset! Returning to profile selection...');
             MathGame.showProfileSelect();
+        }
+    },
+
+    skipLevelsUnlocked: false,
+
+    toggleSkipLevels() {
+        if (!this.skipLevelsUnlocked) {
+            const password = prompt('🔒 Enter password to unlock Skip Levels:');
+            if (password === 'Limonit2017') {
+                this.skipLevelsUnlocked = true;
+                alert('✅ Skip Levels unlocked!');
+                const container = document.getElementById('skip-levels-container');
+                if (container) {
+                    container.classList.remove('hidden');
+                }
+            } else if (password !== null) {
+                alert('❌ Incorrect password!');
+            }
+        } else {
+            const container = document.getElementById('skip-levels-container');
+            if (container) {
+                container.classList.toggle('hidden');
+            }
+        }
+    },
+
+    skipToLevel(level) {
+        const levelNum = parseInt(level);
+        if (levelNum >= 1 && levelNum <= 7) {
+            if (confirm(`Skip to Level ${levelNum}?\n\nThis will update ${MathGame.activeProfile.name}'s progress.`)) {
+                MathGame.activeProfile.currentLevel = levelNum;
+                ProfileSystem.saveProfiles();
+                alert(`✅ Jumped to Level ${levelNum}!`);
+                MathGame.showWorldMap();
+            }
         }
     }
 };

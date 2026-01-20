@@ -32,6 +32,7 @@ const GameEngine = {
             jumpStrength: level.jumpStrength,
             gravity: level.gravity,
             onGround: false,
+            jumpCount: 0,
             facing: 'right'
         };
 
@@ -51,6 +52,9 @@ const GameEngine = {
             problem: problems[f.problemId]
         }));
         this.decorations = [...level.decorations];
+
+        // Load images for decorations
+        this.loadDecorationImages();
 
         // Reset stats
         const isElla = MathGame.activeProfile.gradeLevel === 0;
@@ -114,10 +118,21 @@ const GameEngine = {
             player.vx = player.speed;
             player.facing = 'right';
         }
-        if ((this.keys[' '] || this.keys['ArrowUp']) && player.onGround) {
-            player.vy = player.jumpStrength;
-            player.onGround = false;
-            AudioManager.playSound('jump');
+        // Double jump: allow jumping if less than 2 jumps used
+        if ((this.keys[' '] || this.keys['ArrowUp']) && player.jumpCount < 2) {
+            // Only jump on key press, not on hold
+            if (!this.jumpKeyPressed) {
+                player.vy = player.jumpStrength;
+                player.onGround = false;
+                player.jumpCount++;
+                AudioManager.playSound('jump');
+                this.jumpKeyPressed = true;
+            }
+        }
+
+        // Reset jump key flag when released
+        if (!this.keys[' '] && !this.keys['ArrowUp']) {
+            this.jumpKeyPressed = false;
         }
 
         // Apply gravity
@@ -157,6 +172,7 @@ const GameEngine = {
                         player.y = platform.y - player.height;
                         player.vy = 0;
                         player.onGround = true;
+                        player.jumpCount = 0; // Reset double jump on landing
                     } else {
                         // Hitting from below
                         player.y = platform.y + platform.height;
@@ -172,8 +188,17 @@ const GameEngine = {
             player.x = LevelManager.currentLevel.levelWidth - player.width;
         }
         if (player.y > 450) {
+            // Player fell off the map - lose a heart (unless Ella)
+            const isElla = MathGame.activeProfile.gradeLevel === 0;
+            if (!isElla) {
+                this.gameStats.hearts--;
+                AudioManager.playSound('wrong');
+            }
+            // Respawn at start
+            player.x = 50;
             player.y = 100;
             player.vy = 0;
+            player.jumpCount = 0; // Reset double jump on respawn
         }
 
         // Update camera
@@ -228,6 +253,24 @@ const GameEngine = {
         fruit.collected = true;
         this.gameStats.fruitsCollected++;
         AudioManager.playSound('collect');
+
+        // Clear scratch pad when collecting fruit
+        MathGame.clearScratchPad();
+    },
+
+    loadDecorationImages() {
+        for (const deco of this.decorations) {
+            if (deco.type === 'image' && deco.image) {
+                const img = new Image();
+                img.onload = () => {
+                    deco.loadedImage = img;
+                };
+                img.onerror = () => {
+                    console.warn(`Failed to load decoration image: ${deco.image}`);
+                };
+                img.src = deco.image;
+            }
+        }
     },
 
     draw() {
@@ -251,8 +294,14 @@ const GameEngine = {
 
         // Draw decorations
         for (const deco of this.decorations) {
-            ctx.font = `${deco.size}px Arial`;
-            ctx.fillText(deco.emoji, deco.x, deco.y);
+            if (deco.type === 'image' && deco.loadedImage) {
+                // Draw image decoration
+                ctx.drawImage(deco.loadedImage, deco.x, deco.y, deco.width, deco.height);
+            } else if (deco.emoji) {
+                // Draw emoji decoration
+                ctx.font = `${deco.size}px Arial`;
+                ctx.fillText(deco.emoji, deco.x, deco.y);
+            }
         }
 
         // Draw platforms
@@ -317,20 +366,42 @@ const GameEngine = {
 
     drawUI(ctx) {
         const canvas = MathGame.canvas;
+        const level = LevelManager.currentLevel;
+
+        // Draw level title at top center
+        ctx.font = 'bold 22px Arial';
+        ctx.fillStyle = '#2c3e50';
+        ctx.textAlign = 'center';
+        ctx.fillText(level.name, canvas.width / 2, 25);
+
+        // Draw math topic subtitle
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#7f8c8d';
+        const topicLabels = {
+            'addition-subtraction': 'Addition & Subtraction',
+            'multiplication-division': 'Multiplication & Division',
+            'fractions': 'Fractions',
+            'geometry': 'Geometry',
+            'measurement': 'Measurement',
+            'review-mix': 'Review Mix',
+            'ultimate-challenge': 'Ultimate Challenge'
+        };
+        ctx.fillText(topicLabels[level.mathTopic] || level.mathTopic, canvas.width / 2, 45);
+        ctx.textAlign = 'left';
 
         // Draw hearts (unless Ella)
         if (MathGame.activeProfile.gradeLevel !== 0) {
             ctx.font = '20px Arial';
             ctx.fillStyle = '#FF1493';
             for (let i = 0; i < this.gameStats.hearts; i++) {
-                ctx.fillText('❤️', 10 + i * 30, 30);
+                ctx.fillText('❤️', 10 + i * 30, 75);
             }
         }
 
         // Draw fruit counter
         ctx.font = '18px Arial';
         ctx.fillStyle = '#000';
-        ctx.fillText(`🍎 ${this.gameStats.fruitsCollected}/${this.fruits.length}`, canvas.width - 100, 30);
+        ctx.fillText(`🍎 ${this.gameStats.fruitsCollected}/${this.fruits.length}`, canvas.width - 100, 75);
 
         // Draw profile name
         ctx.fillText(`${MathGame.activeProfile.avatar} ${MathGame.activeProfile.name}`, 10, canvas.height - 10);

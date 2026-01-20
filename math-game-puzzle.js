@@ -73,7 +73,7 @@ const PuzzleSystem = {
         setTimeout(() => {
             GameEngine.collectFruit(this.currentFruit);
             this.close();
-        }, 2000);
+        }, 3500);
     },
 
     handleWrong() {
@@ -103,7 +103,7 @@ const PuzzleSystem = {
                 this.currentProblem = this.generateSimilarProblem(this.currentProblem);
                 this.renderProblem(); // Show new problem
                 feedback.innerHTML = '<div class="feedback-info">💡 You can do this!</div>';
-            }, 2500);
+            }, 4000);
         }
     },
 
