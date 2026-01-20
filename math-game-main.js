@@ -1,6 +1,8 @@
 // Capy's Math Adventure - Educational Platformer Game
 // Educational game where Capy solves math problems to collect fruits
 
+console.log('Loading math-game-main.js...');
+
 const MathGame = {
     state: 'profile-select', // profile-select | world-map | gameplay | puzzle | celebration
     canvas: null,
@@ -36,12 +38,20 @@ const MathGame = {
     },
 
     initScratchPad() {
+        console.log('initScratchPad called');
         const scratchPad = document.getElementById('scratch-pad');
         const scratchClear = document.getElementById('scratch-clear');
         const scratchToggle = document.getElementById('scratch-toggle');
         const scratchContainer = document.getElementById('scratch-pad-container');
 
-        if (!scratchPad || !scratchClear || !scratchToggle) return;
+        console.log('Scratch pad elements:', { scratchPad, scratchClear, scratchToggle, scratchContainer });
+
+        if (!scratchPad || !scratchClear || !scratchToggle) {
+            console.error('Missing scratch pad elements!');
+            return;
+        }
+
+        console.log('Setting up scratch pad event listeners...');
 
         // Clear button
         scratchClear.addEventListener('click', () => {
@@ -117,6 +127,8 @@ const MathGame = {
         console.log('Celebration screen rendered');
     }
 };
+
+console.log('MathGame object defined successfully');
 
 // Note: MathGame.init() is called by Router.initializePage() in router.js
 // when the math-game tab is clicked. No DOMContentLoaded initialization needed.
