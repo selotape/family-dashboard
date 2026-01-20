@@ -14,34 +14,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 300, height: 20, type: 'rock' },
-            { x: 350, y: 320, width: 150, height: 20, type: 'rock' },
-            { x: 550, y: 280, width: 200, height: 20, type: 'rock' },
-            { x: 800, y: 300, width: 180, height: 20, type: 'rock' },
-            { x: 1000, y: 250, width: 150, height: 20, type: 'rock' },
-            { x: 1200, y: 280, width: 200, height: 20, type: 'rock' },
-            { x: 1450, y: 320, width: 150, height: 20, type: 'rock' },
-            { x: 1650, y: 280, width: 180, height: 20, type: 'rock' },
-            { x: 1880, y: 310, width: 200, height: 20, type: 'rock' },
-            { x: 2130, y: 270, width: 150, height: 20, type: 'rock' },
-            { x: 2330, y: 300, width: 180, height: 20, type: 'rock' },
-            { x: 2560, y: 260, width: 200, height: 20, type: 'rock' },
-            { x: 2810, y: 310, width: 390, height: 20, type: 'rock' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 200, height: 20, type: 'rock' },
+            { x: 400, y: 360, width: 180, height: 20, type: 'rock' },
+            { x: 800, y: 360, width: 160, height: 20, type: 'rock' },
+            { x: 1400, y: 360, width: 180, height: 20, type: 'rock' },
+            { x: 2200, y: 360, width: 200, height: 20, type: 'rock' },
+
+            // Mid-low level (y=280-290)
+            { x: 250, y: 285, width: 140, height: 20, type: 'rock' },
+            { x: 630, y: 290, width: 160, height: 20, type: 'rock' },
+            { x: 1050, y: 280, width: 150, height: 20, type: 'rock' },
+            { x: 1650, y: 285, width: 170, height: 20, type: 'rock' },
+            { x: 2450, y: 290, width: 160, height: 20, type: 'rock' },
+
+            // Mid-high level (y=205-215)
+            { x: 100, y: 210, width: 130, height: 20, type: 'rock' },
+            { x: 500, y: 205, width: 140, height: 20, type: 'rock' },
+            { x: 900, y: 215, width: 150, height: 20, type: 'rock' },
+            { x: 1300, y: 210, width: 160, height: 20, type: 'rock' },
+            { x: 1900, y: 205, width: 140, height: 20, type: 'rock' },
+            { x: 2650, y: 210, width: 150, height: 20, type: 'rock' },
+
+            // High level (y=130-140)
+            { x: 350, y: 135, width: 120, height: 20, type: 'rock' },
+            { x: 750, y: 140, width: 130, height: 20, type: 'rock' },
+            { x: 1550, y: 135, width: 140, height: 20, type: 'rock' },
+            { x: 2100, y: 130, width: 120, height: 20, type: 'rock' },
+
+            // Final platform
+            { x: 2900, y: 360, width: 300, height: 20, type: 'rock' }
         ],
 
         fruits: [
-            { x: 150, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 280, y: 290, emoji: '🍊', problemId: 1 },
-            { x: 420, y: 270, emoji: '🍋', problemId: 2 },
-            { x: 640, y: 240, emoji: '🍌', problemId: 3 },
-            { x: 880, y: 260, emoji: '🍇', problemId: 4 },
-            { x: 1080, y: 210, emoji: '🍓', problemId: 5 },
-            { x: 1290, y: 240, emoji: '🍒', problemId: 6 },
-            { x: 1520, y: 280, emoji: '🍑', problemId: 7 },
-            { x: 1730, y: 240, emoji: '🥝', problemId: 8 },
-            { x: 1970, y: 270, emoji: '🍍', problemId: 9 },
-            { x: 2210, y: 230, emoji: '🥭', problemId: 10 },
-            { x: 2650, y: 220, emoji: '🍉', problemId: 11 }
+            { x: 100, y: 320, emoji: '🍎', problemId: 0 },          // Ground level
+            { x: 320, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 420, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 490, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 700, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 820, y: 100, emoji: '🍓', problemId: 5 },          // High
+            { x: 970, y: 175, emoji: '🍒', problemId: 6 },          // Mid-high
+            { x: 1130, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1380, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1970, y: 165, emoji: '🍍', problemId: 9 },         // Mid-high
+            { x: 2280, y: 320, emoji: '🥭', problemId: 10 },        // Ground
+            { x: 3000, y: 320, emoji: '🍉', problemId: 11 }         // Final platform
         ],
 
         decorations: [
@@ -70,34 +87,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 250, height: 20, type: 'dock' },
-            { x: 300, y: 310, width: 160, height: 20, type: 'dock' },
-            { x: 510, y: 270, width: 180, height: 20, type: 'dock' },
-            { x: 740, y: 310, width: 150, height: 20, type: 'dock' },
-            { x: 940, y: 260, width: 200, height: 20, type: 'dock' },
-            { x: 1190, y: 290, width: 170, height: 20, type: 'dock' },
-            { x: 1410, y: 330, width: 160, height: 20, type: 'dock' },
-            { x: 1620, y: 270, width: 190, height: 20, type: 'dock' },
-            { x: 1860, y: 300, width: 180, height: 20, type: 'dock' },
-            { x: 2090, y: 260, width: 160, height: 20, type: 'dock' },
-            { x: 2300, y: 310, width: 190, height: 20, type: 'dock' },
-            { x: 2540, y: 270, width: 180, height: 20, type: 'dock' },
-            { x: 2770, y: 320, width: 430, height: 20, type: 'dock' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 220, height: 20, type: 'dock' },
+            { x: 450, y: 360, width: 180, height: 20, type: 'dock' },
+            { x: 900, y: 360, width: 170, height: 20, type: 'dock' },
+            { x: 1350, y: 360, width: 190, height: 20, type: 'dock' },
+            { x: 2100, y: 360, width: 200, height: 20, type: 'dock' },
+
+            // Mid-low level (y=280-290)
+            { x: 280, y: 285, width: 150, height: 20, type: 'dock' },
+            { x: 680, y: 290, width: 160, height: 20, type: 'dock' },
+            { x: 1120, y: 280, width: 170, height: 20, type: 'dock' },
+            { x: 1600, y: 285, width: 160, height: 20, type: 'dock' },
+            { x: 2380, y: 290, width: 180, height: 20, type: 'dock' },
+
+            // Mid-high level (y=205-215)
+            { x: 150, y: 210, width: 120, height: 20, type: 'dock' },
+            { x: 550, y: 205, width: 130, height: 20, type: 'dock' },
+            { x: 1000, y: 215, width: 140, height: 20, type: 'dock' },
+            { x: 1480, y: 210, width: 150, height: 20, type: 'dock' },
+            { x: 1900, y: 205, width: 130, height: 20, type: 'dock' },
+            { x: 2600, y: 210, width: 140, height: 20, type: 'dock' },
+
+            // High level (y=130-140)
+            { x: 400, y: 135, width: 110, height: 20, type: 'dock' },
+            { x: 800, y: 140, width: 120, height: 20, type: 'dock' },
+            { x: 1750, y: 135, width: 130, height: 20, type: 'dock' },
+            { x: 2240, y: 130, width: 120, height: 20, type: 'dock' },
+
+            // Final platform
+            { x: 2850, y: 360, width: 350, height: 20, type: 'dock' }
         ],
 
         fruits: [
-            { x: 120, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 370, y: 270, emoji: '🍊', problemId: 1 },
-            { x: 600, y: 230, emoji: '🍋', problemId: 2 },
-            { x: 820, y: 270, emoji: '🍌', problemId: 3 },
-            { x: 1040, y: 220, emoji: '🍇', problemId: 4 },
-            { x: 1280, y: 250, emoji: '🍓', problemId: 5 },
-            { x: 1490, y: 290, emoji: '🍒', problemId: 6 },
-            { x: 1710, y: 230, emoji: '🍑', problemId: 7 },
-            { x: 1950, y: 260, emoji: '🥝', problemId: 8 },
-            { x: 2170, y: 220, emoji: '🍍', problemId: 9 },
-            { x: 2410, y: 270, emoji: '🥭', problemId: 10 },
-            { x: 2900, y: 280, emoji: '🍉', problemId: 11 }
+            { x: 110, y: 320, emoji: '🍎', problemId: 0 },          // Ground
+            { x: 350, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 470, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 540, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 600, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 750, y: 245, emoji: '🍓', problemId: 5 },          // Mid-low
+            { x: 870, y: 100, emoji: '🍒', problemId: 6 },          // High
+            { x: 1200, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1560, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1820, y: 95, emoji: '🍍', problemId: 9 },          // High
+            { x: 2190, y: 320, emoji: '🥭', problemId: 10 },        // Ground
+            { x: 3000, y: 320, emoji: '🍉', problemId: 11 }         // Final
         ],
 
         decorations: [
@@ -126,34 +160,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 280, height: 20, type: 'coral' },
-            { x: 330, y: 300, width: 170, height: 20, type: 'coral' },
-            { x: 550, y: 260, width: 160, height: 20, type: 'coral' },
-            { x: 760, y: 290, width: 180, height: 20, type: 'coral' },
-            { x: 990, y: 240, width: 150, height: 20, type: 'coral' },
-            { x: 1190, y: 280, width: 200, height: 20, type: 'coral' },
-            { x: 1440, y: 310, width: 160, height: 20, type: 'coral' },
-            { x: 1650, y: 260, width: 170, height: 20, type: 'coral' },
-            { x: 1870, y: 300, width: 190, height: 20, type: 'coral' },
-            { x: 2110, y: 250, width: 160, height: 20, type: 'coral' },
-            { x: 2320, y: 290, width: 180, height: 20, type: 'coral' },
-            { x: 2550, y: 270, width: 170, height: 20, type: 'coral' },
-            { x: 2770, y: 320, width: 430, height: 20, type: 'coral' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 240, height: 20, type: 'coral' },
+            { x: 480, y: 360, width: 170, height: 20, type: 'coral' },
+            { x: 920, y: 360, width: 180, height: 20, type: 'coral' },
+            { x: 1450, y: 360, width: 190, height: 20, type: 'coral' },
+            { x: 2250, y: 360, width: 180, height: 20, type: 'coral' },
+
+            // Mid-low level (y=280-290)
+            { x: 290, y: 285, width: 160, height: 20, type: 'coral' },
+            { x: 700, y: 290, width: 150, height: 20, type: 'coral' },
+            { x: 1150, y: 280, width: 180, height: 20, type: 'coral' },
+            { x: 1690, y: 285, width: 170, height: 20, type: 'coral' },
+            { x: 2480, y: 290, width: 160, height: 20, type: 'coral' },
+
+            // Mid-high level (y=205-215)
+            { x: 120, y: 210, width: 140, height: 20, type: 'coral' },
+            { x: 570, y: 205, width: 120, height: 20, type: 'coral' },
+            { x: 1020, y: 215, width: 150, height: 20, type: 'coral' },
+            { x: 1380, y: 210, width: 140, height: 20, type: 'coral' },
+            { x: 1950, y: 205, width: 160, height: 20, type: 'coral' },
+            { x: 2700, y: 210, width: 140, height: 20, type: 'coral' },
+
+            // High level (y=130-140)
+            { x: 380, y: 135, width: 120, height: 20, type: 'coral' },
+            { x: 830, y: 140, width: 110, height: 20, type: 'coral' },
+            { x: 1580, y: 135, width: 130, height: 20, type: 'coral' },
+            { x: 2120, y: 130, width: 120, height: 20, type: 'coral' },
+
+            // Final platform
+            { x: 2920, y: 360, width: 280, height: 20, type: 'coral' }
         ],
 
         fruits: [
-            { x: 140, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 400, y: 260, emoji: '🍊', problemId: 1 },
-            { x: 620, y: 220, emoji: '🍋', problemId: 2 },
-            { x: 840, y: 250, emoji: '🍌', problemId: 3 },
-            { x: 1070, y: 200, emoji: '🍇', problemId: 4 },
-            { x: 1300, y: 240, emoji: '🍓', problemId: 5 },
-            { x: 1520, y: 270, emoji: '🍒', problemId: 6 },
-            { x: 1740, y: 220, emoji: '🍑', problemId: 7 },
-            { x: 1970, y: 260, emoji: '🥝', problemId: 8 },
-            { x: 2190, y: 210, emoji: '🍍', problemId: 9 },
-            { x: 2420, y: 250, emoji: '🥭', problemId: 10 },
-            { x: 2900, y: 280, emoji: '🍉', problemId: 11 }
+            { x: 120, y: 320, emoji: '🍎', problemId: 0 },          // Ground
+            { x: 360, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 450, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 560, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 630, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 770, y: 245, emoji: '🍓', problemId: 5 },          // Mid-low
+            { x: 890, y: 100, emoji: '🍒', problemId: 6 },          // High
+            { x: 1230, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1450, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1650, y: 95, emoji: '🍍', problemId: 9 },          // High
+            { x: 2020, y: 165, emoji: '🥭', problemId: 10 },        // Mid-high
+            { x: 3050, y: 320, emoji: '🍉', problemId: 11 }         // Final
         ],
 
         decorations: [
@@ -182,34 +233,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 260, height: 20, type: 'building' },
-            { x: 310, y: 310, width: 180, height: 20, type: 'building' },
-            { x: 540, y: 270, width: 160, height: 20, type: 'building' },
-            { x: 750, y: 300, width: 170, height: 20, type: 'building' },
-            { x: 970, y: 250, width: 190, height: 20, type: 'building' },
-            { x: 1210, y: 290, width: 160, height: 20, type: 'building' },
-            { x: 1420, y: 320, width: 180, height: 20, type: 'building' },
-            { x: 1650, y: 270, width: 170, height: 20, type: 'building' },
-            { x: 1870, y: 310, width: 200, height: 20, type: 'building' },
-            { x: 2120, y: 260, width: 150, height: 20, type: 'building' },
-            { x: 2320, y: 300, width: 190, height: 20, type: 'building' },
-            { x: 2560, y: 270, width: 170, height: 20, type: 'building' },
-            { x: 2780, y: 320, width: 420, height: 20, type: 'building' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 230, height: 20, type: 'building' },
+            { x: 430, y: 360, width: 190, height: 20, type: 'building' },
+            { x: 850, y: 360, width: 170, height: 20, type: 'building' },
+            { x: 1380, y: 360, width: 180, height: 20, type: 'building' },
+            { x: 2180, y: 360, width: 190, height: 20, type: 'building' },
+
+            // Mid-low level (y=280-290)
+            { x: 270, y: 285, width: 140, height: 20, type: 'building' },
+            { x: 670, y: 290, width: 160, height: 20, type: 'building' },
+            { x: 1070, y: 280, width: 170, height: 20, type: 'building' },
+            { x: 1610, y: 285, width: 160, height: 20, type: 'building' },
+            { x: 2420, y: 290, width: 170, height: 20, type: 'building' },
+
+            // Mid-high level (y=205-215)
+            { x: 140, y: 210, width: 130, height: 20, type: 'building' },
+            { x: 530, y: 205, width: 140, height: 20, type: 'building' },
+            { x: 960, y: 215, width: 150, height: 20, type: 'building' },
+            { x: 1280, y: 210, width: 140, height: 20, type: 'building' },
+            { x: 1880, y: 205, width: 150, height: 20, type: 'building' },
+            { x: 2640, y: 210, width: 140, height: 20, type: 'building' },
+
+            // High level (y=130-140)
+            { x: 360, y: 135, width: 120, height: 20, type: 'building' },
+            { x: 760, y: 140, width: 130, height: 20, type: 'building' },
+            { x: 1500, y: 135, width: 120, height: 20, type: 'building' },
+            { x: 2070, y: 130, width: 130, height: 20, type: 'building' },
+
+            // Final platform
+            { x: 2870, y: 360, width: 330, height: 20, type: 'building' }
         ],
 
         fruits: [
-            { x: 130, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 390, y: 270, emoji: '🍊', problemId: 1 },
-            { x: 610, y: 230, emoji: '🍋', problemId: 2 },
-            { x: 830, y: 260, emoji: '🍌', problemId: 3 },
-            { x: 1070, y: 210, emoji: '🍇', problemId: 4 },
-            { x: 1300, y: 250, emoji: '🍓', problemId: 5 },
-            { x: 1510, y: 280, emoji: '🍒', problemId: 6 },
-            { x: 1740, y: 230, emoji: '🍑', problemId: 7 },
-            { x: 1980, y: 270, emoji: '🥝', problemId: 8 },
-            { x: 2200, y: 220, emoji: '🍍', problemId: 9 },
-            { x: 2430, y: 260, emoji: '🥭', problemId: 10 },
-            { x: 2900, y: 280, emoji: '🍉', problemId: 11 }
+            { x: 115, y: 320, emoji: '🍎', problemId: 0 },          // Ground
+            { x: 340, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 430, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 510, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 590, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 740, y: 245, emoji: '🍓', problemId: 5 },          // Mid-low
+            { x: 830, y: 100, emoji: '🍒', problemId: 6 },          // High
+            { x: 1150, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1350, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1570, y: 95, emoji: '🍍', problemId: 9 },          // High
+            { x: 1950, y: 165, emoji: '🥭', problemId: 10 },        // Mid-high
+            { x: 3000, y: 320, emoji: '🍉', problemId: 11 }         // Final
         ],
 
         decorations: [
@@ -238,34 +306,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 270, height: 20, type: 'stone' },
-            { x: 320, y: 310, width: 170, height: 20, type: 'stone' },
-            { x: 540, y: 270, width: 180, height: 20, type: 'stone' },
-            { x: 770, y: 300, width: 160, height: 20, type: 'stone' },
-            { x: 980, y: 250, width: 180, height: 20, type: 'stone' },
-            { x: 1210, y: 290, width: 170, height: 20, type: 'stone' },
-            { x: 1430, y: 320, width: 160, height: 20, type: 'stone' },
-            { x: 1640, y: 270, width: 190, height: 20, type: 'stone' },
-            { x: 1880, y: 310, width: 170, height: 20, type: 'stone' },
-            { x: 2100, y: 260, width: 180, height: 20, type: 'stone' },
-            { x: 2330, y: 300, width: 160, height: 20, type: 'stone' },
-            { x: 2540, y: 270, width: 190, height: 20, type: 'stone' },
-            { x: 2780, y: 320, width: 420, height: 20, type: 'stone' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 240, height: 20, type: 'stone' },
+            { x: 460, y: 360, width: 180, height: 20, type: 'stone' },
+            { x: 880, y: 360, width: 190, height: 20, type: 'stone' },
+            { x: 1420, y: 360, width: 170, height: 20, type: 'stone' },
+            { x: 2170, y: 360, width: 200, height: 20, type: 'stone' },
+
+            // Mid-low level (y=280-290)
+            { x: 300, y: 285, width: 150, height: 20, type: 'stone' },
+            { x: 690, y: 290, width: 160, height: 20, type: 'stone' },
+            { x: 1120, y: 280, width: 170, height: 20, type: 'stone' },
+            { x: 1640, y: 285, width: 180, height: 20, type: 'stone' },
+            { x: 2420, y: 290, width: 160, height: 20, type: 'stone' },
+
+            // Mid-high level (y=205-215)
+            { x: 130, y: 210, width: 130, height: 20, type: 'stone' },
+            { x: 550, y: 205, width: 140, height: 20, type: 'stone' },
+            { x: 1000, y: 215, width: 140, height: 20, type: 'stone' },
+            { x: 1330, y: 210, width: 150, height: 20, type: 'stone' },
+            { x: 1930, y: 205, width: 140, height: 20, type: 'stone' },
+            { x: 2670, y: 210, width: 150, height: 20, type: 'stone' },
+
+            // High level (y=130-140)
+            { x: 370, y: 135, width: 120, height: 20, type: 'stone' },
+            { x: 780, y: 140, width: 110, height: 20, type: 'stone' },
+            { x: 1540, y: 135, width: 130, height: 20, type: 'stone' },
+            { x: 2080, y: 130, width: 120, height: 20, type: 'stone' },
+
+            // Final platform
+            { x: 2900, y: 360, width: 300, height: 20, type: 'stone' }
         ],
 
         fruits: [
-            { x: 135, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 400, y: 270, emoji: '🍊', problemId: 1 },
-            { x: 630, y: 230, emoji: '🍋', problemId: 2 },
-            { x: 850, y: 260, emoji: '🍌', problemId: 3 },
-            { x: 1080, y: 210, emoji: '🍇', problemId: 4 },
-            { x: 1300, y: 250, emoji: '🍓', problemId: 5 },
-            { x: 1510, y: 280, emoji: '🍒', problemId: 6 },
-            { x: 1740, y: 230, emoji: '🍑', problemId: 7 },
-            { x: 1970, y: 270, emoji: '🥝', problemId: 8 },
-            { x: 2190, y: 220, emoji: '🍍', problemId: 9 },
-            { x: 2420, y: 260, emoji: '🥭', problemId: 10 },
-            { x: 2900, y: 280, emoji: '🍉', problemId: 11 }
+            { x: 120, y: 320, emoji: '🍎', problemId: 0 },          // Ground
+            { x: 370, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 440, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 550, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 610, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 760, y: 245, emoji: '🍓', problemId: 5 },          // Mid-low
+            { x: 850, y: 100, emoji: '🍒', problemId: 6 },          // High
+            { x: 1200, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1400, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1610, y: 95, emoji: '🍍', problemId: 9 },          // High
+            { x: 2000, y: 165, emoji: '🥭', problemId: 10 },        // Mid-high
+            { x: 3030, y: 320, emoji: '🍉', problemId: 11 }         // Final
         ],
 
         decorations: [
@@ -294,34 +379,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 240, height: 20, type: 'cloud' },
-            { x: 290, y: 300, width: 180, height: 20, type: 'cloud' },
-            { x: 520, y: 250, width: 160, height: 20, type: 'cloud' },
-            { x: 730, y: 290, width: 170, height: 20, type: 'cloud' },
-            { x: 950, y: 240, width: 200, height: 20, type: 'cloud' },
-            { x: 1200, y: 280, width: 160, height: 20, type: 'cloud' },
-            { x: 1410, y: 310, width: 180, height: 20, type: 'cloud' },
-            { x: 1640, y: 260, width: 170, height: 20, type: 'cloud' },
-            { x: 1860, y: 300, width: 190, height: 20, type: 'cloud' },
-            { x: 2100, y: 250, width: 160, height: 20, type: 'cloud' },
-            { x: 2310, y: 290, width: 180, height: 20, type: 'cloud' },
-            { x: 2540, y: 260, width: 180, height: 20, type: 'cloud' },
-            { x: 2770, y: 320, width: 430, height: 20, type: 'cloud' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 210, height: 20, type: 'cloud' },
+            { x: 420, y: 360, width: 180, height: 20, type: 'cloud' },
+            { x: 830, y: 360, width: 170, height: 20, type: 'cloud' },
+            { x: 1360, y: 360, width: 190, height: 20, type: 'cloud' },
+            { x: 2200, y: 360, width: 180, height: 20, type: 'cloud' },
+
+            // Mid-low level (y=280-290)
+            { x: 260, y: 285, width: 140, height: 20, type: 'cloud' },
+            { x: 650, y: 290, width: 160, height: 20, type: 'cloud' },
+            { x: 1050, y: 280, width: 170, height: 20, type: 'cloud' },
+            { x: 1600, y: 285, width: 180, height: 20, type: 'cloud' },
+            { x: 2430, y: 290, width: 170, height: 20, type: 'cloud' },
+
+            // Mid-high level (y=205-215)
+            { x: 110, y: 210, width: 130, height: 20, type: 'cloud' },
+            { x: 520, y: 205, width: 140, height: 20, type: 'cloud' },
+            { x: 940, y: 215, width: 150, height: 20, type: 'cloud' },
+            { x: 1270, y: 210, width: 140, height: 20, type: 'cloud' },
+            { x: 1890, y: 205, width: 160, height: 20, type: 'cloud' },
+            { x: 2660, y: 210, width: 150, height: 20, type: 'cloud' },
+
+            // High level (y=130-140)
+            { x: 340, y: 135, width: 120, height: 20, type: 'cloud' },
+            { x: 740, y: 140, width: 130, height: 20, type: 'cloud' },
+            { x: 1510, y: 135, width: 120, height: 20, type: 'cloud' },
+            { x: 2100, y: 130, width: 130, height: 20, type: 'cloud' },
+
+            // Final platform
+            { x: 2880, y: 360, width: 320, height: 20, type: 'cloud' }
         ],
 
         fruits: [
-            { x: 120, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 370, y: 260, emoji: '🍊', problemId: 1 },
-            { x: 600, y: 210, emoji: '🍋', problemId: 2 },
-            { x: 820, y: 250, emoji: '🍌', problemId: 3 },
-            { x: 1060, y: 200, emoji: '🍇', problemId: 4 },
-            { x: 1290, y: 240, emoji: '🍓', problemId: 5 },
-            { x: 1500, y: 270, emoji: '🍒', problemId: 6 },
-            { x: 1730, y: 220, emoji: '🍑', problemId: 7 },
-            { x: 1960, y: 260, emoji: '🥝', problemId: 8 },
-            { x: 2180, y: 210, emoji: '🍍', problemId: 9 },
-            { x: 2410, y: 250, emoji: '🥭', problemId: 10 },
-            { x: 2900, y: 280, emoji: '🍉', problemId: 11 }
+            { x: 105, y: 320, emoji: '🍎', problemId: 0 },          // Ground
+            { x: 330, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 410, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 510, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 580, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 720, y: 245, emoji: '🍓', problemId: 5 },          // Mid-low
+            { x: 810, y: 100, emoji: '🍒', problemId: 6 },          // High
+            { x: 1130, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1340, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1580, y: 95, emoji: '🍍', problemId: 9 },          // High
+            { x: 1960, y: 165, emoji: '🥭', problemId: 10 },        // Mid-high
+            { x: 3010, y: 320, emoji: '🍉', problemId: 11 }         // Final
         ],
 
         decorations: [
@@ -350,34 +452,51 @@ const LEVELS = [
         levelWidth: 3200,
 
         platforms: [
-            { x: 0, y: 350, width: 280, height: 20, type: 'rainbow' },
-            { x: 330, y: 310, width: 170, height: 20, type: 'rainbow' },
-            { x: 550, y: 270, width: 180, height: 20, type: 'rainbow' },
-            { x: 780, y: 300, width: 160, height: 20, type: 'rainbow' },
-            { x: 990, y: 250, width: 180, height: 20, type: 'rainbow' },
-            { x: 1220, y: 290, width: 170, height: 20, type: 'rainbow' },
-            { x: 1440, y: 320, width: 160, height: 20, type: 'rainbow' },
-            { x: 1650, y: 270, width: 190, height: 20, type: 'rainbow' },
-            { x: 1890, y: 310, width: 170, height: 20, type: 'rainbow' },
-            { x: 2110, y: 260, width: 180, height: 20, type: 'rainbow' },
-            { x: 2340, y: 300, width: 160, height: 20, type: 'rainbow' },
-            { x: 2550, y: 270, width: 180, height: 20, type: 'rainbow' },
-            { x: 2780, y: 320, width: 420, height: 20, type: 'rainbow' }
+            // Ground level (y=360)
+            { x: 0, y: 360, width: 250, height: 20, type: 'rainbow' },
+            { x: 470, y: 360, width: 180, height: 20, type: 'rainbow' },
+            { x: 890, y: 360, width: 190, height: 20, type: 'rainbow' },
+            { x: 1430, y: 360, width: 180, height: 20, type: 'rainbow' },
+            { x: 2190, y: 360, width: 200, height: 20, type: 'rainbow' },
+
+            // Mid-low level (y=280-290)
+            { x: 310, y: 285, width: 150, height: 20, type: 'rainbow' },
+            { x: 700, y: 290, width: 160, height: 20, type: 'rainbow' },
+            { x: 1130, y: 280, width: 180, height: 20, type: 'rainbow' },
+            { x: 1660, y: 285, width: 170, height: 20, type: 'rainbow' },
+            { x: 2440, y: 290, width: 170, height: 20, type: 'rainbow' },
+
+            // Mid-high level (y=205-215)
+            { x: 140, y: 210, width: 140, height: 20, type: 'rainbow' },
+            { x: 560, y: 205, width: 140, height: 20, type: 'rainbow' },
+            { x: 1010, y: 215, width: 150, height: 20, type: 'rainbow' },
+            { x: 1340, y: 210, width: 150, height: 20, type: 'rainbow' },
+            { x: 1940, y: 205, width: 150, height: 20, type: 'rainbow' },
+            { x: 2680, y: 210, width: 160, height: 20, type: 'rainbow' },
+
+            // High level (y=130-140)
+            { x: 380, y: 135, width: 130, height: 20, type: 'rainbow' },
+            { x: 790, y: 140, width: 120, height: 20, type: 'rainbow' },
+            { x: 1570, y: 135, width: 130, height: 20, type: 'rainbow' },
+            { x: 2100, y: 130, width: 120, height: 20, type: 'rainbow' },
+
+            // Final platform
+            { x: 2910, y: 360, width: 290, height: 20, type: 'rainbow' }
         ],
 
         fruits: [
-            { x: 140, y: 310, emoji: '🍎', problemId: 0 },
-            { x: 410, y: 270, emoji: '🍊', problemId: 1 },
-            { x: 640, y: 230, emoji: '🍋', problemId: 2 },
-            { x: 860, y: 260, emoji: '🍌', problemId: 3 },
-            { x: 1090, y: 210, emoji: '🍇', problemId: 4 },
-            { x: 1310, y: 250, emoji: '🍓', problemId: 5 },
-            { x: 1520, y: 280, emoji: '🍒', problemId: 6 },
-            { x: 1750, y: 230, emoji: '🍑', problemId: 7 },
-            { x: 1980, y: 270, emoji: '🥝', problemId: 8 },
-            { x: 2200, y: 220, emoji: '🍍', problemId: 9 },
-            { x: 2430, y: 260, emoji: '🥭', problemId: 10 },
-            { x: 2900, y: 280, emoji: '🍉', problemId: 11 }
+            { x: 125, y: 320, emoji: '🍎', problemId: 0 },          // Ground
+            { x: 380, y: 245, emoji: '🍊', problemId: 1 },          // Mid-low
+            { x: 450, y: 95, emoji: '🍋', problemId: 2 },           // High
+            { x: 560, y: 320, emoji: '🍌', problemId: 3 },          // Ground
+            { x: 620, y: 165, emoji: '🍇', problemId: 4 },          // Mid-high
+            { x: 770, y: 245, emoji: '🍓', problemId: 5 },          // Mid-low
+            { x: 860, y: 100, emoji: '🍒', problemId: 6 },          // High
+            { x: 1210, y: 240, emoji: '🍑', problemId: 7 },         // Mid-low
+            { x: 1420, y: 170, emoji: '🥝', problemId: 8 },         // Mid-high
+            { x: 1640, y: 95, emoji: '🍍', problemId: 9 },          // High
+            { x: 2010, y: 165, emoji: '🥭', problemId: 10 },        // Mid-high
+            { x: 3040, y: 320, emoji: '🍉', problemId: 11 }         // Final
         ],
 
         decorations: [
@@ -407,62 +526,62 @@ const PROBLEMS = {
         // 3rd Grade (Noga) - Addition/Subtraction within 1000
         grade3: [
             {
-                question: 'A lion has 124 cubs. 87 more cubs are born. How many cubs now?',
+                question: '🦁 A lion has 124 cubs. 87 more cubs are born. How many cubs now?',
                 choices: ['201', '211', '221', '231'],
                 correctIndex: 1
             },
             {
-                question: 'An elephant walks 456 meters. Then walks 278 more meters. Total distance?',
+                question: '🐘 An elephant walks 456 meters. Then walks 278 more meters. Total distance?',
                 choices: ['734', '724', '744', '714'],
                 correctIndex: 0
             },
             {
-                question: 'A zebra herd has 315 members. 142 leave for water. How many remain?',
+                question: '🦓 A zebra herd has 315 members. 142 leave for water. How many remain?',
                 choices: ['173', '183', '163', '193'],
                 correctIndex: 0
             },
             {
-                question: 'A giraffe is 523 cm tall. A baby giraffe is 189 cm shorter. Baby\'s height?',
+                question: '🦒 A giraffe is 523 cm tall. A baby giraffe is 189 cm shorter. Baby\'s height?',
                 choices: ['334', '344', '324', '354'],
                 correctIndex: 0
             },
             {
-                question: 'Safari has 682 trees. They plant 159 more. How many trees total?',
+                question: '🌴 Safari has 682 trees. They plant 159 more. How many trees total?',
                 choices: ['831', '841', '851', '821'],
                 correctIndex: 1
             },
             {
-                question: 'A safari truck drives 547 km one day and 286 km the next. Total distance?',
+                question: '🚙 A safari truck drives 547 km one day and 286 km the next. Total distance?',
                 choices: ['833', '823', '843', '813'],
                 correctIndex: 0
             },
             {
-                question: 'There are 725 animals. 368 are sleeping. How many are awake?',
+                question: '🦁 There are 725 animals. 368 are sleeping. How many are awake?',
                 choices: ['357', '367', '347', '377'],
                 correctIndex: 0
             },
             {
-                question: 'A waterhole has 891 liters. Animals drink 457 liters. How much remains?',
+                question: '💧 A waterhole has 891 liters. Animals drink 457 liters. How much remains?',
                 choices: ['434', '444', '424', '454'],
                 correctIndex: 0
             },
             {
-                question: 'Park rangers count 638 birds in the morning and 275 in the evening. Total?',
+                question: '🦜 Park rangers count 638 birds in the morning and 275 in the evening. Total?',
                 choices: ['903', '913', '923', '893'],
                 correctIndex: 1
             },
             {
-                question: 'A cheetah runs 952 meters. Then runs 387 meters back. Net distance?',
+                question: '🐆 A cheetah runs 952 meters. Then runs 387 meters back. Net distance?',
                 choices: ['565', '575', '555', '585'],
                 correctIndex: 0
             },
             {
-                question: 'Safari gift shop has 476 souvenirs. Sells 198. How many left?',
+                question: '🎁 Safari gift shop has 476 souvenirs. Sells 198. How many left?',
                 choices: ['278', '288', '268', '298'],
                 correctIndex: 0
             },
             {
-                question: 'Two safari camps have 423 and 389 visitors. Total visitors?',
+                question: '🏕️ Two safari camps have 423 and 389 visitors. Total visitors?',
                 choices: ['812', '822', '802', '832'],
                 correctIndex: 0
             }
@@ -470,18 +589,18 @@ const PROBLEMS = {
 
         // 1st Grade (Dana) - Addition/Subtraction within 20
         grade1: [
-            { question: 'A lion has 7 cubs. 5 more are born. How many cubs?', choices: ['11', '12', '13', '14'], correctIndex: 1 },
-            { question: 'You see 8 elephants. 4 walk away. How many left?', choices: ['4', '5', '3', '6'], correctIndex: 0 },
-            { question: 'There are 6 giraffes and 7 zebras. How many animals?', choices: ['12', '13', '14', '15'], correctIndex: 1 },
-            { question: 'A tree has 15 birds. 8 fly away. How many remain?', choices: ['7', '8', '6', '9'], correctIndex: 0 },
-            { question: '9 monkeys play. 6 more join. How many monkeys total?', choices: ['14', '15', '16', '17'], correctIndex: 1 },
-            { question: 'You count 12 lions. 5 are sleeping. How many are awake?', choices: ['7', '8', '6', '9'], correctIndex: 0 },
-            { question: 'Safari has 10 trucks. Gets 8 more. How many trucks?', choices: ['17', '18', '19', '20'], correctIndex: 1 },
-            { question: '14 animals drink water. 6 leave. How many still drinking?', choices: ['8', '9', '7', '10'], correctIndex: 0 },
-            { question: 'You see 5 cheetahs and 9 gazelles. How many animals?', choices: ['13', '14', '15', '16'], correctIndex: 1 },
-            { question: '18 birds sit in a tree. 9 fly away. How many left?', choices: ['9', '10', '8', '11'], correctIndex: 0 },
-            { question: '7 hippos in water. 6 more jump in. How many hippos?', choices: ['12', '13', '14', '15'], correctIndex: 1 },
-            { question: 'Park has 16 benches. 7 break. How many good benches?', choices: ['9', '10', '8', '11'], correctIndex: 0 }
+            { question: '🦁 A lion has 7 cubs. 5 more are born. How many cubs?', choices: ['11', '12', '13', '14'], correctIndex: 1 },
+            { question: '🐘 You see 8 elephants. 4 walk away. How many left?', choices: ['4', '5', '3', '6'], correctIndex: 0 },
+            { question: '🦒 There are 6 giraffes and 7 zebras. How many animals?', choices: ['12', '13', '14', '15'], correctIndex: 1 },
+            { question: '🦜 A tree has 15 birds. 8 fly away. How many remain?', choices: ['7', '8', '6', '9'], correctIndex: 0 },
+            { question: '🐒 9 monkeys play. 6 more join. How many monkeys total?', choices: ['14', '15', '16', '17'], correctIndex: 1 },
+            { question: '🦁 You count 12 lions. 5 are sleeping. How many are awake?', choices: ['7', '8', '6', '9'], correctIndex: 0 },
+            { question: '🚙 Safari has 10 trucks. Gets 8 more. How many trucks?', choices: ['17', '18', '19', '20'], correctIndex: 1 },
+            { question: '💧 14 animals drink water. 6 leave. How many still drinking?', choices: ['8', '9', '7', '10'], correctIndex: 0 },
+            { question: '🐆 You see 5 cheetahs and 9 gazelles. How many animals?', choices: ['13', '14', '15', '16'], correctIndex: 1 },
+            { question: '🦜 18 birds sit in a tree. 9 fly away. How many left?', choices: ['9', '10', '8', '11'], correctIndex: 0 },
+            { question: '🦛 7 hippos in water. 6 more jump in. How many hippos?', choices: ['12', '13', '14', '15'], correctIndex: 1 },
+            { question: '🪑 Park has 16 benches. 7 break. How many good benches?', choices: ['9', '10', '8', '11'], correctIndex: 0 }
         ],
 
         // Pre-K (Ella) - Simple counting 1-10

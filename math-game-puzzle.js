@@ -86,22 +86,124 @@ const PuzzleSystem = {
             feedback.innerHTML = '<div class="feedback-wrong">❌ Try again! (-1 heart)</div>';
             AudioManager.playSound('wrong');
         } else {
-            // Second wrong: show solution, give fruit anyway
+            // Second wrong: show solution, then give similar problem
             const correctAnswer = this.currentProblem.choices[this.currentProblem.correctIndex];
             const feedback = document.getElementById('puzzle-feedback');
             feedback.innerHTML = `
                 <div class="feedback-solution">
                     <p>The correct answer was: <strong>${correctAnswer}</strong></p>
-                    <p>Let's keep going! You'll get the next one!</p>
+                    <p>Now try a similar problem!</p>
                 </div>
             `;
             AudioManager.playSound('wrong');
 
+            // Generate similar problem after showing solution
             setTimeout(() => {
-                GameEngine.collectFruit(this.currentFruit);
-                this.close();
+                this.attempts = 0; // Reset attempts for similar problem
+                this.currentProblem = this.generateSimilarProblem(this.currentProblem);
+                this.renderProblem(); // Show new problem
+                feedback.innerHTML = '<div class="feedback-info">💡 You can do this!</div>';
             }, 2500);
         }
+    },
+
+    renderProblem() {
+        const questionEl = document.querySelector('.puzzle-question');
+        const choicesEl = document.querySelector('.puzzle-choices');
+
+        questionEl.textContent = this.currentProblem.question;
+        choicesEl.innerHTML = this.currentProblem.choices.map((choice, i) => `
+            <button class="puzzle-choice" onclick="PuzzleSystem.checkAnswer(${i})">${choice}</button>
+        `).join('');
+    },
+
+    generateSimilarProblem(originalProblem) {
+        const gradeLevel = MathGame.activeProfile.gradeLevel;
+
+        // For 3rd grade (Noga)
+        if (gradeLevel === 3) {
+            const num1 = Math.floor(Math.random() * 300) + 100; // 100-400
+            const num2 = Math.floor(Math.random() * 200) + 50;  // 50-250
+            const operation = Math.random() > 0.5 ? 'add' : 'subtract';
+
+            if (operation === 'add') {
+                const answer = num1 + num2;
+                const { choices, correctIndex } = this.generateChoices(answer, 2000);
+                return {
+                    question: `🦁 A lion has ${num1} cubs. ${num2} more are born. How many cubs?`,
+                    choices: choices,
+                    correctIndex: correctIndex
+                };
+            } else {
+                const answer = num1 - num2;
+                const { choices, correctIndex } = this.generateChoices(answer, 2000);
+                return {
+                    question: `🦒 A giraffe herd has ${num1} members. ${num2} leave. How many remain?`,
+                    choices: choices,
+                    correctIndex: correctIndex
+                };
+            }
+        }
+
+        // For 1st grade (Dana)
+        else if (gradeLevel === 1) {
+            const num1 = Math.floor(Math.random() * 10) + 5;  // 5-15
+            const num2 = Math.floor(Math.random() * 8) + 2;   // 2-10
+            const operation = Math.random() > 0.5 ? 'add' : 'subtract';
+
+            if (operation === 'add' && num1 + num2 <= 20) {
+                const answer = num1 + num2;
+                const { choices, correctIndex } = this.generateChoices(answer, 20);
+                return {
+                    question: `🦁 ${num1} lions play. ${num2} more join. How many?`,
+                    choices: choices,
+                    correctIndex: correctIndex
+                };
+            } else {
+                const answer = Math.max(num1 - num2, 0);
+                const { choices, correctIndex } = this.generateChoices(answer, 20);
+                return {
+                    question: `🐘 ${num1} elephants drink water. ${num2} leave. How many left?`,
+                    choices: choices,
+                    correctIndex: correctIndex
+                };
+            }
+        }
+
+        // For Pre-K (Ella) - Note: Ella mode auto-collects, but this is for consistency
+        else {
+            const count = Math.floor(Math.random() * 5) + 3; // 3-8
+            const emojis = ['🦁', '🐘', '🦒', '🦓'];
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            const { choices, correctIndex } = this.generateChoices(count, 10);
+            return {
+                question: `Count! ${emoji.repeat(count)}`,
+                choices: choices,
+                correctIndex: correctIndex
+            };
+        }
+    },
+
+    generateChoices(correctAnswer, max = 1000) {
+        const choices = [correctAnswer];
+
+        // Generate 3 wrong answers within reasonable range
+        while (choices.length < 4) {
+            const offset = Math.floor(Math.random() * 20) - 10; // ±10
+            const wrong = correctAnswer + offset;
+            if (wrong !== correctAnswer && wrong > 0 && wrong <= max && !choices.includes(wrong)) {
+                choices.push(wrong);
+            }
+        }
+
+        // Shuffle and find new correct index
+        const shuffled = choices.sort(() => Math.random() - 0.5);
+        const correctIndex = shuffled.indexOf(correctAnswer);
+
+        return {
+            choices: shuffled.map(String),
+            correctIndex: correctIndex
+        };
     },
 
     close() {

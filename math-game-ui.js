@@ -48,13 +48,13 @@ const UIManager = {
                     </div>
                 </div>
 
-                <div class="world-map-levels">
-                    ${this.renderLevelPath()}
-                </div>
-
                 <button class="continue-btn" onclick="MathGame.startLevel(${currentLevel})">
                     Continue Adventure →
                 </button>
+
+                <div class="world-map-levels">
+                    ${this.renderLevelPath()}
+                </div>
 
                 <button class="debug-reset-btn" onclick="UIManager.resetProgress()">
                     🔧 Debug: Reset All Progress

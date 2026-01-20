@@ -61,8 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only initialize if the math-game tab is active
     const mathGamePage = document.getElementById('math-game');
     if (mathGamePage) {
-        // Initialize when tab is clicked
         const mathGameTab = document.querySelector('[data-page="math-game"]');
+
+        // Check if math-game tab is already active on page load
+        if (mathGameTab && mathGameTab.classList.contains('active')) {
+            setTimeout(() => MathGame.init(), 100);
+        }
+
+        // Also initialize on click for future visits
         if (mathGameTab) {
             mathGameTab.addEventListener('click', () => {
                 setTimeout(() => {

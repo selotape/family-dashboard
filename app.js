@@ -563,6 +563,12 @@
                 if (lastWeight) {
                     document.getElementById('target-weight').value = lastWeight;
                 }
+
+                // Load deadlift mode state
+                const deadliftMode = localStorage.getItem('deadliftMode');
+                if (deadliftMode === 'true') {
+                    document.getElementById('deadlift-mode').checked = true;
+                }
             },
 
             loadConfig() {
@@ -618,16 +624,21 @@
                 // Weight adjustment buttons
                 document.getElementById('weight-up').addEventListener('click', () => {
                     const input = document.getElementById('target-weight');
-                    input.value = parseInt(input.value) + 5;
+                    input.value = parseFloat(input.value) + 5;
                 });
                 document.getElementById('weight-down').addEventListener('click', () => {
                     const input = document.getElementById('target-weight');
-                    input.value = Math.max(this.config.barWeight, parseInt(input.value) - 5);
+                    input.value = Math.max(this.config.barWeight, parseFloat(input.value) - 5);
                 });
 
                 // Enter key to calculate
                 document.getElementById('target-weight').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') this.calculate();
+                });
+
+                // Save deadlift mode preference
+                document.getElementById('deadlift-mode').addEventListener('change', (e) => {
+                    localStorage.setItem('deadliftMode', e.target.checked);
                 });
 
                 // Config toggle
@@ -760,7 +771,7 @@
             // Calculate warm-up sets using subset-first approach (minimize plate removal)
             calculate() {
                 const targetInput = document.getElementById('target-weight');
-                const targetWeight = parseInt(targetInput.value);
+                const targetWeight = parseFloat(targetInput.value);
 
                 if (isNaN(targetWeight) || targetWeight < this.config.barWeight) {
                     alert(`Please enter a weight of at least ${this.config.barWeight} lbs (bar weight)`);
@@ -780,15 +791,33 @@
 
                 const warmupSets = [];
 
-                // Always start with empty bar
-                warmupSets.push({
-                    weight: this.config.barWeight,
-                    percentage: Math.round((this.config.barWeight / actualWork) * 100),
-                    sets: 2,
-                    reps: 5,
-                    plates: [],
-                    isBar: true
-                });
+                // Check if deadlift mode is enabled
+                const isDeadlift = document.getElementById('deadlift-mode').checked;
+
+                // Determine starting warm-up
+                if (isDeadlift) {
+                    // Deadlift mode: start with higher weight based on work weight
+                    const startWeight = actualWork <= 250 ? 85 : 125;
+                    const startPlates = this.calculatePlates(startWeight, false);
+                    warmupSets.push({
+                        weight: startPlates.total,
+                        percentage: Math.round((startPlates.total / actualWork) * 100),
+                        sets: 1,
+                        reps: 5,
+                        plates: startPlates.plates,
+                        isBar: false
+                    });
+                } else {
+                    // Normal mode: start with empty bar
+                    warmupSets.push({
+                        weight: this.config.barWeight,
+                        percentage: Math.round((this.config.barWeight / actualWork) * 100),
+                        sets: 2,
+                        reps: 5,
+                        plates: [],
+                        isBar: true
+                    });
+                }
 
                 // Warm-up constraints:
                 // - 3-4 warm-up sets (including bar)
@@ -1011,7 +1040,8 @@
 
                 // Add work set
                 warmupSets.push({
-                    weight: actualWork,
+                    weight: targetWeight,  // Show target weight, not calculated weight
+                    actualWeight: actualWork,  // Store actual achievable weight
                     percentage: 100,
                     sets: 3,
                     reps: 5,
@@ -1019,7 +1049,7 @@
                     isWork: true
                 });
 
-                this.renderSets(warmupSets);
+                this.renderSets(warmupSets, targetWeight);
             },
 
             // Calculate plate changes between sets
@@ -1046,7 +1076,7 @@
                 return { add, remove };
             },
 
-            renderSets(sets) {
+            renderSets(sets, targetWeight) {
                 const container = document.getElementById('warmup-sets');
                 let html = '';
 
@@ -1058,6 +1088,12 @@
                     const label = set.isWork ? 'WORK SET' : set.isBar ? 'WARM-UP 1' : `WARM-UP ${i + 1}`;
                     const cardClass = set.isWork ? 'warmup-set-card work-set' : 'warmup-set-card';
 
+                    // Show note if actual weight differs from target (for work set)
+                    let weightNote = '';
+                    if (set.isWork && set.actualWeight && set.actualWeight !== set.weight) {
+                        weightNote = `<div class="weight-note">Actual with plates: ${set.actualWeight} lbs</div>`;
+                    }
+
                     html += `
                         <div class="${cardClass}">
                             <div class="set-header">
@@ -1065,6 +1101,7 @@
                                 <span class="set-percentage">${set.percentage}%</span>
                             </div>
                             <div class="set-weight">${set.weight} <span class="unit">lbs</span></div>
+                            ${weightNote}
                             <div class="set-progress">
                                 <div class="set-progress-fill" style="width: ${set.percentage}%"></div>
                             </div>

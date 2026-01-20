@@ -517,6 +517,29 @@
             font-weight: 600;
         }
 
+        .deadlift-checkbox {
+            margin: 16px 0;
+        }
+
+        .deadlift-checkbox label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #94a3b8;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .deadlift-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #f97316;
+        }
+
         .calculate-btn {
             width: 100%;
             padding: 16px 24px;
@@ -597,6 +620,13 @@
             font-size: 16px;
             color: #94a3b8;
             font-weight: 600;
+        }
+
+        .weight-note {
+            font-size: 12px;
+            color: #fbbf24;
+            font-style: italic;
+            margin-top: 4px;
         }
 
         .set-percentage {
@@ -1059,7 +1089,7 @@
         }
 
         #math-game-canvas {
-            display: block;
+            display: none;
             width: 100%;
             max-width: 800px;
             height: 400px;
