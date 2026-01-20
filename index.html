@@ -19,147 +19,22 @@
     </nav>
 
     <div class="content">
-        <!-- Grandma Countdown Page -->
-        <div id="grandma" class="page active">
-            <h2 class="countdown-page-title">Grandmas are coming!</h2>
-            <div class="grandmas-container">
-                <!-- Grandma Ayelet -->
-                <div class="countdown-card ayelet">
-                    <div class="countdown-emoji">👵</div>
-                    <div class="countdown-title">סבתא אילת מגיעה!</div>
-                    <div class="countdown-subtitle">Grandma Ayelet is coming!</div>
-                    <div class="countdown-number" id="days-ayelet">--</div>
-                    <div class="countdown-label">days to go</div>
-                    <div class="countdown-date">January 28, 2026</div>
-                </div>
-
-                <!-- Grandma Orly -->
-                <div class="countdown-card orly">
-                    <div class="countdown-emoji">👵</div>
-                    <div class="countdown-title">סבתא אורלי מגיעה!</div>
-                    <div class="countdown-subtitle">Grandma Orly is coming!</div>
-                    <div class="countdown-number" id="days-orly">--</div>
-                    <div class="countdown-label">days to go</div>
-                    <div class="countdown-date">April 16, 2026</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Routines Timer Page -->
-        <div id="routines" class="page">
-            <div class="routine-container" id="routine-container">
-                <div class="routine-icon" id="routine-icon">⏰</div>
-                <h2 class="routine-title" id="routine-title">Loading...</h2>
-                <div class="routine-timer">
-                    <span class="routine-minutes" id="routine-minutes">--</span>
-                    <span class="routine-label" id="routine-label">minutes</span>
-                </div>
-                <div class="routine-target" id="routine-target"></div>
-                <div class="routine-message" id="routine-message" style="display: none;"></div>
-            </div>
-        </div>
-
-        <!-- TODOs Page (dynamically loaded) -->
-        <div id="todos" class="page">
-            <div id="todos-content" class="loading">Loading tasks...</div>
-            <button class="refresh-btn" onclick="loadTasks()">🔄 Refresh</button>
-            <div class="last-updated" id="last-updated"></div>
-        </div>
-
-        <!-- Capybara Game Page -->
-        <div id="game" class="page">
-            <div class="game-container">
-                <div class="game-header">
-                    <div class="game-score">Score: <span id="score">0</span></div>
-                    <div class="game-high-score">Best: <span id="high-score">0</span></div>
-                </div>
-                <canvas id="game-canvas" width="800" height="400"></canvas>
-                <div class="game-instructions">
-                    Press <kbd>SPACE</kbd> or <kbd>Click</kbd> to jump!
-                </div>
-                <div id="game-overlay" class="game-overlay">
-                    <div class="overlay-content">
-                        <div class="overlay-title">🏊 Capybara River Run 🌴</div>
-                        <div class="overlay-subtitle">Amazon Adventure!</div>
-                        <div class="overlay-text" id="overlay-text">Help the capybara swim through the Amazon river!<br>Avoid dangerous creatures!</div>
-                        <button class="game-btn" id="start-btn">Start Game</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Warm-Up Calculator Page -->
-        <div id="warmup" class="page">
-            <div class="warmup-container">
-                <div class="warmup-header">
-                    <h1>🏋️ Warm-Up Calculator</h1>
-                    <p class="warmup-tagline">Get strong, stay safe!</p>
-                </div>
-
-                <!-- Target Weight Input -->
-                <div class="warmup-input-section">
-                    <label for="target-weight">Target Work Weight</label>
-                    <div class="weight-input-group">
-                        <button class="weight-adjust" id="weight-down">−</button>
-                        <input type="number" id="target-weight" value="135" min="35" step="5">
-                        <button class="weight-adjust" id="weight-up">+</button>
-                        <span class="weight-unit">lbs</span>
-                    </div>
-                    <div class="deadlift-checkbox">
-                        <label>
-                            <input type="checkbox" id="deadlift-mode">
-                            Deadlift? (Skip bar, start heavier)
-                        </label>
-                    </div>
-                    <button class="calculate-btn" id="calculate-warmup">Calculate Warm-Up</button>
-                </div>
-
-                <!-- Warm-Up Sets Display -->
-                <div class="warmup-sets" id="warmup-sets">
-                    <div class="warmup-placeholder">
-                        <p>Enter your target weight and hit calculate!</p>
-                        <p class="warmup-quote">"The only bad workout is the one that didn't happen."</p>
-                    </div>
-                </div>
-
-                <!-- Plate Configuration -->
-                <div class="plate-config-section">
-                    <button class="config-toggle" id="config-toggle">
-                        ⚙️ My Plates <span class="toggle-arrow">▼</span>
-                    </button>
-                    <div class="plate-config" id="plate-config">
-                        <h3>Standard Plates (per side)</h3>
-                        <div class="plate-grid" id="standard-plates">
-                            <!-- Generated by JS -->
-                        </div>
-                        <h3>Micro Plates (per side)</h3>
-                        <div class="plate-grid" id="micro-plates">
-                            <!-- Generated by JS -->
-                        </div>
-                        <h3>Bar Weight</h3>
-                        <div class="bar-config">
-                            <button class="plate-adjust" data-bar="-5">−</button>
-                            <span id="bar-weight-display">35</span>
-                            <span class="weight-unit">lbs</span>
-                            <button class="plate-adjust" data-bar="+5">+</button>
-                        </div>
-                        <button class="save-config-btn" id="save-config">Save Configuration</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Math Adventure Game Page -->
-        <div id="math-game" class="page">
-            <div class="math-game-container">
-                <div id="math-game-ui"></div>
-                <canvas id="math-game-canvas" width="800" height="400"></canvas>
-                <div id="math-puzzle-dialog" class="hidden"></div>
-            </div>
-        </div>
+        <!-- Pages will be loaded dynamically from pages/ directory -->
     </div>
 
+    <!-- Core Infrastructure (MUST load first) -->
+    <script src="js/core/router.js"></script>
+
+    <!-- Feature Modules (order doesn't matter) -->
+    <script src="js/modules/countdown.js"></script>
+    <script src="js/modules/todos.js"></script>
+    <script src="js/modules/capybara-game.js"></script>
+    <script src="js/modules/warmup-calculator.js"></script>
+    <script src="js/modules/routine-timer.js"></script>
+
+    <!-- Application Entry Point (initializes modules) -->
     <script src="app.js"></script>
+
     <!-- Math Game - Modular Files (load order matters for dependencies) -->
     <script src="math-game-data.js"></script>
     <script src="math-game-storage.js"></script>
