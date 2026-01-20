@@ -70,7 +70,8 @@ const PRACTICE_LEVEL = {
 
     background: {
         sky: '#B8E6F5',
-        ground: '#98D8C8'
+        ground: '#98D8C8',
+        image: 'images/bg-practice.jpg'
     }
 };
 
@@ -145,7 +146,8 @@ const LEVELS = [
 
         background: {
             sky: '#87CEEB',
-            ground: '#DEB887'
+            ground: '#DEB887',
+            image: 'images/bg-level-1-safari.jpg'
         }
     },
     {
@@ -218,7 +220,8 @@ const LEVELS = [
 
         background: {
             sky: '#4A9FD8',
-            ground: '#1E5A8E'
+            ground: '#1E5A8E',
+            image: 'images/bg-level-2-ocean.jpg'
         }
     },
     {
@@ -291,7 +294,8 @@ const LEVELS = [
 
         background: {
             sky: '#1A4D6D',
-            ground: '#0A2540'
+            ground: '#0A2540',
+            image: 'images/bg-level-3-underwater.jpg'
         }
     },
     {
@@ -364,7 +368,8 @@ const LEVELS = [
 
         background: {
             sky: '#87A2C4',
-            ground: '#5A6D7E'
+            ground: '#5A6D7E',
+            image: 'images/bg-level-4-atlanta.jpg'
         }
     },
     {
@@ -437,7 +442,8 @@ const LEVELS = [
 
         background: {
             sky: '#F4D06F',
-            ground: '#D4A74F'
+            ground: '#D4A74F',
+            image: 'images/bg-level-5-israel.jpg'
         }
     },
     {
@@ -510,7 +516,8 @@ const LEVELS = [
 
         background: {
             sky: '#87CEEB',
-            ground: '#B0E2FF'
+            ground: '#B0E2FF',
+            image: 'images/bg-level-6-sky.jpg'
         }
     },
     {
@@ -583,7 +590,8 @@ const LEVELS = [
 
         background: {
             sky: '#FFB6D9',
-            ground: '#FFC8DD'
+            ground: '#FFC8DD',
+            image: 'images/bg-level-7-celebration.jpg'
         }
     }
 ];

@@ -8,6 +8,7 @@ const GameEngine = {
     platforms: [],
     fruits: [],
     decorations: [],
+    backgroundImage: null,
     keys: {},
     animationId: null,
     levelStartTime: 0,
@@ -64,6 +65,9 @@ const GameEngine = {
 
         // Load images for decorations
         this.loadDecorationImages();
+
+        // Load background image if specified
+        this.loadBackgroundImage(level);
 
         // Reset stats
         const isElla = MathGame.activeProfile.gradeLevel === 0;
@@ -292,6 +296,23 @@ const GameEngine = {
         }
     },
 
+    loadBackgroundImage(level) {
+        if (level.background && level.background.image) {
+            const img = new Image();
+            img.onload = () => {
+                this.backgroundImage = img;
+                console.log(`Background image loaded: ${level.background.image}`);
+            };
+            img.onerror = () => {
+                console.warn(`Failed to load background image: ${level.background.image}`);
+                this.backgroundImage = null;
+            };
+            img.src = level.background.image;
+        } else {
+            this.backgroundImage = null;
+        }
+    },
+
     draw() {
         const ctx = MathGame.ctx;
         const canvas = MathGame.canvas;
@@ -301,11 +322,23 @@ const GameEngine = {
 
         // Draw background
         const level = LevelManager.currentLevel;
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, level.background.sky);
-        gradient.addColorStop(1, level.background.ground);
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (this.backgroundImage) {
+            // Draw background image - scale to cover canvas height
+            const scale = canvas.height / this.backgroundImage.height;
+            const scaledWidth = this.backgroundImage.width * scale;
+
+            // Tile the image horizontally if level is wider than image
+            for (let x = 0; x < canvas.width; x += scaledWidth) {
+                ctx.drawImage(this.backgroundImage, x, 0, scaledWidth, canvas.height);
+            }
+        } else {
+            // Fallback to gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, level.background.sky);
+            gradient.addColorStop(1, level.background.ground);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
         // Save context and apply camera transform
         ctx.save();
