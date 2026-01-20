@@ -463,15 +463,39 @@
             }
 
             var spellBtn = document.getElementById('reading-start-spelling');
+
+            // Clean up previous Enter key handler if exists
+            if (self._startSpellingEnterHandler) {
+                document.removeEventListener('keypress', self._startSpellingEnterHandler);
+                self._startSpellingEnterHandler = null;
+            }
+
             if (spellBtn) {
                 spellBtn.addEventListener('click', function() {
                     window.ReadingGameAudio.playPageTurn();
                     state.startSpelling();
                     self.render();
                 });
+
+                // Allow Enter key to start spelling
+                self._startSpellingEnterHandler = function(e) {
+                    if (e.key === 'Enter') {
+                        window.ReadingGameAudio.playPageTurn();
+                        state.startSpelling();
+                        self.render();
+                    }
+                };
+                document.addEventListener('keypress', self._startSpellingEnterHandler);
             }
 
             var nextBtn = document.getElementById('reading-next-sentence');
+
+            // Clean up previous Enter key handler if exists
+            if (self._nextSentenceEnterHandler) {
+                document.removeEventListener('keypress', self._nextSentenceEnterHandler);
+                self._nextSentenceEnterHandler = null;
+            }
+
             if (nextBtn) {
                 nextBtn.addEventListener('click', function() {
                     window.ReadingGameAudio.playPageTurn();
@@ -479,6 +503,17 @@
                     state.setState('reading');
                     self.render();
                 });
+
+                // Allow Enter key to go to next sentence
+                self._nextSentenceEnterHandler = function(e) {
+                    if (e.key === 'Enter') {
+                        window.ReadingGameAudio.playPageTurn();
+                        state.currentSentenceIndex++;
+                        state.setState('reading');
+                        self.render();
+                    }
+                };
+                document.addEventListener('keypress', self._nextSentenceEnterHandler);
             }
 
             // Inline spelling mode handlers
