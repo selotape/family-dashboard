@@ -60,6 +60,12 @@
                         setTimeout(() => MathGame.init(), 100);
                     }
                     break;
+                case 'reading-game':
+                    // Reading game initializes when page loads
+                    if (typeof ReadingGame !== 'undefined' && ReadingGame.init && !ReadingGame.initialized) {
+                        setTimeout(() => ReadingGame.init(), 100);
+                    }
+                    break;
                 // routines runs in background
             }
         },
