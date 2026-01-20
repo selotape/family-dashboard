@@ -8,9 +8,17 @@ const MathGame = {
     canvas: null,
     ctx: null,
     activeProfile: null,
+    initialized: false, // Guard against multiple initializations
 
     init() {
         console.log('MathGame.init called');
+
+        // Prevent multiple initializations
+        if (this.initialized) {
+            console.log('Already initialized, skipping...');
+            return;
+        }
+
         try {
             this.canvas = document.getElementById('math-game-canvas');
             if (!this.canvas) {
@@ -31,6 +39,9 @@ const MathGame = {
             // Show profile selection screen
             console.log('Showing profile selection...');
             this.showProfileSelect();
+
+            // Mark as initialized
+            this.initialized = true;
             console.log('Init complete');
         } catch (error) {
             console.error('Error during init:', error);
