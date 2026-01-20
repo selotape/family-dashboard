@@ -7,7 +7,16 @@ const ProfileSystem = {
 
     init() {
         const data = StorageManager.getProfiles();
-        this.profiles = data.profiles;
+
+        // Safety check - if data is null or malformed, reinitialize
+        if (!data || !data.profiles) {
+            console.warn('Profile data is missing or malformed. Reinitializing...');
+            StorageManager.initializeProfiles();
+            const newData = StorageManager.getProfiles();
+            this.profiles = newData.profiles;
+        } else {
+            this.profiles = data.profiles;
+        }
 
         // Validate and fix grade levels (in case localStorage has wrong values)
         const correctGradeLevels = { 'noga': 3, 'dana': 1, 'ella': 0 };
