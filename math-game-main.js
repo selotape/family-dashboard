@@ -118,31 +118,5 @@ const MathGame = {
     }
 };
 
-
-// ============================================================================
-// INITIALIZE GAME WHEN PAGE LOADS
-// ============================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Only initialize if the math-game tab is active
-    const mathGamePage = document.getElementById('math-game');
-    if (mathGamePage) {
-        const mathGameTab = document.querySelector('[data-page="math-game"]');
-
-        // Check if math-game tab is already active on page load
-        if (mathGameTab && mathGameTab.classList.contains('active')) {
-            setTimeout(() => MathGame.init(), 100);
-        }
-
-        // Also initialize on click for future visits
-        if (mathGameTab) {
-            mathGameTab.addEventListener('click', () => {
-                setTimeout(() => {
-                    if (!MathGame.canvas) {
-                        MathGame.init();
-                    }
-                }, 100);
-            });
-        }
-    }
-});
+// Note: MathGame.init() is called by Router.initializePage() in router.js
+// when the math-game tab is clicked. No DOMContentLoaded initialization needed.
