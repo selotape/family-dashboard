@@ -332,18 +332,18 @@ const GameEngine = {
             }
         }
 
-        // Draw hovering finish arrow when all fruits collected
-        const allFruitsCollected = this.gameStats.fruitsCollected === this.fruits.length;
-        const reachedEnd = this.player.x >= LevelManager.currentLevel.levelWidth - 100;
-        if (allFruitsCollected && !reachedEnd) {
-            this.drawFinishArrow(ctx);
-        }
-
         // Draw player (Capy)
         this.drawPlayer(ctx);
 
         // Restore context
         ctx.restore();
+
+        // Draw hovering finish arrow when all fruits collected (in screen space)
+        const allFruitsCollected = this.gameStats.fruitsCollected === this.fruits.length;
+        const reachedEnd = this.player.x >= LevelManager.currentLevel.levelWidth - 100;
+        if (allFruitsCollected && !reachedEnd) {
+            this.drawFinishArrow(ctx);
+        }
 
         // Draw UI
         this.drawUI(ctx);
@@ -382,8 +382,9 @@ const GameEngine = {
     },
 
     drawFinishArrow(ctx) {
-        // Position arrow at the end of the level
-        const arrowX = LevelManager.currentLevel.levelWidth - 80;
+        // Position arrow on the right side of the screen (viewport)
+        const canvas = MathGame.canvas;
+        const arrowX = canvas.width - 60; // 60px from right edge of screen
         const arrowY = 200;
 
         // Create hovering animation using sine wave
