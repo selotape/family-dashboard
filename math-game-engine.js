@@ -214,8 +214,11 @@ const GameEngine = {
         // Check fruit collisions
         this.checkFruitCollisions();
 
-        // Check level completion
-        if (this.gameStats.fruitsCollected === this.fruits.length) {
+        // Check level completion - must collect all fruits AND reach the end
+        const allFruitsCollected = this.gameStats.fruitsCollected === this.fruits.length;
+        const reachedEnd = player.x >= LevelManager.currentLevel.levelWidth - 100;
+
+        if (allFruitsCollected && reachedEnd) {
             this.completeLevel();
         }
 
@@ -329,6 +332,13 @@ const GameEngine = {
             }
         }
 
+        // Draw hovering finish arrow when all fruits collected
+        const allFruitsCollected = this.gameStats.fruitsCollected === this.fruits.length;
+        const reachedEnd = this.player.x >= LevelManager.currentLevel.levelWidth - 100;
+        if (allFruitsCollected && !reachedEnd) {
+            this.drawFinishArrow(ctx);
+        }
+
         // Draw player (Capy)
         this.drawPlayer(ctx);
 
@@ -369,6 +379,49 @@ const GameEngine = {
         ctx.fillStyle = '#6B5345';
         ctx.fillRect(p.x + 5, p.y + p.height - 5, 10, 5);
         ctx.fillRect(p.x + p.width - 15, p.y + p.height - 5, 10, 5);
+    },
+
+    drawFinishArrow(ctx) {
+        // Position arrow at the end of the level
+        const arrowX = LevelManager.currentLevel.levelWidth - 80;
+        const arrowY = 200;
+
+        // Create hovering animation using sine wave
+        const time = Date.now() / 1000;
+        const bounce = Math.sin(time * 3) * 10; // Bounce up/down 10px
+        const pulse = Math.sin(time * 2) * 0.15 + 0.85; // Pulse size 85%-100%
+
+        // Draw glowing background circle
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(arrowX, arrowY + bounce, 40 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Draw large animated arrow
+        ctx.save();
+        ctx.translate(arrowX, arrowY + bounce);
+        ctx.scale(pulse, pulse);
+        ctx.font = 'bold 60px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#FFD700';
+        ctx.strokeStyle = '#FF8C00';
+        ctx.lineWidth = 3;
+        ctx.strokeText('→', 0, 0);
+        ctx.fillText('→', 0, 0);
+        ctx.restore();
+
+        // Draw "FINISH!" text below arrow
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#FFD700';
+        ctx.strokeStyle = '#FF8C00';
+        ctx.lineWidth = 2;
+        ctx.strokeText('FINISH!', arrowX, arrowY + bounce + 45);
+        ctx.fillText('FINISH!', arrowX, arrowY + bounce + 45);
     },
 
     drawUI(ctx) {
