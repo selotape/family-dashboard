@@ -179,6 +179,10 @@
                 return;
             }
 
+            // Check if routines page is actually visible/active
+            const routinesPage = document.getElementById('routines');
+            const isPageActive = routinesPage && routinesPage.classList.contains('active');
+
             // Remove all theme classes
             container.className = 'routine-container';
 
@@ -225,8 +229,10 @@
                 messageEl.style.display = 'none';
             }
 
-            // Check for 5-minute mark chime
-            this.checkChime(routineType, minutes);
+            // Check for 5-minute mark chime (only if page is active)
+            if (isPageActive) {
+                this.checkChime(routineType, minutes);
+            }
         },
 
         checkChime: function(routineType, minutes) {
