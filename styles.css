@@ -92,6 +92,10 @@
             border-color: rgba(168, 85, 247, 0.3);
         }
 
+        .countdown-card.israel {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
         .countdown-emoji {
             font-size: 48px;
             margin-bottom: 10px;
@@ -105,6 +109,10 @@
 
         .countdown-card.orly .countdown-title {
             color: #a855f7;
+        }
+
+        .countdown-card.israel .countdown-title {
+            color: #3b82f6;
         }
 
         .countdown-subtitle {
@@ -125,6 +133,12 @@
 
         .countdown-card.orly .countdown-number {
             background: linear-gradient(135deg, #a855f7, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .countdown-card.israel .countdown-number {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
             -webkit-background-clip: text;
             background-clip: text;
         }
@@ -3004,5 +3018,293 @@
     .reading-spelling-input {
         font-size: 18px;
         letter-spacing: 3px;
+    }
+}
+
+/* ============================================ */
+/* MEMORY VIEWER STYLES                         */
+/* ============================================ */
+
+.memory-viewer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.memory-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.memory-header h1 {
+    font-size: 36px;
+    color: #e94560;
+    margin-bottom: 8px;
+}
+
+.memory-tagline {
+    color: #94a3b8;
+    font-size: 16px;
+}
+
+.memory-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    min-height: 500px;
+}
+
+.memory-tree-panel {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.memory-tree-panel h3 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.memory-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.memory-tree-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.memory-tree-item:hover {
+    background: rgba(233, 69, 96, 0.15);
+    border-color: rgba(233, 69, 96, 0.3);
+}
+
+.memory-tree-item.active {
+    background: rgba(233, 69, 96, 0.2);
+    border-color: rgba(233, 69, 96, 0.5);
+    border-left: 3px solid #e94560;
+}
+
+.memory-file-icon {
+    font-size: 18px;
+}
+
+.memory-file-name {
+    flex: 1;
+    font-size: 14px;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+.memory-file-size {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.memory-empty {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+}
+
+.memory-content-panel {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.memory-file-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.memory-file-header span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e94560;
+}
+
+.memory-refresh-btn {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.memory-refresh-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.memory-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: #64748b;
+    text-align: center;
+}
+
+/* Responsive for memory viewer */
+@media (max-width: 768px) {
+    .memory-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .memory-tree-panel {
+        max-height: 200px;
+    }
+
+    .memory-content-panel {
+        max-height: none;
+        min-height: 400px;
+    }
+}
+
+/* ============================================ */
+/* BUG REPORTS STYLES                           */
+/* ============================================ */
+
+.bug-reports-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.bug-reports-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.bug-reports-header h1 {
+    font-size: 36px;
+    color: #e94560;
+    margin-bottom: 8px;
+}
+
+.bug-reports-tagline {
+    color: #94a3b8;
+    font-size: 16px;
+}
+
+.bug-report-form {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.bug-report-form .form-group {
+    margin-bottom: 24px;
+}
+
+.bug-report-form label {
+    display: block;
+    font-size: 16px;
+    color: #e94560;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.bug-report-form textarea {
+    width: 100%;
+    padding: 14px;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #eee;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+}
+
+.bug-report-form textarea:focus {
+    outline: none;
+    border-color: #e94560;
+}
+
+.bug-report-form textarea::placeholder {
+    color: #64748b;
+}
+
+.submit-bug-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #e94560, #d63850);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.submit-bug-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(233, 69, 96, 0.4);
+}
+
+.submit-bug-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.bug-report-status {
+    margin-top: 20px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.bug-report-status.success {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #4ade80;
+}
+
+.bug-report-status.error {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+}
+
+/* Responsive for bug reports */
+@media (max-width: 600px) {
+    .bug-report-form {
+        padding: 20px;
+    }
+
+    .bug-reports-header h1 {
+        font-size: 28px;
     }
 }

@@ -37,11 +37,6 @@
                         CountdownTimer.update();
                     }
                     break;
-                case 'todos':
-                    if (typeof TodoLoader !== 'undefined') {
-                        TodoLoader.load();
-                    }
-                    break;
                 case 'game':
                     // Game initializes automatically when DOM exists
                     if (typeof Game !== 'undefined' && Game.init) {
@@ -64,6 +59,16 @@
                     // Reading game initializes when page loads
                     if (typeof ReadingGame !== 'undefined' && ReadingGame.init && !ReadingGame.initialized) {
                         setTimeout(() => ReadingGame.init(), 100);
+                    }
+                    break;
+                case 'memory-viewer':
+                    if (typeof MemoryViewer !== 'undefined' && MemoryViewer.init) {
+                        MemoryViewer.init();
+                    }
+                    break;
+                case 'bug-reports':
+                    if (typeof BugReports !== 'undefined' && BugReports.init) {
+                        BugReports.init();
                     }
                     break;
                 // routines runs in background

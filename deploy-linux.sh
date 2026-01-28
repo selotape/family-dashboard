@@ -2,9 +2,9 @@
 set -e
 
 #############################################################
-# Family Dashboard - Linux Deployment Script
+# Family Dashboard - Linux Deployment Script (User-Level)
 # This script:
-# 1. Installs/updates the systemd service
+# 1. Installs/updates a user-level systemd service (no sudo)
 # 2. Sets up a cron job for auto git-pull every 10 minutes
 #############################################################
 
@@ -21,30 +21,15 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_BIN="python3"
 USER=$(whoami)
 VENV_DIR="$PROJECT_DIR/venv"
+SYSTEMD_USER_DIR="$HOME/.config/systemd/user"
 
 echo -e "${BLUE}============================================================${NC}"
-echo -e "${BLUE}🏠 Family Dashboard - Linux Deployment${NC}"
+echo -e "${BLUE}🏠 Family Dashboard - Linux Deployment (User-Level)${NC}"
 echo -e "${BLUE}============================================================${NC}"
 echo ""
 echo -e "${GREEN}Project Directory: ${NC}$PROJECT_DIR"
 echo -e "${GREEN}User: ${NC}$USER"
-echo ""
-
-#############################################################
-# Check if running with sudo privileges
-#############################################################
-if [ "$EUID" -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  This script needs sudo privileges to install systemd service.${NC}"
-    echo -e "${YELLOW}Re-running with sudo...${NC}"
-    exec sudo -E bash "$0" "$@"
-fi
-
-# Get the actual user (not root) if running via sudo
-ACTUAL_USER="${SUDO_USER:-$USER}"
-ACTUAL_HOME=$(eval echo ~$ACTUAL_USER)
-
-echo -e "${GREEN}✓ Running with sudo privileges${NC}"
-echo -e "${GREEN}Deploying for user: ${NC}$ACTUAL_USER"
+echo -e "${GREEN}Service Location: ${NC}$SYSTEMD_USER_DIR/${SERVICE_NAME}.service"
 echo ""
 
 #############################################################
@@ -61,13 +46,13 @@ fi
 # Create virtual environment if it doesn't exist
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment..."
-    sudo -u $ACTUAL_USER $PYTHON_BIN -m venv "$VENV_DIR"
+    $PYTHON_BIN -m venv "$VENV_DIR"
 fi
 
 # Install/upgrade pip and dependencies
 echo "Installing dependencies from requirements.txt..."
-sudo -u $ACTUAL_USER "$VENV_DIR/bin/pip" install --upgrade pip
-sudo -u $ACTUAL_USER "$VENV_DIR/bin/pip" install -r "$PROJECT_DIR/requirements.txt"
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install -r "$PROJECT_DIR/requirements.txt"
 
 echo -e "${GREEN}✓ Python dependencies installed${NC}"
 echo ""
@@ -87,7 +72,6 @@ ANTHROPIC_API_KEY=your_api_key_here
 # Server Configuration
 PORT=8080
 EOF
-    chown $ACTUAL_USER:$ACTUAL_USER "$PROJECT_DIR/.env"
     echo -e "${YELLOW}⚠️  Please edit $PROJECT_DIR/.env and add your ANTHROPIC_API_KEY${NC}"
     echo -e "${YELLOW}Then re-run this script.${NC}"
     exit 1
@@ -97,16 +81,19 @@ echo -e "${GREEN}✓ Environment file exists${NC}"
 echo ""
 
 #############################################################
-# 3. Create/Update systemd service
+# 3. Create/Update user-level systemd service
 #############################################################
-echo -e "${BLUE}[3/4] Installing systemd service...${NC}"
+echo -e "${BLUE}[3/4] Installing user-level systemd service...${NC}"
 
-SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+# Create systemd user directory if it doesn't exist
+mkdir -p "$SYSTEMD_USER_DIR"
+
+SERVICE_FILE="$SYSTEMD_USER_DIR/${SERVICE_NAME}.service"
 
 # Stop existing service if running
-if systemctl is-active --quiet "$SERVICE_NAME"; then
+if systemctl --user is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
     echo "Stopping existing service..."
-    systemctl stop "$SERVICE_NAME"
+    systemctl --user stop "$SERVICE_NAME"
 fi
 
 # Create systemd service file
@@ -117,7 +104,6 @@ After=network.target
 
 [Service]
 Type=simple
-User=$ACTUAL_USER
 WorkingDirectory=$PROJECT_DIR
 Environment="PATH=$VENV_DIR/bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=$VENV_DIR/bin/python $PROJECT_DIR/server.py
@@ -128,33 +114,33 @@ StandardError=journal
 SyslogIdentifier=family-dashboard
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 EOF
 
 echo "Service file created at: $SERVICE_FILE"
 
 # Reload systemd daemon
-systemctl daemon-reload
+systemctl --user daemon-reload
 
-# Enable service to start on boot
-systemctl enable "$SERVICE_NAME"
+# Enable service to start on login
+systemctl --user enable "$SERVICE_NAME"
 
 # Start the service
-systemctl start "$SERVICE_NAME"
+systemctl --user start "$SERVICE_NAME"
 
 # Check status
-if systemctl is-active --quiet "$SERVICE_NAME"; then
+if systemctl --user is-active --quiet "$SERVICE_NAME"; then
     echo -e "${GREEN}✓ Service installed and started successfully${NC}"
     echo ""
-    echo -e "${GREEN}Service Commands:${NC}"
-    echo "  • Start:   sudo systemctl start $SERVICE_NAME"
-    echo "  • Stop:    sudo systemctl stop $SERVICE_NAME"
-    echo "  • Restart: sudo systemctl restart $SERVICE_NAME"
-    echo "  • Status:  sudo systemctl status $SERVICE_NAME"
-    echo "  • Logs:    sudo journalctl -u $SERVICE_NAME -f"
+    echo -e "${GREEN}Service Commands (no sudo needed):${NC}"
+    echo "  • Start:   systemctl --user start $SERVICE_NAME"
+    echo "  • Stop:    systemctl --user stop $SERVICE_NAME"
+    echo "  • Restart: systemctl --user restart $SERVICE_NAME"
+    echo "  • Status:  systemctl --user status $SERVICE_NAME"
+    echo "  • Logs:    journalctl --user -u $SERVICE_NAME -f"
 else
     echo -e "${RED}✗ Failed to start service${NC}"
-    echo "Check logs with: sudo journalctl -u $SERVICE_NAME -n 50"
+    echo "Check logs with: journalctl --user -u $SERVICE_NAME -n 50"
     exit 1
 fi
 
@@ -167,7 +153,7 @@ echo -e "${BLUE}[4/4] Setting up auto-update cron job...${NC}"
 
 CRON_SCRIPT="$PROJECT_DIR/auto-update.sh"
 
-# Create git pull script
+# Create git pull script (uses user-level systemctl)
 cat > "$CRON_SCRIPT" <<'EOF'
 #!/bin/bash
 # Auto-update script for Family Dashboard
@@ -207,9 +193,9 @@ else
         fi
     fi
 
-    # Restart service
+    # Restart service (user-level, no sudo needed)
     echo "Restarting service..." >> "$LOG_FILE"
-    sudo systemctl restart family-dashboard >> "$LOG_FILE" 2>&1
+    systemctl --user restart family-dashboard >> "$LOG_FILE" 2>&1
 
     echo "✓ Update completed successfully" >> "$LOG_FILE"
 fi
@@ -218,7 +204,6 @@ echo "" >> "$LOG_FILE"
 EOF
 
 chmod +x "$CRON_SCRIPT"
-chown $ACTUAL_USER:$ACTUAL_USER "$CRON_SCRIPT"
 
 echo "Created auto-update script at: $CRON_SCRIPT"
 
@@ -227,35 +212,34 @@ CRON_JOB="*/10 * * * * $CRON_SCRIPT"
 CRON_COMMENT="# Family Dashboard auto-update (every 10 minutes)"
 
 # Get existing crontab, remove old entry if exists, add new one
-(sudo -u $ACTUAL_USER crontab -l 2>/dev/null | grep -v "$CRON_SCRIPT" | grep -v "Family Dashboard auto-update"; echo "$CRON_COMMENT"; echo "$CRON_JOB") | sudo -u $ACTUAL_USER crontab -
+(crontab -l 2>/dev/null | grep -v "$CRON_SCRIPT" | grep -v "Family Dashboard auto-update"; echo "$CRON_COMMENT"; echo "$CRON_JOB") | crontab -
 
 echo -e "${GREEN}✓ Cron job installed (runs every 10 minutes)${NC}"
 echo ""
-echo -e "${GREEN}Cron Configuration:${NC}"
-echo "  • Script: $CRON_SCRIPT"
-echo "  • Schedule: Every 10 minutes"
-echo "  • Log: $ACTUAL_HOME/.family-dashboard-updates.log"
-echo "  • View cron: crontab -l"
-echo ""
 
 #############################################################
-# Setup sudo permissions for service restart
+# Enable lingering for service to run at boot (optional)
 #############################################################
-echo -e "${BLUE}Setting up sudo permissions for service restart...${NC}"
+echo -e "${BLUE}Checking boot persistence...${NC}"
 
-SUDOERS_FILE="/etc/sudoers.d/family-dashboard"
+if loginctl show-user "$USER" 2>/dev/null | grep -q "Linger=yes"; then
+    echo -e "${GREEN}✓ Lingering already enabled - service will start at boot${NC}"
+else
+    echo -e "${YELLOW}⚠️  Lingering not enabled${NC}"
+    echo ""
+    echo "To have the service start at boot (before you log in), run:"
+    echo -e "  ${BLUE}sudo loginctl enable-linger $USER${NC}"
+    echo ""
+    echo "This is optional - the service will still start when you log in."
+    echo ""
+    read -p "Enable lingering now? (requires sudo) [y/N]: " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        sudo loginctl enable-linger "$USER"
+        echo -e "${GREEN}✓ Lingering enabled - service will start at boot${NC}"
+    fi
+fi
 
-cat > "$SUDOERS_FILE" <<EOF
-# Allow $ACTUAL_USER to restart family-dashboard service without password
-$ACTUAL_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart family-dashboard
-$ACTUAL_USER ALL=(ALL) NOPASSWD: /bin/systemctl start family-dashboard
-$ACTUAL_USER ALL=(ALL) NOPASSWD: /bin/systemctl stop family-dashboard
-$ACTUAL_USER ALL=(ALL) NOPASSWD: /bin/systemctl status family-dashboard
-EOF
-
-chmod 0440 "$SUDOERS_FILE"
-
-echo -e "${GREEN}✓ Sudo permissions configured${NC}"
 echo ""
 
 #############################################################
@@ -269,14 +253,13 @@ echo -e "${GREEN}Server is running at:${NC} http://localhost:8080"
 echo ""
 echo -e "${BLUE}What was installed:${NC}"
 echo "  ✓ Python virtual environment with dependencies"
-echo "  ✓ Systemd service (starts on boot)"
+echo "  ✓ User-level systemd service (no sudo needed)"
 echo "  ✓ Auto-update cron job (every 10 minutes)"
-echo "  ✓ Sudo permissions for service management"
 echo ""
-echo -e "${BLUE}Useful Commands:${NC}"
-echo "  • View server logs:    sudo journalctl -u $SERVICE_NAME -f"
-echo "  • View update logs:    tail -f $ACTUAL_HOME/.family-dashboard-updates.log"
-echo "  • Restart service:     sudo systemctl restart $SERVICE_NAME"
+echo -e "${BLUE}Useful Commands (no sudo needed):${NC}"
+echo "  • View server logs:    journalctl --user -u $SERVICE_NAME -f"
+echo "  • View update logs:    tail -f ~/.family-dashboard-updates.log"
+echo "  • Restart service:     systemctl --user restart $SERVICE_NAME"
 echo "  • Check cron job:      crontab -l"
 echo "  • Manual update:       $CRON_SCRIPT"
 echo ""
