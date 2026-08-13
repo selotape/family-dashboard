@@ -101,9 +101,33 @@
                 tab.addEventListener('click', () => this.switchToTab(tab.dataset.page));
             });
 
+            // Collapsible tabs banner
+            this.setupTabsToggle();
+
             // Restore last visited tab or load grandma by default
             const lastTab = localStorage.getItem('lastTab') || 'grandma';
             this.switchToTab(lastTab);
+        },
+
+        // Show/hide the tabs banner; state persists across refreshes
+        setupTabsToggle: function() {
+            const nav = document.getElementById('tabs-nav');
+            const btn = document.getElementById('tabs-toggle');
+            if (!nav || !btn) return;
+
+            const apply = (collapsed) => {
+                nav.classList.toggle('collapsed', collapsed);
+                btn.setAttribute('aria-expanded', String(!collapsed));
+                btn.textContent = collapsed ? 'Menu ☰' : 'Hide menu ▲';
+            };
+
+            apply(localStorage.getItem('tabsCollapsed') === '1');
+
+            btn.addEventListener('click', () => {
+                const collapsed = !nav.classList.contains('collapsed');
+                localStorage.setItem('tabsCollapsed', collapsed ? '1' : '0');
+                apply(collapsed);
+            });
         }
     };
 })();

@@ -9,7 +9,11 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="tabs">
+    <header class="topbar">
+        <span class="topbar-title">🏠 Family Dashboard</span>
+        <button class="tabs-toggle" id="tabs-toggle" aria-controls="tabs-nav" aria-expanded="true">Hide menu ▲</button>
+    </header>
+    <nav class="tabs" id="tabs-nav">
         <button class="tab active" data-page="grandma">👵 Grandma Countdown</button>
         <button class="tab" data-page="routines">⏰ Routines</button>
         <button class="tab" data-page="game">🎮 Capybara Game</button>
