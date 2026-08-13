@@ -61,16 +61,6 @@
                         setTimeout(() => ReadingGame.init(), 100);
                     }
                     break;
-                case 'memory-viewer':
-                    if (typeof MemoryViewer !== 'undefined' && MemoryViewer.init) {
-                        MemoryViewer.init();
-                    }
-                    break;
-                case 'bug-reports':
-                    if (typeof BugReports !== 'undefined' && BugReports.init) {
-                        BugReports.init();
-                    }
-                    break;
                 // routines runs in background
             }
         },
