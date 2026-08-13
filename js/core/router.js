@@ -61,7 +61,12 @@
                         setTimeout(() => ReadingGame.init(), 100);
                     }
                     break;
-                // routines runs in background
+                case 'routines':
+                    // Render/refresh the routines timeline immediately on open
+                    if (typeof RoutineTimer !== 'undefined' && RoutineTimer.update) {
+                        RoutineTimer.update();
+                    }
+                    break;
             }
         },
 

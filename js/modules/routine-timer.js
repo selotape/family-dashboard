@@ -1,28 +1,29 @@
 // Routines Timer Module
-// Morning & Evening countdown system with audio chimes
+// Full-day timeline: shows every routine at once (morning -> evening), with
+// checkable daily chores and a live countdown + audio chime for the next item.
 (function() {
     'use strict';
 
     window.RoutineTimer = {
-        // Milestones configuration
-        milestones: {
-            morning: { hour: 7, minute: 20, icon: '🏫', title: 'Time to Leave for School', target: 'Leave by 7:20 AM' },
-            dinner:  { hour: 18, minute: 0, icon: '🍽️', title: 'Dinner Time!', target: 'Dinner at 6:00 PM' },
-            shower:  { hour: 18, minute: 45, icon: '🚿', title: 'Shower Time!', target: 'Showers at 6:45 PM' },
-            bed:     { hour: 19, minute: 30, icon: '🌙', title: 'Bedtime!', target: 'Bed at 7:30 PM' }
-        },
+        // Ordered daily schedule (top -> bottom). This is the single place to
+        // edit times / labels / emojis / grouping. `chime` picks which of the
+        // existing sounds plays (morning | dinner | shower | bed).
+        schedule: [
+            { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning' },
+            { id: 'cubby',  group: 'Afternoon', hour: 16, minute: 30, icon: '🎒', label: 'Backpacks into Cubby',       chime: 'morning' },
+            { id: 'dinner', group: 'Evening',   hour: 18, minute: 0,  icon: '🍽️', label: 'Dinner',                     chime: 'dinner' },
+            { id: 'snacks', group: 'Evening',   hour: 18, minute: 30, icon: '🥨', label: 'Restock snacks (backpack)',   chime: 'dinner' },
+            { id: 'shower', group: 'Evening',   hour: 18, minute: 45, icon: '🚿', label: 'Shower',                     chime: 'shower' },
+            { id: 'bed',    group: 'Evening',   hour: 19, minute: 30, icon: '🌙', label: 'Bedtime',                    chime: 'bed' }
+        ],
 
-        // Time windows
-        morningStart: 6,    // 6:00 AM
-        morningEnd: 7,      // 7:20 AM (use milestone time)
-        eveningStart: 17.5, // 5:30 PM
-        eveningEnd: 19.5,   // 7:30 PM
+        STORAGE_KEY: 'routineChores',
 
         // State
         audioCtx: null,
         audioEnabled: false,
         lastChimeMinute: null,
-        currentRoutine: null,
+        activeId: null,
 
         init: function() {
             this.update();
@@ -35,8 +36,6 @@
                     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     this.audioEnabled = true;
                     console.log('🔊 Audio enabled!');
-                    // Play a tiny test sound to confirm
-                    this.playChime('dinner', false);
                 }
             };
 
@@ -46,13 +45,13 @@
         },
 
         initAudio: function() {
-            // Audio is now initialized on user gesture in init()
+            // Audio is initialized on user gesture in init()
             if (this.audioCtx && this.audioCtx.state === 'suspended') {
                 this.audioCtx.resume();
             }
         },
 
-        // Play themed chime based on current routine - plays 3 beeps
+        // Play themed chime for a routine - plays 3 beeps + flashes the active row
         playChime: function(routine, isUrgent = false) {
             if (!this.audioEnabled || !this.audioCtx) return;
             this.initAudio();
@@ -92,164 +91,216 @@
                 oscillator.stop(startTime + sound.duration);
             }
 
-            // Visual flash (animation loops 5x at 0.6s = 3 seconds)
-            const container = document.getElementById('routine-container');
-            if (container) {
-                container.classList.remove('chime-flash'); // Reset if already playing
-                void container.offsetWidth; // Force reflow to restart animation
-                container.classList.add('chime-flash');
-                setTimeout(() => container.classList.remove('chime-flash'), 3000);
+            // Visual flash on the active row (animation runs ~3 seconds)
+            const activeRow = document.querySelector('.routine-item.active');
+            if (activeRow) {
+                activeRow.classList.remove('chime-flash'); // Reset if already playing
+                void activeRow.offsetWidth; // Force reflow to restart animation
+                activeRow.classList.add('chime-flash');
+                setTimeout(() => activeRow.classList.remove('chime-flash'), 3000);
             }
         },
 
-        getCurrentRoutineType: function() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const timeDecimal = hours + minutes / 60;
-
-            // Morning: 6:00 AM - 7:20 AM
-            if (timeDecimal >= this.morningStart && timeDecimal < 7 + 20/60) {
-                return 'morning';
-            }
-
-            // Evening: 5:30 PM - 7:30 PM
-            if (timeDecimal >= this.eveningStart && timeDecimal < this.eveningEnd) {
-                // Determine which evening milestone
-                const dinnerTime = this.milestones.dinner.hour + this.milestones.dinner.minute/60;
-                const showerTime = this.milestones.shower.hour + this.milestones.shower.minute/60;
-                const bedTime = this.milestones.bed.hour + this.milestones.bed.minute/60;
-
-                if (timeDecimal < dinnerTime) return 'dinner';
-                if (timeDecimal < showerTime) return 'shower';
-                if (timeDecimal < bedTime) return 'bed';
-            }
-
-            return 'off-hours';
+        // ---- Time helpers ----
+        formatTime: function(hour, minute) {
+            const period = hour >= 12 ? 'PM' : 'AM';
+            let h = hour % 12;
+            if (h === 0) h = 12;
+            return h + ':' + String(minute).padStart(2, '0') + ' ' + period;
         },
 
-        getMinutesRemaining: function(milestone) {
+        // Minutes until an item's time today. Positive = upcoming, 0 = this minute,
+        // negative = already passed.
+        getMinutesRemaining: function(item) {
             const now = new Date();
             const target = new Date();
-            target.setHours(milestone.hour, milestone.minute, 0, 0);
-
-            // If target is in the past (shouldn't happen during active window), return 0
-            if (target <= now) return 0;
-
-            const diffMs = target - now;
-            return Math.ceil(diffMs / (1000 * 60));
+            target.setHours(item.hour, item.minute, 0, 0);
+            return Math.ceil((target - now) / (1000 * 60));
         },
 
-        getMorningUrgencyClass: function(minutes) {
-            if (minutes > 30) return 'morning';
-            if (minutes > 15) return 'morning-aware';
-            if (minutes > 5) return 'morning-hurry';
-            return 'morning-urgent';
+        // ---- Chore persistence (per-calendar-day, auto-resets at midnight) ----
+        todayKey: function() {
+            const d = new Date();
+            return d.getFullYear() + '-' +
+                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(d.getDate()).padStart(2, '0');
         },
 
-        getOffHoursMessage: function() {
-            const now = new Date();
-            const hours = now.getHours();
+        loadChecks: function() {
+            let record = null;
+            try {
+                record = JSON.parse(localStorage.getItem(this.STORAGE_KEY));
+            } catch (e) {
+                record = null;
+            }
+            const today = this.todayKey();
+            // New day (or missing/corrupt) -> reset to a fresh empty record
+            if (!record || record.date !== today || typeof record.checked !== 'object' || record.checked === null) {
+                record = { date: today, checked: {} };
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(record));
+            }
+            return record.checked;
+        },
 
-            if (hours < this.morningStart) {
-                return { icon: '😴', title: 'Still sleeping time...', message: 'Go back to sleep!' };
+        saveChecks: function(checked) {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+                date: this.todayKey(),
+                checked: checked
+            }));
+        },
+
+        toggleCheck: function(id, isChecked) {
+            const checked = this.loadChecks();
+            if (isChecked) {
+                checked[id] = true;
+            } else {
+                delete checked[id];
             }
-            if (hours >= 7 && hours < 12) {
-                return { icon: '📚', title: 'Have a great day!', message: 'Learning time at school!' };
+            this.saveChecks(checked);
+        },
+
+        resetToday: function() {
+            this.saveChecks({});
+            const boxes = document.querySelectorAll('#routine-timeline input[type="checkbox"]');
+            boxes.forEach(b => { b.checked = false; });
+            this.update();
+        },
+
+        // ---- Rendering ----
+        // Build the timeline once into #routine-timeline. Idempotent: if the
+        // rows already exist it does nothing (so navigating away and back is fine).
+        renderTimeline: function() {
+            const container = document.getElementById('routine-timeline');
+            if (!container || container.querySelector('.routine-item')) return;
+
+            const checked = this.loadChecks();
+            let html = '';
+            let lastGroup = null;
+
+            this.schedule.forEach(item => {
+                if (item.group !== lastGroup) {
+                    html += '<div class="routine-group-header">' + item.group + '</div>';
+                    lastGroup = item.group;
+                }
+                const isChecked = checked[item.id] ? ' checked' : '';
+                html +=
+                    '<div class="routine-item theme-' + item.chime + '" data-id="' + item.id + '">' +
+                        '<label class="routine-check">' +
+                            '<input type="checkbox"' + isChecked + '>' +
+                            '<span class="routine-check-box"></span>' +
+                        '</label>' +
+                        '<span class="routine-item-icon">' + item.icon + '</span>' +
+                        '<div class="routine-item-body">' +
+                            '<span class="routine-item-label">' + item.label + '</span>' +
+                            '<span class="routine-item-time">' + this.formatTime(item.hour, item.minute) + '</span>' +
+                        '</div>' +
+                        '<span class="routine-item-countdown"></span>' +
+                    '</div>';
+            });
+
+            container.innerHTML = html;
+
+            // Checkbox toggling via event delegation (attached once)
+            container.addEventListener('change', (e) => {
+                const box = e.target;
+                if (box && box.matches && box.matches('input[type="checkbox"]')) {
+                    const row = box.closest('.routine-item');
+                    const id = row && row.getAttribute('data-id');
+                    if (id) {
+                        this.toggleCheck(id, box.checked);
+                        row.classList.toggle('done', box.checked);
+                    }
+                }
+            });
+
+            // Reset button
+            const resetBtn = document.getElementById('routine-reset-btn');
+            if (resetBtn && !resetBtn.dataset.bound) {
+                resetBtn.dataset.bound = '1';
+                resetBtn.addEventListener('click', () => this.resetToday());
             }
-            if (hours >= 12 && hours < this.eveningStart) {
-                return { icon: '☀️', title: 'Enjoy your day!', message: 'See you at dinner time!' };
-            }
-            // After 7:30 PM
-            return { icon: '🌟', title: 'Good night!', message: 'Sweet dreams!' };
         },
 
         update: function() {
-            const routineType = this.getCurrentRoutineType();
-            const container = document.getElementById('routine-container');
-            const iconEl = document.getElementById('routine-icon');
-            const titleEl = document.getElementById('routine-title');
-            const minutesEl = document.getElementById('routine-minutes');
-            const labelEl = document.getElementById('routine-label');
-            const targetEl = document.getElementById('routine-target');
-            const messageEl = document.getElementById('routine-message');
+            const container = document.getElementById('routine-timeline');
+            if (!container) return; // Routines page not loaded yet
 
-            // Only update if elements exist (routines page is loaded)
-            if (!container || !iconEl || !titleEl || !minutesEl || !labelEl || !targetEl || !messageEl) {
-                return;
+            this.renderTimeline();
+
+            // loadChecks() also performs the midnight reset when the day rolls over
+            const checked = this.loadChecks();
+
+            // Active item = the next item today whose time hasn't fully passed
+            // (smallest non-negative minutes remaining).
+            let activeItem = null;
+            let activeMinutes = null;
+            this.schedule.forEach(item => {
+                const mins = this.getMinutesRemaining(item);
+                if (mins >= 0 && (activeMinutes === null || mins < activeMinutes)) {
+                    activeMinutes = mins;
+                    activeItem = item;
+                }
+            });
+
+            // Update each row's state
+            this.schedule.forEach(item => {
+                const row = container.querySelector('.routine-item[data-id="' + item.id + '"]');
+                if (!row) return;
+
+                const mins = this.getMinutesRemaining(item);
+                const isDone = !!checked[item.id];
+                const isActive = !!activeItem && item.id === activeItem.id;
+                const isPast = mins < 0;
+
+                row.classList.toggle('done', isDone);
+                row.classList.toggle('active', isActive && !isDone);
+                row.classList.toggle('past', isPast && !isActive && !isDone);
+                row.classList.toggle('future', !isPast && !isActive && !isDone);
+                // Extra urgency pulse when the active item is imminent
+                row.classList.toggle('urgent', isActive && !isDone && mins <= 5);
+
+                // Keep the checkbox in sync (e.g. after a midnight reset)
+                const box = row.querySelector('input[type="checkbox"]');
+                if (box && box.checked !== isDone) box.checked = isDone;
+
+                const cd = row.querySelector('.routine-item-countdown');
+                if (cd) {
+                    if (isActive && !isDone) {
+                        cd.textContent = mins === 0 ? 'Now!' : ('in ' + mins + ' min');
+                        cd.style.display = '';
+                    } else {
+                        cd.textContent = '';
+                        cd.style.display = 'none';
+                    }
+                }
+            });
+
+            // Status line
+            const statusEl = document.getElementById('routine-status');
+            if (statusEl) {
+                statusEl.textContent = activeItem ? '' : '🌟 All done for today — sweet dreams!';
             }
 
-            // Check if routines page is actually visible/active
+            // Chimes: only for the active item, only while the Routines tab is visible
             const routinesPage = document.getElementById('routines');
             const isPageActive = routinesPage && routinesPage.classList.contains('active');
-
-            // Remove all theme classes
-            container.className = 'routine-container';
-
-            if (routineType === 'off-hours') {
-                const offHours = this.getOffHoursMessage();
-                container.classList.add('off-hours');
-                iconEl.textContent = offHours.icon;
-                titleEl.textContent = offHours.title;
-                minutesEl.textContent = offHours.message;
-                labelEl.style.display = 'none';
-                targetEl.textContent = '';
-                messageEl.style.display = 'none';
-                this.lastChimeMinute = null;
-                return;
-            }
-
-            // Active routine
-            const milestone = this.milestones[routineType];
-            const minutes = this.getMinutesRemaining(milestone);
-
-            // Apply theme class
-            if (routineType === 'morning') {
-                container.classList.add(this.getMorningUrgencyClass(minutes));
-            } else {
-                container.classList.add(routineType);
-            }
-
-            // Update display
-            iconEl.textContent = milestone.icon;
-            titleEl.textContent = milestone.title;
-            minutesEl.textContent = minutes;
-            labelEl.textContent = minutes === 1 ? 'minute' : 'minutes';
-            labelEl.style.display = 'block';
-            targetEl.textContent = milestone.target;
-
-            // Show message at milestone time (0 minutes)
-            if (minutes === 0) {
-                messageEl.textContent = routineType === 'morning' ? 'Time to go! 🏃‍♀️' :
-                                       routineType === 'dinner' ? 'Food is ready! 🍽️' :
-                                       routineType === 'shower' ? 'Get in the shower! 🚿' :
-                                       'Time for bed! 🌙';
-                messageEl.style.display = 'block';
-            } else {
-                messageEl.style.display = 'none';
-            }
-
-            // Check for 5-minute mark chime (only if page is active)
-            if (isPageActive) {
-                this.checkChime(routineType, minutes);
+            if (isPageActive && activeItem && !checked[activeItem.id]) {
+                this.checkChime(activeItem.id, activeItem.chime, activeMinutes);
             }
         },
 
-        checkChime: function(routineType, minutes) {
-            // Chime at 5-minute intervals
-            const chimeMinutes = [60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0];
-
-            if (chimeMinutes.includes(minutes) && this.lastChimeMinute !== minutes) {
-                this.lastChimeMinute = minutes;
-                // More urgent chime for lower minutes
-                const isUrgent = minutes <= 10;
-                this.playChime(routineType, isUrgent);
+        checkChime: function(activeId, chimeKey, minutes) {
+            // Reset the chime tracker when the active item changes
+            if (this.activeId !== activeId) {
+                this.activeId = activeId;
+                this.lastChimeMinute = null;
             }
 
-            // Reset lastChimeMinute when routine changes
-            if (this.currentRoutine !== routineType) {
-                this.currentRoutine = routineType;
-                this.lastChimeMinute = null;
+            // Chime at 5-minute intervals leading up to the item
+            const chimeMinutes = [60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0];
+            if (chimeMinutes.includes(minutes) && this.lastChimeMinute !== minutes) {
+                this.lastChimeMinute = minutes;
+                this.playChime(chimeKey, minutes <= 10);
             }
         }
     };

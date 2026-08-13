@@ -878,196 +878,243 @@
         }
 
         /* ========================================
-           ROUTINES TIMER STYLES
-           Morning & Evening countdown timers
+           ROUTINES TIMELINE STYLES
+           Full-day timeline with checkable chores
            ======================================== */
 
-        .routine-container {
-            max-width: 600px;
+        .routines-page {
+            max-width: 640px;
             margin: 0 auto;
-            padding: 40px 20px;
-            text-align: center;
-            border-radius: 24px;
-            transition: all 0.5s ease;
-            position: relative;
-            overflow: hidden;
+            padding: 20px 16px 40px;
         }
 
-        .routine-icon {
-            font-size: 80px;
-            margin-bottom: 10px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .routine-title {
-            font-size: 28px;
-            font-weight: 700;
+        .routines-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
             margin-bottom: 20px;
+        }
+
+        .routines-page-title {
+            font-size: 30px;
+            font-weight: 800;
             color: #fff;
             text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin: 0;
         }
 
-        .routine-timer {
-            margin: 30px 0;
+        .routine-reset-btn {
+            background: rgba(255,255,255,0.08);
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .routine-reset-btn:hover {
+            background: rgba(255,255,255,0.16);
+            color: #fff;
+        }
+        .routine-reset-btn:active { transform: scale(0.96); }
+
+        .routine-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .routine-minutes {
-            font-size: 140px;
-            font-weight: 800;
+        .routine-group-header {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin: 18px 0 4px;
+            padding-left: 4px;
+        }
+        .routine-group-header:first-child { margin-top: 0; }
+
+        /* Item row */
+        .routine-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-left: 5px solid rgba(255,255,255,0.15);
+            transition: background 0.3s ease, opacity 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .routine-item-icon {
+            font-size: 34px;
             line-height: 1;
-            display: block;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            flex-shrink: 0;
         }
 
-        .routine-label {
-            font-size: 32px;
-            opacity: 0.9;
-            margin-top: 10px;
-            display: block;
+        .routine-item-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
         }
 
-        .routine-target {
-            font-size: 18px;
-            opacity: 0.8;
-            margin-top: 20px;
+        .routine-item-label {
+            font-size: 19px;
+            font-weight: 700;
+            color: #f1f5f9;
         }
 
-        .routine-message {
-            font-size: 24px;
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
+        .routine-item-time {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
         }
 
-        /* Morning theme - urgency based colors */
-        .routine-container.morning {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.2) 100%);
-            border: 2px solid rgba(34, 197, 94, 0.4);
-        }
-        .routine-container.morning .routine-minutes { color: #22c55e; }
-
-        .routine-container.morning-aware {
-            background: linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.2) 100%);
-            border: 2px solid rgba(234, 179, 8, 0.4);
-        }
-        .routine-container.morning-aware .routine-minutes { color: #eab308; }
-
-        .routine-container.morning-hurry {
-            background: linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(234, 88, 12, 0.2) 100%);
-            border: 2px solid rgba(249, 115, 22, 0.4);
-        }
-        .routine-container.morning-hurry .routine-minutes { color: #f97316; }
-
-        .routine-container.morning-urgent {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(220, 38, 38, 0.3) 100%);
-            border: 2px solid rgba(239, 68, 68, 0.5);
-            animation: urgentPulse 0.5s ease-in-out infinite;
-        }
-        .routine-container.morning-urgent .routine-minutes { color: #ef4444; }
-
-        @keyframes urgentPulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
-            50% { transform: scale(1.02); box-shadow: 0 0 50px rgba(239, 68, 68, 0.5); }
+        .routine-item-countdown {
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(255,255,255,0.18);
+            border-radius: 999px;
+            padding: 5px 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        /* Evening themes */
-        .routine-container.dinner {
-            background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
-            border: 2px solid rgba(251, 191, 36, 0.5);
-        }
-        .routine-container.dinner .routine-minutes { color: #fff; }
-        .routine-container.dinner .routine-title { color: #fff; }
-
-        .routine-container.shower {
-            background: linear-gradient(135deg, #3b82f6 0%, #22d3d8 100%);
-            border: 2px solid rgba(34, 211, 216, 0.5);
-        }
-        .routine-container.shower .routine-minutes { color: #fff; }
-        .routine-container.shower .routine-title { color: #fff; }
-
-        .routine-container.bed {
-            background: linear-gradient(135deg, #1e1b4b 0%, #8b5cf6 50%, #4c1d95 100%);
-            border: 2px solid rgba(139, 92, 246, 0.5);
+        /* Custom checkbox */
+        .routine-check {
             position: relative;
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
         }
-        .routine-container.bed .routine-minutes { color: #c4b5fd; }
-        .routine-container.bed .routine-title { color: #e9d5ff; }
-
-        /* Stars animation for bedtime */
-        .routine-container.bed::before {
+        .routine-check input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+        .routine-check-box {
+            display: block;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            border: 2px solid rgba(255,255,255,0.35);
+            background: rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+        .routine-check input:checked + .routine-check-box {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+        .routine-check input:checked + .routine-check-box::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image:
-                radial-gradient(2px 2px at 20px 30px, white, transparent),
-                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
-                radial-gradient(1px 1px at 90px 40px, white, transparent),
-                radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.6), transparent),
-                radial-gradient(1px 1px at 160px 30px, white, transparent),
-                radial-gradient(2px 2px at 200px 60px, rgba(255,255,255,0.7), transparent),
-                radial-gradient(1px 1px at 250px 20px, white, transparent),
-                radial-gradient(2px 2px at 300px 50px, rgba(255,255,255,0.8), transparent),
-                radial-gradient(1px 1px at 350px 70px, white, transparent),
-                radial-gradient(2px 2px at 400px 30px, rgba(255,255,255,0.6), transparent);
-            animation: twinkle 4s ease-in-out infinite;
-            pointer-events: none;
+            left: 10px;
+            top: 5px;
+            width: 7px;
+            height: 13px;
+            border: solid #fff;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        .routine-check input:focus-visible + .routine-check-box {
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
         }
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
+        /* Per-routine accent colors (left border + active glow) */
+        .routine-item.theme-morning { border-left-color: #22c55e; }
+        .routine-item.theme-dinner  { border-left-color: #fbbf24; }
+        .routine-item.theme-shower  { border-left-color: #22d3d8; }
+        .routine-item.theme-bed     { border-left-color: #8b5cf6; }
+
+        /* State: future (default look already applies) */
+        .routine-item.future { opacity: 0.9; }
+
+        /* State: past (dimmed, not yet checked) */
+        .routine-item.past {
+            opacity: 0.45;
         }
 
-        /* Off-hours relaxed state */
-        .routine-container.off-hours {
-            background: linear-gradient(135deg, rgba(100, 116, 139, 0.2) 0%, rgba(71, 85, 105, 0.15) 100%);
-            border: 2px solid rgba(100, 116, 139, 0.3);
+        /* State: active (the next-up item) */
+        .routine-item.active {
+            background: rgba(255,255,255,0.12);
+            transform: scale(1.02);
         }
-        .routine-container.off-hours .routine-icon { animation: none; }
-        .routine-container.off-hours .routine-minutes { color: #94a3b8; font-size: 60px; }
-        .routine-container.off-hours .routine-label { display: none; }
+        .routine-item.active .routine-item-label { color: #fff; }
+        .routine-item.active.theme-morning { box-shadow: 0 0 24px rgba(34,197,94,0.45);  border-color: rgba(34,197,94,0.6); }
+        .routine-item.active.theme-dinner  { box-shadow: 0 0 24px rgba(251,191,36,0.45); border-color: rgba(251,191,36,0.6); }
+        .routine-item.active.theme-shower  { box-shadow: 0 0 24px rgba(34,211,216,0.45); border-color: rgba(34,211,216,0.6); }
+        .routine-item.active.theme-bed     { box-shadow: 0 0 24px rgba(139,92,246,0.45); border-color: rgba(139,92,246,0.6); }
+        .routine-item.active .routine-item-icon { animation: float 3s ease-in-out infinite; }
+        .routine-item.active.theme-morning .routine-item-countdown { background: #22c55e; }
+        .routine-item.active.theme-dinner  .routine-item-countdown { background: #f97316; }
+        .routine-item.active.theme-shower  .routine-item-countdown { background: #3b82f6; }
+        .routine-item.active.theme-bed     .routine-item-countdown { background: #7c3aed; }
 
-        /* Pulse animations for active timers */
-        .routine-container.morning .routine-icon,
-        .routine-container.dinner .routine-icon,
-        .routine-container.shower .routine-icon,
-        .routine-container.bed .routine-icon {
-            animation: float 3s ease-in-out infinite;
+        /* State: active + imminent (<=5 min) -> pulse */
+        .routine-item.active.urgent { animation: urgentPulse 0.8s ease-in-out infinite; }
+
+        /* State: done (checked) - strikethrough + muted, overrides active/past look */
+        .routine-item.done {
+            opacity: 0.55;
+            box-shadow: none;
+            transform: none;
+            animation: none;
+        }
+        .routine-item.done .routine-item-label {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+        .routine-item.done .routine-item-icon { filter: grayscale(0.6); }
+
+        .routine-status {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #c4b5fd;
+            min-height: 24px;
         }
 
-        .routine-container.morning-hurry .routine-icon {
-            animation: bounce 0.6s ease-in-out infinite;
+        /* Chime notification flash - loops 5 times for ~3 seconds total */
+        .routine-item.chime-flash {
+            animation: chimeFlash 0.6s ease-in-out 5;
         }
 
-        .routine-container.morning-urgent .routine-icon {
-            animation: shake 0.3s ease-in-out infinite;
+        /* --- Shared keyframes (also used by other pages, keep defined) --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
-
+        @keyframes urgentPulse {
+            0%, 100% { transform: scale(1.02); }
+            50% { transform: scale(1.05); }
+        }
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
         }
-
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
-
-        /* Chime notification flash - loops 5 times for ~3 seconds total */
-        .routine-container.chime-flash {
-            animation: chimeFlash 0.6s ease-in-out 5;
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
-
         @keyframes chimeFlash {
             0%, 100% { filter: brightness(1); transform: scale(1); }
             50% { filter: brightness(1.4); transform: scale(1.03); }
@@ -1075,20 +1122,10 @@
 
         /* Responsive */
         @media (max-width: 600px) {
-            .routine-container {
-                padding: 30px 15px;
-                margin: 0 10px;
-            }
-            .routine-icon { font-size: 60px; }
-            .routine-title { font-size: 22px; }
-            .routine-minutes { font-size: 100px; }
-            .routine-label { font-size: 24px; }
-            .routine-message { font-size: 18px; padding: 15px; }
-        }
-
-        @media (max-width: 380px) {
-            .routine-minutes { font-size: 80px; }
-            .routine-label { font-size: 20px; }
+            .routines-page-title { font-size: 24px; }
+            .routine-item { padding: 14px; gap: 10px; }
+            .routine-item-icon { font-size: 28px; }
+            .routine-item-label { font-size: 17px; }
         }
 
         /* ========================================

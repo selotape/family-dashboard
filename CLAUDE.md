@@ -124,6 +124,7 @@ The Math Game is a separate subsystem with its own module structure:
 
 **localStorage keys used:**
 - `lastTab` - Last visited tab for restoration on refresh
+- `routineChores` - Routines timeline daily chore checkboxes (`{date, checked}`; auto-resets each new day)
 - `capybaraHighScore` - Capybara game high score
 - `gymConfig` - Warm-up calculator plate configuration
 - `lastTargetWeight` - Warm-up calculator last input
