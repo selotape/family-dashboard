@@ -1,235 +1,130 @@
 # Linux Deployment Guide
 
-This guide explains how to deploy the Family Dashboard as a persistent service on a Linux machine.
+This guide explains how to run the Family Dashboard as a persistent, always-on
+service on a Linux machine that also serves your latest **local** edits.
 
 ## Quick Start
 
-1. Clone the repository:
-```bash
-git clone https://github.com/selotape/family-dashboard.git
-cd family-dashboard
-```
+From the project directory:
 
-2. Run the deployment script:
 ```bash
 chmod +x deploy-linux.sh
 ./deploy-linux.sh
 ```
 
-The script will ask for sudo password and automatically:
-- Install Python dependencies in a virtual environment
-- Create/update the systemd service
-- Set up auto-update cron job (every 10 minutes)
-- Start the server
+The script (no sudo required) will:
+- Install Python dependencies into a local `venv/`
+- Create a placeholder `.env` if one doesn't exist (story generation is optional)
+- Install a **user-level systemd service** that runs forever and restarts on crash
+- Install a **systemd path unit** that auto-restarts the service when `server.py`
+  or `.env` change
 
-3. Access the dashboard at: **http://localhost:8080**
+Then open the dashboard at: **http://localhost:8080**
+
+## How Updates Work (local edits, no git pull)
+
+This deployment serves your **local working tree directly** — there is no build
+step and no `git pull`. What you edit is what gets served:
+
+| You edit…                         | What happens                                            |
+| --------------------------------- | ------------------------------------------------------- |
+| `index.html`, `styles.css`, `js/*`, `pages/*` | Served **live** from disk — just **refresh the browser**. No restart. |
+| `server.py` or `.env`             | The service **auto-restarts within ~1–2 s** to pick it up. |
+| `requirements.txt`                | Re-run `./deploy-linux.sh` to install the new dependencies. |
+
+Content files are read from disk on every request, so they never need a restart.
+Only the Python process (`server.py`) and its startup config (`.env`) do — and the
+path unit handles that automatically.
 
 ## What Gets Installed
 
-### 1. Systemd Service
-- **Service Name**: `family-dashboard`
-- **Auto-starts on boot**: Yes
-- **User**: Your current user (not root)
-- **Working Directory**: Project directory
-- **Logs**: Via systemd journal
+### Systemd units (user-level, in `~/.config/systemd/user/`)
+- `family-dashboard.service` — the long-running web server (`Restart=always`)
+- `family-dashboard.path` — watches `server.py` and `.env` for changes
+- `family-dashboard-restart.service` — oneshot that restarts the server, triggered
+  by the path unit
 
-### 2. Auto-Update Cron Job
-- **Schedule**: Every 10 minutes
-- **Action**: `git pull` from main branch
-- **Auto-restart**: Service restarts if updates are found
-- **Update Log**: `~/.family-dashboard-updates.log`
+### Python virtual environment
+- Location: `./venv/`
+- Dependencies: from `requirements.txt`
 
-### 3. Python Virtual Environment
-- **Location**: `./venv/`
-- **Dependencies**: Installed from `requirements.txt`
+## Boot Persistence
+
+The service is user-level. If **lingering** is enabled for your user it starts at
+boot, before you log in. The deploy script reports whether it's on. To enable it:
+
+```bash
+sudo loginctl enable-linger "$USER"
+```
+
+(On this machine lingering is already enabled.)
 
 ## Managing the Service
 
-### Service Commands
 ```bash
-# Start the service
-sudo systemctl start family-dashboard
+# Status / logs
+systemctl --user status family-dashboard
+journalctl --user -u family-dashboard -f
 
-# Stop the service
-sudo systemctl stop family-dashboard
+# Start / stop / restart
+systemctl --user start family-dashboard
+systemctl --user stop family-dashboard
+systemctl --user restart family-dashboard
 
-# Restart the service
-sudo systemctl restart family-dashboard
-
-# Check status
-sudo systemctl status family-dashboard
-
-# View live logs
-sudo journalctl -u family-dashboard -f
-
-# View recent logs (last 50 lines)
-sudo journalctl -u family-dashboard -n 50
-```
-
-### Cron Job Management
-```bash
-# View cron jobs
-crontab -l
-
-# View update logs
-tail -f ~/.family-dashboard-updates.log
-
-# Manually trigger update
-./auto-update.sh
-
-# Remove cron job
-crontab -e  # Then delete the family-dashboard lines
+# The auto-restart watcher
+systemctl --user status family-dashboard.path
 ```
 
 ## Configuration
 
-### Environment Variables
-Edit `.env` file in the project directory:
-
+### Environment variables (`.env`)
 ```bash
-# Required: Anthropic API Key for story generation
+# Optional: enables the Reading Game story generator
 ANTHROPIC_API_KEY=your_api_key_here
 
-# Optional: Server port (default: 8080)
+# Optional: server port (default 8080)
 PORT=8080
 ```
 
-After editing `.env`, restart the service:
-```bash
-sudo systemctl restart family-dashboard
-```
+After editing `.env`, the service auto-restarts to apply the change (or run
+`systemctl --user restart family-dashboard`).
 
-## Re-deploying / Updating
+## Re-deploying
 
-To update the service configuration or re-deploy:
-
-```bash
-./deploy-linux.sh
-```
-
-The script is idempotent - it can be run multiple times safely. It will:
-- Update the systemd service file
-- Reinstall dependencies if needed
-- Replace the cron job with the latest version
-- Restart the service
+`./deploy-linux.sh` is idempotent — safe to run again. It reinstalls the units,
+reinstalls dependencies, and restarts the service.
 
 ## Troubleshooting
 
 ### Service won't start
 ```bash
-# Check service status
-sudo systemctl status family-dashboard
-
-# View detailed logs
-sudo journalctl -u family-dashboard -n 100
-
-# Common issues:
-# 1. Missing .env file or invalid API key
-# 2. Port 8080 already in use
-# 3. Missing Python dependencies
+systemctl --user status family-dashboard
+journalctl --user -u family-dashboard -n 100
+# Common causes: port 8080 already in use, missing dependencies.
 ```
 
-### Auto-updates not working
+### Auto-restart on server.py/.env not happening
 ```bash
-# Check cron job is installed
-crontab -l | grep family-dashboard
-
-# Check update logs
-tail -20 ~/.family-dashboard-updates.log
-
-# Test manual update
-./auto-update.sh
-```
-
-### Permission issues
-```bash
-# The service runs as your user, not root
-# Check file ownership
-ls -la
-
-# Fix ownership if needed
-sudo chown -R $USER:$USER .
+systemctl --user status family-dashboard.path   # should be "active (waiting)"
+journalctl --user -u family-dashboard-restart -n 20
 ```
 
 ## Uninstalling
 
-To completely remove the installation:
-
 ```bash
-# Stop and disable service
-sudo systemctl stop family-dashboard
-sudo systemctl disable family-dashboard
-
-# Remove service file
-sudo rm /etc/systemd/system/family-dashboard.service
-
-# Remove sudoers file
-sudo rm /etc/sudoers.d/family-dashboard
-
-# Reload systemd
-sudo systemctl daemon-reload
-
-# Remove cron job
-crontab -e  # Delete family-dashboard lines
-
-# Remove project directory (optional)
-cd ..
-rm -rf family-dashboard
+systemctl --user disable --now family-dashboard.service family-dashboard.path
+rm ~/.config/systemd/user/family-dashboard.service \
+   ~/.config/systemd/user/family-dashboard.path \
+   ~/.config/systemd/user/family-dashboard-restart.service
+systemctl --user daemon-reload
 ```
 
-## Security Notes
+## Accessing From Other Devices
 
-- The service runs as your user (not root) for security
-- Sudo permissions are granted only for service management commands
-- The `.env` file contains sensitive API keys - keep it secure
-- Auto-update uses SSH/HTTPS authentication (configure GitHub credentials)
-
-## Port Configuration
-
-The default port is **8080**. To use a different port:
-
-1. Edit `.env`:
-   ```bash
-   PORT=3000
-   ```
-
-2. Restart service:
-   ```bash
-   sudo systemctl restart family-dashboard
-   ```
-
-## Accessing from Other Devices
-
-To access the dashboard from other devices on your network:
-
-1. Find your server's IP address:
-   ```bash
-   hostname -I
-   ```
-
-2. Open firewall port (if needed):
-   ```bash
-   sudo ufw allow 8080/tcp
-   ```
-
-3. Access from other devices:
-   ```
-   http://YOUR_SERVER_IP:8080
-   ```
-
-## Running on Raspberry Pi
-
-This script works perfectly on Raspberry Pi OS (Debian-based):
+The server binds `0.0.0.0`, so other devices on your network can reach it:
 
 ```bash
-# Install Python3 if not present
-sudo apt update
-sudo apt install python3 python3-venv python3-pip git
-
-# Clone and deploy
-git clone https://github.com/selotape/family-dashboard.git
-cd family-dashboard
-./deploy-linux.sh
+hostname -I                 # find this machine's IP
+# then browse to  http://YOUR_SERVER_IP:8080
+sudo ufw allow 8080/tcp     # only if a firewall is blocking it
 ```
-
-The dashboard will start automatically on boot and keep itself updated!

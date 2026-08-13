@@ -457,9 +457,12 @@ if __name__ == '__main__':
     watcher_thread = threading.Thread(target=watch_files, daemon=True)
     watcher_thread.start()
 
-    # Open browser in background thread
-    browser_thread = threading.Thread(target=open_browser, daemon=True)
-    browser_thread.start()
+    # Open browser in background thread, but only when running interactively.
+    # Under systemd the stdout is the journal (not a tty), so we skip this to
+    # avoid spawning a browser tab on every (re)start of the service.
+    if sys.stdout.isatty():
+        browser_thread = threading.Thread(target=open_browser, daemon=True)
+        browser_thread.start()
 
     # Start Flask server
     try:

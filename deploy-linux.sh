@@ -4,8 +4,11 @@ set -e
 #############################################################
 # Family Dashboard - Linux Deployment Script (User-Level)
 # This script:
-# 1. Installs/updates a user-level systemd service (no sudo)
-# 2. Sets up a cron job for auto git-pull every 10 minutes
+# 1. Installs Python dependencies into a local virtualenv
+# 2. Installs a user-level systemd service (no sudo) that runs forever
+# 3. Installs a systemd path unit that auto-restarts the service when
+#    server.py or .env change (content files are served live from disk,
+#    so they need no restart -- just refresh the browser)
 #############################################################
 
 # Colors for output
@@ -58,45 +61,43 @@ echo -e "${GREEN}✓ Python dependencies installed${NC}"
 echo ""
 
 #############################################################
-# 2. Check for .env file
+# 2. Check for .env file (optional - only story generation needs it)
 #############################################################
 echo -e "${BLUE}[2/4] Checking environment configuration...${NC}"
 
 if [ ! -f "$PROJECT_DIR/.env" ]; then
-    echo -e "${YELLOW}⚠️  No .env file found!${NC}"
-    echo "Creating .env template..."
+    echo -e "${YELLOW}⚠️  No .env file found - creating a placeholder.${NC}"
     cat > "$PROJECT_DIR/.env" <<EOF
-# Anthropic API Key (required for story generation)
-ANTHROPIC_API_KEY=your_api_key_here
+# Anthropic API Key (optional - only the Reading Game story generator needs it).
+# The dashboard runs fine without it; add a real key to enable story generation,
+# then the service will auto-restart to pick it up.
+ANTHROPIC_API_KEY=
 
 # Server Configuration
 PORT=8080
 EOF
-    echo -e "${YELLOW}⚠️  Please edit $PROJECT_DIR/.env and add your ANTHROPIC_API_KEY${NC}"
-    echo -e "${YELLOW}Then re-run this script.${NC}"
-    exit 1
+    echo -e "${YELLOW}   Story generation stays disabled until you add ANTHROPIC_API_KEY to .env${NC}"
+else
+    echo -e "${GREEN}✓ Environment file exists${NC}"
 fi
-
-echo -e "${GREEN}✓ Environment file exists${NC}"
 echo ""
 
 #############################################################
-# 3. Create/Update user-level systemd service
+# 3. Install user-level systemd units (service + auto-restart-on-change)
 #############################################################
-echo -e "${BLUE}[3/4] Installing user-level systemd service...${NC}"
+echo -e "${BLUE}[3/4] Installing user-level systemd units...${NC}"
 
-# Create systemd user directory if it doesn't exist
 mkdir -p "$SYSTEMD_USER_DIR"
 
 SERVICE_FILE="$SYSTEMD_USER_DIR/${SERVICE_NAME}.service"
+PATH_FILE="$SYSTEMD_USER_DIR/${SERVICE_NAME}.path"
+RESTART_FILE="$SYSTEMD_USER_DIR/${SERVICE_NAME}-restart.service"
 
-# Stop existing service if running
-if systemctl --user is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
-    echo "Stopping existing service..."
-    systemctl --user stop "$SERVICE_NAME"
-fi
+# Stop existing units if running (idempotent re-deploy)
+systemctl --user stop "${SERVICE_NAME}.path" 2>/dev/null || true
+systemctl --user stop "${SERVICE_NAME}.service" 2>/dev/null || true
 
-# Create systemd service file
+# --- Main long-running service ---
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=Family Dashboard Web Server
@@ -108,7 +109,7 @@ WorkingDirectory=$PROJECT_DIR
 Environment="PATH=$VENV_DIR/bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=$VENV_DIR/bin/python $PROJECT_DIR/server.py
 Restart=always
-RestartSec=10
+RestartSec=5
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=family-dashboard
@@ -117,16 +118,41 @@ SyslogIdentifier=family-dashboard
 WantedBy=default.target
 EOF
 
-echo "Service file created at: $SERVICE_FILE"
+# --- Oneshot that restarts the main service (triggered by the path unit) ---
+cat > "$RESTART_FILE" <<EOF
+[Unit]
+Description=Restart Family Dashboard when source changes
 
-# Reload systemd daemon
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl --user restart ${SERVICE_NAME}.service
+EOF
+
+# --- Path unit: watch the files that actually require a restart ---
+# Content files (HTML/CSS/JS/pages) are served live from disk and need NO restart.
+# Only server.py and .env require the Python process to be restarted.
+cat > "$PATH_FILE" <<EOF
+[Unit]
+Description=Watch Family Dashboard source for changes
+
+[Path]
+PathModified=$PROJECT_DIR/server.py
+PathModified=$PROJECT_DIR/.env
+Unit=${SERVICE_NAME}-restart.service
+
+[Install]
+WantedBy=default.target
+EOF
+
+echo "Units created:"
+echo "  • $SERVICE_FILE"
+echo "  • $PATH_FILE"
+echo "  • $RESTART_FILE"
+
+# Reload systemd and enable/start units
 systemctl --user daemon-reload
-
-# Enable service to start on login
-systemctl --user enable "$SERVICE_NAME"
-
-# Start the service
-systemctl --user start "$SERVICE_NAME"
+systemctl --user enable --now "${SERVICE_NAME}.service"
+systemctl --user enable --now "${SERVICE_NAME}.path"
 
 # Check status
 if systemctl --user is-active --quiet "$SERVICE_NAME"; then
@@ -143,103 +169,20 @@ else
     echo "Check logs with: journalctl --user -u $SERVICE_NAME -n 50"
     exit 1
 fi
-
 echo ""
 
 #############################################################
-# 4. Setup cron job for git pull
+# 4. Verify boot persistence (linger)
 #############################################################
-echo -e "${BLUE}[4/4] Setting up auto-update cron job...${NC}"
-
-CRON_SCRIPT="$PROJECT_DIR/auto-update.sh"
-
-# Create git pull script (uses user-level systemctl)
-cat > "$CRON_SCRIPT" <<'EOF'
-#!/bin/bash
-# Auto-update script for Family Dashboard
-
-# Change to project directory
-cd "$(dirname "$0")"
-
-# Log file
-LOG_FILE="$HOME/.family-dashboard-updates.log"
-
-# Timestamp
-echo "==================================================" >> "$LOG_FILE"
-echo "[$(date)] Checking for updates..." >> "$LOG_FILE"
-
-# Fetch latest changes
-git fetch origin main >> "$LOG_FILE" 2>&1
-
-# Check if there are updates
-LOCAL=$(git rev-parse HEAD)
-REMOTE=$(git rev-parse origin/main)
-
-if [ "$LOCAL" = "$REMOTE" ]; then
-    echo "Already up to date." >> "$LOG_FILE"
-else
-    echo "Updates found. Pulling changes..." >> "$LOG_FILE"
-
-    # Stash any local changes (just in case)
-    git stash >> "$LOG_FILE" 2>&1
-
-    # Pull latest changes
-    git pull origin main >> "$LOG_FILE" 2>&1
-
-    # Install any new dependencies
-    if [ -f "requirements.txt" ]; then
-        if [ -d "venv" ]; then
-            venv/bin/pip install -r requirements.txt >> "$LOG_FILE" 2>&1
-        fi
-    fi
-
-    # Restart service (user-level, no sudo needed)
-    echo "Restarting service..." >> "$LOG_FILE"
-    systemctl --user restart family-dashboard >> "$LOG_FILE" 2>&1
-
-    echo "✓ Update completed successfully" >> "$LOG_FILE"
-fi
-
-echo "" >> "$LOG_FILE"
-EOF
-
-chmod +x "$CRON_SCRIPT"
-
-echo "Created auto-update script at: $CRON_SCRIPT"
-
-# Add to user's crontab (run every 10 minutes)
-CRON_JOB="*/10 * * * * $CRON_SCRIPT"
-CRON_COMMENT="# Family Dashboard auto-update (every 10 minutes)"
-
-# Get existing crontab, remove old entry if exists, add new one
-(crontab -l 2>/dev/null | grep -v "$CRON_SCRIPT" | grep -v "Family Dashboard auto-update"; echo "$CRON_COMMENT"; echo "$CRON_JOB") | crontab -
-
-echo -e "${GREEN}✓ Cron job installed (runs every 10 minutes)${NC}"
-echo ""
-
-#############################################################
-# Enable lingering for service to run at boot (optional)
-#############################################################
-echo -e "${BLUE}Checking boot persistence...${NC}"
+echo -e "${BLUE}[4/4] Checking boot persistence...${NC}"
 
 if loginctl show-user "$USER" 2>/dev/null | grep -q "Linger=yes"; then
-    echo -e "${GREEN}✓ Lingering already enabled - service will start at boot${NC}"
+    echo -e "${GREEN}✓ Lingering is enabled - service starts at boot (before login)${NC}"
 else
-    echo -e "${YELLOW}⚠️  Lingering not enabled${NC}"
-    echo ""
-    echo "To have the service start at boot (before you log in), run:"
-    echo -e "  ${BLUE}sudo loginctl enable-linger $USER${NC}"
-    echo ""
-    echo "This is optional - the service will still start when you log in."
-    echo ""
-    read -p "Enable lingering now? (requires sudo) [y/N]: " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        sudo loginctl enable-linger "$USER"
-        echo -e "${GREEN}✓ Lingering enabled - service will start at boot${NC}"
-    fi
+    echo -e "${YELLOW}⚠️  Lingering not enabled - service starts only after you log in.${NC}"
+    echo "   To start it at boot before login, run:"
+    echo -e "     ${BLUE}sudo loginctl enable-linger $USER${NC}"
 fi
-
 echo ""
 
 #############################################################
@@ -251,19 +194,15 @@ echo -e "${GREEN}============================================================${N
 echo ""
 echo -e "${GREEN}Server is running at:${NC} http://localhost:8080"
 echo ""
-echo -e "${BLUE}What was installed:${NC}"
-echo "  ✓ Python virtual environment with dependencies"
-echo "  ✓ User-level systemd service (no sudo needed)"
-echo "  ✓ Auto-update cron job (every 10 minutes)"
+echo -e "${BLUE}How updates work (local edits, no git pull):${NC}"
+echo "  • Edit HTML/CSS/JS/pages  → just refresh the browser (served live)"
+echo "  • Edit server.py or .env  → service auto-restarts within ~1-2s"
+echo "  • Edit requirements.txt   → re-run ./deploy-linux.sh to install new deps"
 echo ""
 echo -e "${BLUE}Useful Commands (no sudo needed):${NC}"
-echo "  • View server logs:    journalctl --user -u $SERVICE_NAME -f"
-echo "  • View update logs:    tail -f ~/.family-dashboard-updates.log"
-echo "  • Restart service:     systemctl --user restart $SERVICE_NAME"
-echo "  • Check cron job:      crontab -l"
-echo "  • Manual update:       $CRON_SCRIPT"
-echo ""
-echo -e "${YELLOW}Note:${NC} The server will automatically pull updates from GitHub every 10 minutes"
-echo "and restart if changes are detected."
+echo "  • View server logs:  journalctl --user -u $SERVICE_NAME -f"
+echo "  • Restart service:   systemctl --user restart $SERVICE_NAME"
+echo "  • Service status:    systemctl --user status $SERVICE_NAME"
+echo "  • Watcher status:    systemctl --user status ${SERVICE_NAME}.path"
 echo ""
 echo -e "${GREEN}============================================================${NC}"
