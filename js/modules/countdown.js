@@ -13,7 +13,7 @@
         update: function() {
             const now = new Date();
 
-            // Grandma Ayelet - January 28, 2026
+            /* Grandma Ayelet - January 28, 2026 (commented out)
             const ayeletEl = document.getElementById('days-ayelet');
             if (ayeletEl) {
                 const ayeletDate = new Date('2026-01-28T00:00:00');
@@ -21,17 +21,18 @@
                 const ayeletDays = Math.ceil(ayeletDiff / (1000 * 60 * 60 * 24));
                 ayeletEl.textContent = ayeletDays > 0 ? ayeletDays : "She's here!";
             }
+            */
 
-            // Grandma Orly - April 16, 2026
+            // Grandma Orly - September 14, 2026
             const orlyEl = document.getElementById('days-orly');
             if (orlyEl) {
-                const orlyDate = new Date('2026-04-16T00:00:00');
+                const orlyDate = new Date('2026-09-14T00:00:00');
                 const orlyDiff = orlyDate - now;
                 const orlyDays = Math.ceil(orlyDiff / (1000 * 60 * 60 * 24));
                 orlyEl.textContent = orlyDays > 0 ? orlyDays : "She's here!";
             }
 
-            // Israel Flight - July 12, 2026
+            /* Israel Flight - July 12, 2026 (commented out)
             const israelEl = document.getElementById('days-israel');
             if (israelEl) {
                 const israelDate = new Date('2026-07-12T00:00:00');
@@ -39,6 +40,7 @@
                 const israelDays = Math.ceil(israelDiff / (1000 * 60 * 60 * 24));
                 israelEl.textContent = israelDays > 0 ? israelDays : "We're flying!";
             }
+            */
         }
     };
 })();
