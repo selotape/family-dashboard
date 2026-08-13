@@ -111,6 +111,17 @@
             return h + ':' + String(minute).padStart(2, '0') + ' ' + period;
         },
 
+        // Live wall-clock string, e.g. "7:15:03 PM"
+        formatClock: function(d) {
+            let h = d.getHours();
+            const period = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            if (h === 0) h = 12;
+            const m = String(d.getMinutes()).padStart(2, '0');
+            const s = String(d.getSeconds()).padStart(2, '0');
+            return h + ':' + m + ':' + s + ' ' + period;
+        },
+
         // Minutes until an item's time today. Positive = upcoming, 0 = this minute,
         // negative = already passed.
         getMinutesRemaining: function(item) {
@@ -270,6 +281,10 @@
             if (!container) return; // Routines page not loaded yet
 
             this.renderTimeline();
+
+            // Live clock in the header
+            const clockEl = document.getElementById('routine-clock');
+            if (clockEl) clockEl.textContent = this.formatClock(new Date());
 
             // loadChecks() also performs the midnight reset when the day rolls over
             const checked = this.loadChecks();

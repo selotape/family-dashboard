@@ -927,6 +927,25 @@
             justify-content: space-between;
             gap: 12px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .routines-header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .routine-clock {
+            font-variant-numeric: tabular-nums;
+            font-weight: 800;
+            font-size: 18px;
+            color: #f1f5f9;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 999px;
+            padding: 6px 14px;
+            white-space: nowrap;
         }
 
         .routines-page-title {
@@ -1129,6 +1148,24 @@
         .routine-item.active.theme-dinner  .routine-item-countdown { background: #f97316; }
         .routine-item.active.theme-shower  .routine-item-countdown { background: #3b82f6; }
         .routine-item.active.theme-bed     .routine-item-countdown { background: #7c3aed; }
+
+        /* Pulsing "live" dot on the active item's countdown = where we are now */
+        .routine-item.active .routine-item-countdown::before {
+            content: '';
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #fff;
+            margin-right: 7px;
+            vertical-align: middle;
+            animation: routineNowPulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes routineNowPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.6); }
+        }
 
         /* State: active + imminent (<=5 min) -> pulse */
         .routine-item.active.urgent { animation: urgentPulse 0.8s ease-in-out infinite; }
