@@ -916,7 +916,7 @@
            ======================================== */
 
         .routines-page {
-            max-width: 640px;
+            max-width: 880px;
             margin: 0 auto;
             padding: 20px 16px 40px;
         }
@@ -955,22 +955,56 @@
         }
         .routine-reset-btn:active { transform: scale(0.96); }
 
+        /* Two large columns (Morning | Afternoon), stack on narrow screens */
         .routine-timeline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .routine-group {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 18px;
+            padding: 8px 12px 14px;
+        }
+
+        .routine-group-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 10px 6px 12px;
+        }
+        .routine-group-header:hover { color: #fff; }
+
+        .routine-group-chevron {
+            font-size: 14px;
+            opacity: 0.8;
+            transition: transform 0.2s ease;
+        }
+        .routine-group.collapsed .routine-group-chevron { transform: rotate(-90deg); }
+
+        .routine-group-items {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
+        .routine-group.collapsed .routine-group-items { display: none; }
 
-        .routine-group-header {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: #94a3b8;
-            margin: 18px 0 4px;
-            padding-left: 4px;
+        @media (max-width: 640px) {
+            .routine-timeline { grid-template-columns: 1fr; }
         }
-        .routine-group-header:first-child { margin-top: 0; }
 
         /* Item row */
         .routine-item {

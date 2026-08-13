@@ -11,13 +11,15 @@
         schedule: [
             { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning' },
             { id: 'cubby',  group: 'Afternoon', hour: 16, minute: 30, icon: '🎒', label: 'Backpacks into Cubby',       chime: 'morning' },
-            { id: 'dinner', group: 'Evening',   hour: 18, minute: 0,  icon: '🍽️', label: 'Dinner',                     chime: 'dinner' },
-            { id: 'snacks', group: 'Evening',   hour: 18, minute: 30, icon: '🥨', label: 'Restock snacks (backpack)',   chime: 'dinner' },
-            { id: 'shower', group: 'Evening',   hour: 18, minute: 45, icon: '🚿', label: 'Shower',                     chime: 'shower' },
-            { id: 'bed',    group: 'Evening',   hour: 19, minute: 30, icon: '🌙', label: 'Bedtime',                    chime: 'bed' }
+            { id: 'dinner', group: 'Afternoon', hour: 18, minute: 0,  icon: '🍽️', label: 'Dinner',                     chime: 'dinner' },
+            { id: 'snacks', group: 'Afternoon', hour: 18, minute: 30, icon: '🥨', label: 'Restock snacks (backpack)',   chime: 'dinner' },
+            { id: 'shower', group: 'Afternoon', hour: 18, minute: 45, icon: '🚿', label: 'Shower',                     chime: 'shower' },
+            { id: 'brush',  group: 'Afternoon', hour: 19, minute: 20, icon: '🪥', label: 'Brush teeth',                chime: 'bed' },
+            { id: 'bed',    group: 'Afternoon', hour: 19, minute: 30, icon: '🌙', label: 'Bedtime',                    chime: 'bed' }
         ],
 
         STORAGE_KEY: 'routineChores',
+        GROUP_KEY: 'routineGroupsCollapsed',
 
         // State
         audioCtx: null,
@@ -166,6 +168,20 @@
             this.update();
         },
 
+        // ---- Collapsed-column persistence (per group name) ----
+        loadGroupCollapse: function() {
+            try {
+                const v = JSON.parse(localStorage.getItem(this.GROUP_KEY));
+                return (v && typeof v === 'object') ? v : {};
+            } catch (e) {
+                return {};
+            }
+        },
+
+        saveGroupCollapse: function(state) {
+            localStorage.setItem(this.GROUP_KEY, JSON.stringify(state || {}));
+        },
+
         // ---- Rendering ----
         // Build the timeline once into #routine-timeline. Idempotent: if the
         // rows already exist it does nothing (so navigating away and back is fine).
@@ -174,28 +190,43 @@
             if (!container || container.querySelector('.routine-item')) return;
 
             const checked = this.loadChecks();
-            let html = '';
-            let lastGroup = null;
+            const collapsed = this.loadGroupCollapse();
 
+            // Group names in order of first appearance (Morning, Afternoon, ...)
+            const groups = [];
             this.schedule.forEach(item => {
-                if (item.group !== lastGroup) {
-                    html += '<div class="routine-group-header">' + item.group + '</div>';
-                    lastGroup = item.group;
-                }
-                const isChecked = checked[item.id] ? ' checked' : '';
+                if (groups.indexOf(item.group) === -1) groups.push(item.group);
+            });
+
+            let html = '';
+            groups.forEach(group => {
+                const isCollapsed = collapsed[group] ? ' collapsed' : '';
                 html +=
-                    '<div class="routine-item theme-' + item.chime + '" data-id="' + item.id + '">' +
-                        '<label class="routine-check">' +
-                            '<input type="checkbox"' + isChecked + '>' +
-                            '<span class="routine-check-box"></span>' +
-                        '</label>' +
-                        '<span class="routine-item-icon">' + item.icon + '</span>' +
-                        '<div class="routine-item-body">' +
-                            '<span class="routine-item-label">' + item.label + '</span>' +
-                            '<span class="routine-item-time">' + this.formatTime(item.hour, item.minute) + '</span>' +
-                        '</div>' +
-                        '<span class="routine-item-countdown"></span>' +
-                    '</div>';
+                    '<div class="routine-group' + isCollapsed + '" data-group="' + group + '">' +
+                        '<button class="routine-group-header" type="button">' +
+                            '<span>' + group + '</span>' +
+                            '<span class="routine-group-chevron">▾</span>' +
+                        '</button>' +
+                        '<div class="routine-group-items">';
+
+                this.schedule.filter(it => it.group === group).forEach(item => {
+                    const isChecked = checked[item.id] ? ' checked' : '';
+                    html +=
+                        '<div class="routine-item theme-' + item.chime + '" data-id="' + item.id + '">' +
+                            '<label class="routine-check">' +
+                                '<input type="checkbox"' + isChecked + '>' +
+                                '<span class="routine-check-box"></span>' +
+                            '</label>' +
+                            '<span class="routine-item-icon">' + item.icon + '</span>' +
+                            '<div class="routine-item-body">' +
+                                '<span class="routine-item-label">' + item.label + '</span>' +
+                                '<span class="routine-item-time">' + this.formatTime(item.hour, item.minute) + '</span>' +
+                            '</div>' +
+                            '<span class="routine-item-countdown"></span>' +
+                        '</div>';
+                });
+
+                html += '</div></div>';
             });
 
             container.innerHTML = html;
@@ -211,6 +242,19 @@
                         row.classList.toggle('done', box.checked);
                     }
                 }
+            });
+
+            // Collapse/expand a column when its header is clicked (persisted)
+            container.addEventListener('click', (e) => {
+                const header = e.target.closest && e.target.closest('.routine-group-header');
+                if (!header) return;
+                const groupEl = header.closest('.routine-group');
+                const group = groupEl && groupEl.getAttribute('data-group');
+                if (!group) return;
+                const nowCollapsed = groupEl.classList.toggle('collapsed');
+                const state = this.loadGroupCollapse();
+                state[group] = nowCollapsed;
+                this.saveGroupCollapse(state);
             });
 
             // Reset button
