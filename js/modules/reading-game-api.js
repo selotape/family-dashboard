@@ -6,7 +6,9 @@
      * Handles communication with the backend Flask server
      */
     window.ReadingGameAPI = {
-        BASE_URL: 'http://localhost:8080',
+        // Use the origin the page was served from, so it works from any device
+        // on the network (e.g. http://192.168.1.251:8080), not just this laptop.
+        BASE_URL: window.location.origin,
         TIMEOUT: 30000,  // 30 seconds
 
         /**
