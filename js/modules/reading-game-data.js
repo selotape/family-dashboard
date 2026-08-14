@@ -20,11 +20,11 @@
                     medium: 40
                 }
             },
-            '1st': {
-                displayName: '1st Grade',
+            '2nd': {
+                displayName: '2nd Grade',
                 emoji: '📚',
-                description: 'Ages 6-7',
-                maxWordLength: 8,
+                description: 'Ages 7-8',
+                maxWordLength: 9,
                 simplifiedFeedback: false,
                 sentenceCounts: {
                     tiny: 10,
@@ -32,11 +32,11 @@
                     medium: 40
                 }
             },
-            '3rd': {
-                displayName: '3rd Grade',
+            '4th': {
+                displayName: '4th Grade',
                 emoji: '🎓',
-                description: 'Ages 8-9',
-                maxWordLength: 12,
+                description: 'Ages 9-10',
+                maxWordLength: 14,
                 simplifiedFeedback: false,
                 sentenceCounts: {
                     tiny: 20,
@@ -79,8 +79,8 @@
             'dad', 'bed', 'pen', 'hen', 'ten', 'wet', 'pet', 'net', 'jet', 'van'
         ],
 
-        // 1st grade word list (fallback)
-        FIRST_GRADE_WORDS: [
+        // 2nd grade word list (fallback)
+        SECOND_GRADE_WORDS: [
             'happy', 'friend', 'school', 'play', 'read', 'book', 'house', 'water',
             'tree', 'flower', 'animal', 'rabbit', 'turtle', 'garden', 'rain',
             'cloud', 'stars', 'moon', 'morning', 'night', 'dragon', 'castle',
@@ -88,8 +88,8 @@
             'pirate', 'rocket', 'planet', 'robot', 'dinosaur', 'monster'
         ],
 
-        // 3rd grade word list (fallback)
-        THIRD_GRADE_WORDS: [
+        // 4th grade word list (fallback)
+        FOURTH_GRADE_WORDS: [
             'adventure', 'explore', 'discover', 'mysterious', 'incredible',
             'ancient', 'beneath', 'shimmer', 'glimmer', 'whisper', 'journey',
             'challenge', 'creative', 'imaginative', 'wonderful', 'marvelous',
@@ -102,7 +102,7 @@
          * Get configuration for a grade level
          */
         getGradeConfig: function(gradeLevel) {
-            return this.GRADE_LEVELS[gradeLevel] || this.GRADE_LEVELS['1st'];
+            return this.GRADE_LEVELS[gradeLevel] || this.GRADE_LEVELS['2nd'];
         },
 
         /**
@@ -120,12 +120,12 @@
             switch (gradeLevel) {
                 case 'Pre-K':
                     return this.PREK_WORDS;
-                case '1st':
-                    return this.FIRST_GRADE_WORDS;
-                case '3rd':
-                    return this.THIRD_GRADE_WORDS;
+                case '2nd':
+                    return this.SECOND_GRADE_WORDS;
+                case '4th':
+                    return this.FOURTH_GRADE_WORDS;
                 default:
-                    return this.FIRST_GRADE_WORDS;
+                    return this.SECOND_GRADE_WORDS;
             }
         },
 

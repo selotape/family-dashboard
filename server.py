@@ -65,17 +65,17 @@ GRADE_CONFIGS = {
         'max_word_length': 6,
         'description': 'very simple 3-5 letter words like cat, dog, sun, run, jump'
     },
-    '1st': {
+    '2nd': {
         'sentence_counts': {'tiny': 10, 'short': 20, 'medium': 40},
-        'vocabulary_level': '1st grade (ages 6-7)',
-        'max_word_length': 8,
-        'description': 'simple words appropriate for early readers, mix of 3-8 letter words'
+        'vocabulary_level': '2nd grade (ages 7-8)',
+        'max_word_length': 9,
+        'description': 'words appropriate for developing readers, mix of 4-9 letter words'
     },
-    '3rd': {
+    '4th': {
         'sentence_counts': {'tiny': 20, 'short': 40, 'medium': 80},
-        'vocabulary_level': '3rd grade (ages 8-9)',
-        'max_word_length': 12,
-        'description': 'more challenging vocabulary with longer words and compound words'
+        'vocabulary_level': '4th grade (ages 9-10)',
+        'max_word_length': 14,
+        'description': 'richer vocabulary with longer, more challenging words and compound words'
     }
 }
 
@@ -146,8 +146,8 @@ def generate_story_with_claude(grade_level, length, prompt, random_theme):
         import random
         prompt = random.choice(RANDOM_THEMES)
 
-    # For 3rd grade, we generate double sentences but only test half
-    test_sentence_count = sentence_count // 2 if grade_level == '3rd' else sentence_count
+    # For 4th grade, we generate double sentences but only test half
+    test_sentence_count = sentence_count // 2 if grade_level == '4th' else sentence_count
 
     # Build the prompt for Claude
     system_prompt = f"""You are a creative children's story writer. Generate engaging, age-appropriate stories for reading practice.
@@ -239,9 +239,9 @@ IMPORTANT:
 
             used_words.add(test_word.lower())
 
-            # For 3rd grade, only mark every other sentence for testing
+            # For 4th grade, only mark every other sentence for testing
             include_test = True
-            if grade_level == '3rd':
+            if grade_level == '4th':
                 include_test = (i % 2 == 0)  # Test even-indexed sentences (0, 2, 4, ...)
 
             processed_sentences.append({
@@ -297,7 +297,7 @@ def api_generate_story():
 
     Request body:
     {
-        "gradeLevel": "1st",
+        "gradeLevel": "2nd",
         "length": "short",
         "prompt": "space adventure with a brave astronaut",
         "random": false

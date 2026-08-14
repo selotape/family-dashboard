@@ -355,7 +355,7 @@
                     html += '<button class="reading-btn reading-btn-primary" id="reading-start-spelling">✏️ Start Spelling</button>';
                 }
             } else {
-                // No test word (for 3rd grade non-test sentences)
+                // No test word (for 4th grade non-test sentences)
                 html += '<p class="reading-sentence">' + sentence.text + '</p>';
                 html += '<button class="reading-btn reading-btn-primary" id="reading-next-sentence">Next →</button>';
             }
@@ -997,7 +997,7 @@
                 html += '<p class="reading-empty-library">No stories yet. Generate your first story!</p>';
             } else {
                 // Group by grade level
-                var grades = ['Pre-K', '1st', '3rd'];
+                var grades = ['Pre-K', '2nd', '4th'];
 
                 grades.forEach(function(grade) {
                     var gradeStories = stories.filter(function(s) { return s.gradeLevel === grade; });

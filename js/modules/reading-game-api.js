@@ -150,7 +150,7 @@
                 if (!sentence.text || typeof sentence.text !== 'string') {
                     return false;
                 }
-                // testWord can be null for 3rd grade (every other sentence)
+                // testWord can be null for 4th grade (every other sentence)
             }
 
             return true;

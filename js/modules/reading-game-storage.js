@@ -27,8 +27,8 @@
             if (!this.getTrophies()) {
                 this.saveTrophies({
                     'Pre-K': 0,
-                    '1st': 0,
-                    '3rd': 0
+                    '2nd': 0,
+                    '4th': 0
                 });
             }
 
@@ -36,7 +36,7 @@
             if (!this.getSettings()) {
                 this.saveSettings({
                     soundEnabled: true,
-                    lastGradeLevel: '1st'
+                    lastGradeLevel: '2nd'
                 });
             }
         },
@@ -151,7 +151,7 @@
                 return data ? JSON.parse(data) : null;
             } catch (e) {
                 console.error('Error reading trophies from localStorage:', e);
-                return { 'Pre-K': 0, '1st': 0, '3rd': 0 };
+                return { 'Pre-K': 0, '2nd': 0, '4th': 0 };
             }
         },
 
@@ -172,11 +172,13 @@
          * Award a trophy for a grade level
          */
         awardTrophy: function(gradeLevel) {
-            var trophies = this.getTrophies();
-            if (trophies[gradeLevel] !== undefined) {
-                trophies[gradeLevel]++;
-                this.saveTrophies(trophies);
+            var trophies = this.getTrophies() || {};
+            // Initialize the key if missing (e.g. after grade levels changed)
+            if (trophies[gradeLevel] === undefined) {
+                trophies[gradeLevel] = 0;
             }
+            trophies[gradeLevel]++;
+            this.saveTrophies(trophies);
         },
 
         /**
@@ -227,7 +229,7 @@
                 return data ? JSON.parse(data) : null;
             } catch (e) {
                 console.error('Error reading settings from localStorage:', e);
-                return { soundEnabled: true, lastGradeLevel: '1st' };
+                return { soundEnabled: true, lastGradeLevel: '2nd' };
             }
         },
 

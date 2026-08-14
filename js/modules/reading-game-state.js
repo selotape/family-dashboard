@@ -23,7 +23,7 @@
         spellingInProgress: false,  // Track if user is currently spelling (inline mode)
 
         // Selected options
-        selectedGrade: '1st',
+        selectedGrade: '2nd',
         selectedLength: 'short',
 
         /**
@@ -345,7 +345,7 @@
         },
 
         /**
-         * Get number of sentences to test (accounting for 3rd grade rule)
+         * Get number of sentences to test (accounting for the 4th grade rule)
          */
         getTestSentenceCount: function() {
             if (!this.currentStory) return 0;
@@ -354,7 +354,7 @@
             var gradeConfig = window.ReadingGameData.getGradeConfig(this.selectedGrade);
 
             if (gradeConfig.testEveryOther) {
-                // For 3rd grade, test every other sentence
+                // For 4th grade, test every other sentence
                 return Math.ceil(totalSentences / 2);
             }
 

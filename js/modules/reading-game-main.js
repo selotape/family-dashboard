@@ -118,8 +118,8 @@
                 totalStories: stories.length,
                 storiesPerGrade: {
                     'Pre-K': stories.filter(function(s) { return s.gradeLevel === 'Pre-K'; }).length,
-                    '1st': stories.filter(function(s) { return s.gradeLevel === '1st'; }).length,
-                    '3rd': stories.filter(function(s) { return s.gradeLevel === '3rd'; }).length
+                    '2nd': stories.filter(function(s) { return s.gradeLevel === '2nd'; }).length,
+                    '4th': stories.filter(function(s) { return s.gradeLevel === '4th'; }).length
                 },
                 trophies: trophies,
                 storageSize: Math.round(storageSize / 1024) + ' KB',
