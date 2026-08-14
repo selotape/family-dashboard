@@ -26,6 +26,14 @@
         STORAGE_KEY: 'routineChores',
         GROUP_KEY: 'routineGroupsCollapsed',
 
+        // The three girls. A chore is only "done" when all three are checked.
+        // (No dedicated capybara/red-panda emoji exist; these are the closest.)
+        girls: [
+            { id: 'noga', name: 'Noga', emoji: '🦫' },
+            { id: 'dana', name: 'Dana', emoji: '🦊' },
+            { id: 'ella', name: 'Ella', emoji: '🐼' }
+        ],
+
         // State
         audioCtx: null,
         audioEnabled: false,
@@ -139,7 +147,7 @@
         // An item is "cleared" (no longer needs attention) when it's marked done,
         // or when it's an auto/event item whose time has already passed.
         isCleared: function(item, checked) {
-            if (checked[item.id]) return true;
+            if (this.isItemDone(checked, item.id)) return true;
             if (item.type === 'auto' && this.getMinutesRemaining(item) < 0) return true;
             return false;
         },
@@ -200,10 +208,40 @@
             }));
         },
 
-        toggleCheck: function(id, isChecked) {
+        // Per-girl completion for an item, normalizing the legacy boolean form.
+        getGirlsState: function(checked, id) {
+            const v = checked[id];
+            if (v === true) return { noga: true, dana: true, ella: true };
+            if (v && typeof v === 'object') {
+                return { noga: !!v.noga, dana: !!v.dana, ella: !!v.ella };
+            }
+            return { noga: false, dana: false, ella: false };
+        },
+
+        // An item is done only when all three girls are checked.
+        isItemDone: function(checked, id) {
+            const g = this.getGirlsState(checked, id);
+            return g.noga && g.dana && g.ella;
+        },
+
+        // Toggle a single girl for an item.
+        setGirl: function(id, girlId, val) {
             const checked = this.loadChecks();
-            if (isChecked) {
-                checked[id] = true;
+            const g = this.getGirlsState(checked, id);
+            g[girlId] = val;
+            if (!g.noga && !g.dana && !g.ella) {
+                delete checked[id];
+            } else {
+                checked[id] = g;
+            }
+            this.saveChecks(checked);
+        },
+
+        // Mark a whole item done (all girls) or clear it.
+        markItemDone: function(id, val) {
+            const checked = this.loadChecks();
+            if (val) {
+                checked[id] = { noga: true, dana: true, ella: true };
             } else {
                 delete checked[id];
             }
@@ -297,8 +335,8 @@
                     const row = box.closest('.routine-item');
                     const id = row && row.getAttribute('data-id');
                     if (id) {
-                        this.toggleCheck(id, box.checked);
-                        row.classList.toggle('done', box.checked);
+                        this.markItemDone(id, box.checked);
+                        this.update();
                     }
                 }
             });
@@ -328,6 +366,17 @@
         renderNextActionSkeleton: function() {
             const el = document.getElementById('next-action');
             if (!el || el.querySelector('.next-action-card')) return;
+            let girlsHtml = '';
+            this.girls.forEach(function(g) {
+                girlsHtml +=
+                    '<label class="na-girl">' +
+                        '<input type="checkbox" data-girl="' + g.id + '">' +
+                        '<span class="na-girl-box"></span>' +
+                        '<span class="na-girl-emoji">' + g.emoji + '</span>' +
+                        '<span class="na-girl-name">' + g.name + '</span>' +
+                    '</label>';
+            });
+
             el.innerHTML =
                 '<div class="next-action-card">' +
                     '<div class="next-action-eyebrow" id="na-eyebrow">Next action</div>' +
@@ -335,6 +384,7 @@
                     '<div class="next-action-label" id="na-label">—</div>' +
                     '<div class="next-action-when" id="na-when"></div>' +
                     '<div class="next-action-time" id="na-time"></div>' +
+                    '<div class="next-action-girls" id="na-girls">' + girlsHtml + '</div>' +
                     '<button class="next-action-btn" id="na-btn" type="button">✓ Mark done</button>' +
                     '<div class="next-action-note" id="na-note"></div>' +
                 '</div>';
@@ -344,8 +394,24 @@
                 btn.dataset.bound = '1';
                 btn.addEventListener('click', () => {
                     if (this.nextActionId) {
-                        this.toggleCheck(this.nextActionId, true);
+                        this.markItemDone(this.nextActionId, true);
                         this.update();
+                    }
+                });
+            }
+
+            // Per-girl checkbox toggling (checking all three completes the item)
+            const girlsEl = document.getElementById('na-girls');
+            if (girlsEl && !girlsEl.dataset.bound) {
+                girlsEl.dataset.bound = '1';
+                girlsEl.addEventListener('change', (e) => {
+                    const box = e.target;
+                    if (box && box.matches && box.matches('input[type="checkbox"]')) {
+                        const girlId = box.getAttribute('data-girl');
+                        if (this.nextActionId && girlId) {
+                            this.setGirl(this.nextActionId, girlId, box.checked);
+                            this.update();
+                        }
                     }
                 });
             }
@@ -361,6 +427,7 @@
             const time  = document.getElementById('na-time');
             const btn   = document.getElementById('na-btn');
             const note  = document.getElementById('na-note');
+            const girls = document.getElementById('na-girls');
 
             if (nextAction) {
                 const mins = this.getMinutesRemaining(nextAction);
@@ -375,12 +442,20 @@
                 label.textContent = nextAction.label;
                 when.textContent  = this.formatRelative(mins);
                 time.textContent  = 'Scheduled ' + this.formatTime(nextAction.hour, nextAction.minute);
-                // Auto/non-negotiable items just happen — no button to press.
+                // Auto/non-negotiable items just happen — no girls, no button.
                 if (isAuto) {
+                    if (girls) girls.style.display = 'none';
                     btn.style.display = 'none';
                     note.style.display = '';
                     note.textContent = '🔒 Happens on its own';
                 } else {
+                    if (girls) {
+                        girls.style.display = '';
+                        const gs = this.getGirlsState(this.loadChecks(), nextAction.id);
+                        girls.querySelectorAll('input[type="checkbox"]').forEach(function(b) {
+                            b.checked = !!gs[b.getAttribute('data-girl')];
+                        });
+                    }
                     btn.style.display = '';
                     btn.textContent = '✓ Mark done';
                     note.style.display = 'none';
@@ -394,6 +469,7 @@
                 label.textContent = 'All done for today!';
                 when.textContent  = '';
                 time.textContent  = 'Sweet dreams';
+                if (girls) girls.style.display = 'none';
                 btn.style.display = 'none';
                 note.style.display = 'none';
             }
@@ -422,7 +498,7 @@
                 if (!row) return;
 
                 const mins = this.getMinutesRemaining(item);
-                const isDone = !!checked[item.id];
+                const isDone = this.isItemDone(checked, item.id);
                 const isNext = !!nextAction && item.id === nextAction.id;
                 const clearedByTime = item.type === 'auto' && mins < 0;
 
@@ -463,7 +539,7 @@
             // Chimes: only for an upcoming next action, only while the tab is visible
             const routinesPage = document.getElementById('routines');
             const isPageActive = routinesPage && routinesPage.classList.contains('active');
-            if (isPageActive && nextAction && !checked[nextAction.id]) {
+            if (isPageActive && nextAction && !this.isItemDone(checked, nextAction.id)) {
                 this.checkChime(nextAction.id, nextAction.chime, this.getMinutesRemaining(nextAction));
             }
         },

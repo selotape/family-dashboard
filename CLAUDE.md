@@ -125,7 +125,7 @@ The Math Game is a separate subsystem with its own module structure:
 **localStorage keys used:**
 - `lastTab` - Last visited tab for restoration on refresh
 - `tabsCollapsed` - Whether the top tabs banner is collapsed (`'1'`/`'0'`)
-- `routineChores` - Routines timeline daily chore checkboxes (`{date, checked}`; auto-resets each new day)
+- `routineChores` - Routines daily chores (`{date, checked}`; each entry is per-girl `{noga,dana,ella}`, done when all three; auto-resets each new day)
 - `routineGroupsCollapsed` - Which routine columns (Morning/Afternoon) are collapsed (`{group: bool}`)
 - `capybaraHighScore` - Capybara game high score
 - `gymConfig` - Warm-up calculator plate configuration
