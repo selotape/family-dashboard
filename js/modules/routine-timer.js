@@ -11,6 +11,9 @@
         // type: 'auto' items clear themselves once their time passes (events);
         //       'chore' items stay as the pending action until marked done.
         schedule: [
+            { id: 'breakfast', group: 'Morning', hour: 7,  minute: 0,  icon: '🥣', label: 'Breakfast',                chime: 'morning', type: 'chore' },
+            { id: 'brush-am',  group: 'Morning', hour: 7,  minute: 10, icon: '🪥', label: 'Brush teeth',              chime: 'morning', type: 'chore' },
+            { id: 'shoes',     group: 'Morning', hour: 7,  minute: 15, icon: '👟', label: 'Shoes & Hair',             chime: 'morning', type: 'chore' },
             { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning', type: 'auto'  },
             { id: 'cubby',  group: 'Afternoon', hour: 16, minute: 30, icon: '🎒', label: 'Backpacks into Cubby',       chime: 'morning', type: 'chore' },
             { id: 'dinner', group: 'Afternoon', hour: 18, minute: 0,  icon: '🍽️', label: 'Dinner',                     chime: 'dinner',  type: 'auto'  },
