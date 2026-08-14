@@ -8,14 +8,16 @@
         // Ordered daily schedule (top -> bottom). This is the single place to
         // edit times / labels / emojis / grouping. `chime` picks which of the
         // existing sounds plays (morning | dinner | shower | bed).
+        // type: 'auto' items clear themselves once their time passes (events);
+        //       'chore' items stay as the pending action until marked done.
         schedule: [
-            { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning' },
-            { id: 'cubby',  group: 'Afternoon', hour: 16, minute: 30, icon: '🎒', label: 'Backpacks into Cubby',       chime: 'morning' },
-            { id: 'dinner', group: 'Afternoon', hour: 18, minute: 0,  icon: '🍽️', label: 'Dinner',                     chime: 'dinner' },
-            { id: 'snacks', group: 'Afternoon', hour: 18, minute: 30, icon: '🥨', label: 'Restock snacks (backpack)',   chime: 'dinner' },
-            { id: 'shower', group: 'Afternoon', hour: 18, minute: 45, icon: '🚿', label: 'Shower',                     chime: 'shower' },
-            { id: 'brush',  group: 'Afternoon', hour: 19, minute: 20, icon: '🪥', label: 'Brush teeth',                chime: 'bed' },
-            { id: 'bed',    group: 'Afternoon', hour: 19, minute: 30, icon: '🌙', label: 'Bedtime',                    chime: 'bed' }
+            { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning', type: 'auto'  },
+            { id: 'cubby',  group: 'Afternoon', hour: 16, minute: 30, icon: '🎒', label: 'Backpacks into Cubby',       chime: 'morning', type: 'chore' },
+            { id: 'dinner', group: 'Afternoon', hour: 18, minute: 0,  icon: '🍽️', label: 'Dinner',                     chime: 'dinner',  type: 'auto'  },
+            { id: 'snacks', group: 'Afternoon', hour: 18, minute: 30, icon: '🥨', label: 'Restock snacks (backpack)',   chime: 'dinner',  type: 'chore' },
+            { id: 'shower', group: 'Afternoon', hour: 18, minute: 45, icon: '🚿', label: 'Shower',                     chime: 'shower',  type: 'chore' },
+            { id: 'brush',  group: 'Afternoon', hour: 19, minute: 20, icon: '🪥', label: 'Brush teeth',                chime: 'bed',     type: 'chore' },
+            { id: 'bed',    group: 'Afternoon', hour: 19, minute: 30, icon: '🌙', label: 'Bedtime',                    chime: 'bed',     type: 'auto'  }
         ],
 
         STORAGE_KEY: 'routineChores',
@@ -129,6 +131,39 @@
             const target = new Date();
             target.setHours(item.hour, item.minute, 0, 0);
             return Math.ceil((target - now) / (1000 * 60));
+        },
+
+        // An item is "cleared" (no longer needs attention) when it's marked done,
+        // or when it's an auto/event item whose time has already passed.
+        isCleared: function(item, checked) {
+            if (checked[item.id]) return true;
+            if (item.type === 'auto' && this.getMinutesRemaining(item) < 0) return true;
+            return false;
+        },
+
+        // The single "Next Action" = first item in the day that isn't cleared.
+        computeNextAction: function(checked) {
+            for (let i = 0; i < this.schedule.length; i++) {
+                if (!this.isCleared(this.schedule[i], checked)) return this.schedule[i];
+            }
+            return null;
+        },
+
+        // Human relative time from signed minutes: "in 15 min", "in 1:15h",
+        // "5 min ago", "1:15h ago", "Now!".
+        formatRelative: function(mins) {
+            if (mins === 0) return 'Now!';
+            const future = mins > 0;
+            let a = Math.abs(mins);
+            let text;
+            if (a < 60) {
+                text = a + ' min';
+            } else {
+                const h = Math.floor(a / 60);
+                const m = a % 60;
+                text = h + ':' + String(m).padStart(2, '0') + 'h';
+            }
+            return future ? ('in ' + text) : (text + ' ago');
         },
 
         // ---- Chore persistence (per-calendar-day, auto-resets at midnight) ----
@@ -276,6 +311,65 @@
             }
         },
 
+        // Build the Next Action widget once; fields are updated each tick.
+        renderNextActionSkeleton: function() {
+            const el = document.getElementById('next-action');
+            if (!el || el.querySelector('.next-action-card')) return;
+            el.innerHTML =
+                '<div class="next-action-card">' +
+                    '<div class="next-action-eyebrow">Next action</div>' +
+                    '<div class="next-action-emoji" id="na-emoji">✨</div>' +
+                    '<div class="next-action-label" id="na-label">—</div>' +
+                    '<div class="next-action-when" id="na-when"></div>' +
+                    '<div class="next-action-time" id="na-time"></div>' +
+                    '<button class="next-action-btn" id="na-btn" type="button">✓ Mark done</button>' +
+                '</div>';
+
+            const btn = document.getElementById('na-btn');
+            if (btn && !btn.dataset.bound) {
+                btn.dataset.bound = '1';
+                btn.addEventListener('click', () => {
+                    if (this.nextActionId) {
+                        this.toggleCheck(this.nextActionId, true);
+                        this.update();
+                    }
+                });
+            }
+        },
+
+        updateNextActionWidget: function(nextAction) {
+            const card = document.querySelector('.next-action-card');
+            if (!card) return;
+            const emoji = document.getElementById('na-emoji');
+            const label = document.getElementById('na-label');
+            const when  = document.getElementById('na-when');
+            const time  = document.getElementById('na-time');
+            const btn   = document.getElementById('na-btn');
+
+            if (nextAction) {
+                const mins = this.getMinutesRemaining(nextAction);
+                card.classList.remove('all-done');
+                card.classList.toggle('overdue', mins < 0);
+                card.classList.toggle('imminent', mins >= 0 && mins <= 5);
+                card.setAttribute('data-theme', nextAction.chime);
+                emoji.textContent = nextAction.icon;
+                label.textContent = nextAction.label;
+                when.textContent  = this.formatRelative(mins);
+                time.textContent  = 'Scheduled ' + this.formatTime(nextAction.hour, nextAction.minute);
+                btn.style.display = '';
+                btn.textContent = nextAction.type === 'chore' ? '✓ Mark done' : '✓ Got it';
+            } else {
+                card.classList.add('all-done');
+                card.classList.remove('overdue', 'imminent');
+                card.removeAttribute('data-theme');
+                emoji.textContent = '🌟';
+                label.textContent = 'All done for today!';
+                when.textContent  = '';
+                time.textContent  = 'Sweet dreams';
+                btn.style.display = 'none';
+            }
+        },
+
         update: function() {
             const container = document.getElementById('routine-timeline');
             if (!container) return; // Routines page not loaded yet
@@ -289,34 +383,27 @@
             // loadChecks() also performs the midnight reset when the day rolls over
             const checked = this.loadChecks();
 
-            // Active item = the next item today whose time hasn't fully passed
-            // (smallest non-negative minutes remaining).
-            let activeItem = null;
-            let activeMinutes = null;
-            this.schedule.forEach(item => {
-                const mins = this.getMinutesRemaining(item);
-                if (mins >= 0 && (activeMinutes === null || mins < activeMinutes)) {
-                    activeMinutes = mins;
-                    activeItem = item;
-                }
-            });
+            // The single call-to-action: first item that isn't cleared.
+            const nextAction = this.computeNextAction(checked);
+            this.nextActionId = nextAction ? nextAction.id : null;
 
-            // Update each row's state
+            // Update each timeline row
             this.schedule.forEach(item => {
                 const row = container.querySelector('.routine-item[data-id="' + item.id + '"]');
                 if (!row) return;
 
                 const mins = this.getMinutesRemaining(item);
                 const isDone = !!checked[item.id];
-                const isActive = !!activeItem && item.id === activeItem.id;
-                const isPast = mins < 0;
+                const isNext = !!nextAction && item.id === nextAction.id;
+                const clearedByTime = item.type === 'auto' && mins < 0;
 
                 row.classList.toggle('done', isDone);
-                row.classList.toggle('active', isActive && !isDone);
-                row.classList.toggle('past', isPast && !isActive && !isDone);
-                row.classList.toggle('future', !isPast && !isActive && !isDone);
-                // Extra urgency pulse when the active item is imminent
-                row.classList.toggle('urgent', isActive && !isDone && mins <= 5);
+                row.classList.toggle('active', isNext && !isDone);
+                row.classList.toggle('past', !isDone && !isNext && clearedByTime);
+                row.classList.toggle('future', !isDone && !isNext && !clearedByTime);
+                row.classList.toggle('overdue', isNext && !isDone && mins < 0);
+                // Extra urgency pulse when the next action is imminent
+                row.classList.toggle('urgent', isNext && !isDone && mins >= 0 && mins <= 5);
 
                 // Keep the checkbox in sync (e.g. after a midnight reset)
                 const box = row.querySelector('input[type="checkbox"]');
@@ -324,8 +411,8 @@
 
                 const cd = row.querySelector('.routine-item-countdown');
                 if (cd) {
-                    if (isActive && !isDone) {
-                        cd.textContent = mins === 0 ? 'Now!' : ('in ' + mins + ' min');
+                    if (isNext && !isDone) {
+                        cd.textContent = this.formatRelative(mins);
                         cd.style.display = '';
                     } else {
                         cd.textContent = '';
@@ -334,17 +421,21 @@
                 }
             });
 
+            // Next Action widget
+            this.renderNextActionSkeleton();
+            this.updateNextActionWidget(nextAction);
+
             // Status line
             const statusEl = document.getElementById('routine-status');
             if (statusEl) {
-                statusEl.textContent = activeItem ? '' : '🌟 All done for today — sweet dreams!';
+                statusEl.textContent = nextAction ? '' : '🌟 All done for today — sweet dreams!';
             }
 
-            // Chimes: only for the active item, only while the Routines tab is visible
+            // Chimes: only for an upcoming next action, only while the tab is visible
             const routinesPage = document.getElementById('routines');
             const isPageActive = routinesPage && routinesPage.classList.contains('active');
-            if (isPageActive && activeItem && !checked[activeItem.id]) {
-                this.checkChime(activeItem.id, activeItem.chime, activeMinutes);
+            if (isPageActive && nextAction && !checked[nextAction.id]) {
+                this.checkChime(nextAction.id, nextAction.chime, this.getMinutesRemaining(nextAction));
             }
         },
 
