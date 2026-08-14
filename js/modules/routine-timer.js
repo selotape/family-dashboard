@@ -256,13 +256,23 @@
                         '<div class="routine-group-items">';
 
                 this.schedule.filter(it => it.group === group).forEach(item => {
-                    const isChecked = checked[item.id] ? ' checked' : '';
-                    html +=
-                        '<div class="routine-item theme-' + item.chime + '" data-id="' + item.id + '">' +
+                    const isAuto = item.type === 'auto';
+                    // Auto/non-negotiable items get a non-clickable status marker;
+                    // chores get a real checkbox.
+                    let control;
+                    if (isAuto) {
+                        control = '<span class="routine-marker" aria-hidden="true"></span>';
+                    } else {
+                        const isChecked = checked[item.id] ? ' checked' : '';
+                        control =
                             '<label class="routine-check">' +
                                 '<input type="checkbox"' + isChecked + '>' +
                                 '<span class="routine-check-box"></span>' +
-                            '</label>' +
+                            '</label>';
+                    }
+                    html +=
+                        '<div class="routine-item theme-' + item.chime + (isAuto ? ' is-auto' : '') + '" data-id="' + item.id + '">' +
+                            control +
                             '<span class="routine-item-icon">' + item.icon + '</span>' +
                             '<div class="routine-item-body">' +
                                 '<span class="routine-item-label">' + item.label + '</span>' +
@@ -317,12 +327,13 @@
             if (!el || el.querySelector('.next-action-card')) return;
             el.innerHTML =
                 '<div class="next-action-card">' +
-                    '<div class="next-action-eyebrow">Next action</div>' +
+                    '<div class="next-action-eyebrow" id="na-eyebrow">Next action</div>' +
                     '<div class="next-action-emoji" id="na-emoji">✨</div>' +
                     '<div class="next-action-label" id="na-label">—</div>' +
                     '<div class="next-action-when" id="na-when"></div>' +
                     '<div class="next-action-time" id="na-time"></div>' +
                     '<button class="next-action-btn" id="na-btn" type="button">✓ Mark done</button>' +
+                    '<div class="next-action-note" id="na-note"></div>' +
                 '</div>';
 
             const btn = document.getElementById('na-btn');
@@ -340,33 +351,48 @@
         updateNextActionWidget: function(nextAction) {
             const card = document.querySelector('.next-action-card');
             if (!card) return;
+            const eyebrow = document.getElementById('na-eyebrow');
             const emoji = document.getElementById('na-emoji');
             const label = document.getElementById('na-label');
             const when  = document.getElementById('na-when');
             const time  = document.getElementById('na-time');
             const btn   = document.getElementById('na-btn');
+            const note  = document.getElementById('na-note');
 
             if (nextAction) {
                 const mins = this.getMinutesRemaining(nextAction);
+                const isAuto = nextAction.type === 'auto';
                 card.classList.remove('all-done');
+                card.classList.toggle('is-auto', isAuto);
                 card.classList.toggle('overdue', mins < 0);
                 card.classList.toggle('imminent', mins >= 0 && mins <= 5);
                 card.setAttribute('data-theme', nextAction.chime);
+                eyebrow.textContent = isAuto ? 'Coming up' : 'Next action';
                 emoji.textContent = nextAction.icon;
                 label.textContent = nextAction.label;
                 when.textContent  = this.formatRelative(mins);
                 time.textContent  = 'Scheduled ' + this.formatTime(nextAction.hour, nextAction.minute);
-                btn.style.display = '';
-                btn.textContent = nextAction.type === 'chore' ? '✓ Mark done' : '✓ Got it';
+                // Auto/non-negotiable items just happen — no button to press.
+                if (isAuto) {
+                    btn.style.display = 'none';
+                    note.style.display = '';
+                    note.textContent = '🔒 Happens on its own';
+                } else {
+                    btn.style.display = '';
+                    btn.textContent = '✓ Mark done';
+                    note.style.display = 'none';
+                }
             } else {
                 card.classList.add('all-done');
-                card.classList.remove('overdue', 'imminent');
+                card.classList.remove('overdue', 'imminent', 'is-auto');
                 card.removeAttribute('data-theme');
+                eyebrow.textContent = 'All done';
                 emoji.textContent = '🌟';
                 label.textContent = 'All done for today!';
                 when.textContent  = '';
                 time.textContent  = 'Sweet dreams';
                 btn.style.display = 'none';
+                note.style.display = 'none';
             }
         },
 
