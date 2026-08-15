@@ -3142,10 +3142,19 @@
 
 .reading-victory-image {
     margin: 30px 0;
-    padding: 60px;
+    padding: 12px;
     background: rgba(255,255,255,0.05);
     border-radius: 12px;
     font-size: 48px;
+}
+
+.reading-victory-video {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 12px;
+    background: #000;
 }
 
 .reading-story-reveal {

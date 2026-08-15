@@ -7,3 +7,6 @@ reading-game-backend.log
 server.log
 venv/
 *.pyc
+
+# Personal video (kept local, not published to public repo)
+images/dana-victory.mp4

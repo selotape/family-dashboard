@@ -921,9 +921,9 @@
                 }
                 html += '</div>';
 
-                // Dana's picture placeholder
+                // Dana's victory dance clip
                 html += '<div class="reading-victory-image">';
-                html += '<p>🎨 [Dana\'s Victory Picture]</p>';
+                html += '<video class="reading-victory-video" src="images/dana-victory.mp4" autoplay loop muted playsinline controls></video>';
                 html += '</div>';
 
                 html += '</div>';
