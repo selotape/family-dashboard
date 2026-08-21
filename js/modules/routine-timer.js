@@ -13,6 +13,7 @@
         schedule: [
             { id: 'dressed',   group: 'Morning', hour: 6,  minute: 55, icon: '👗', label: 'Get Dressed',              chime: 'morning', type: 'chore' },
             { id: 'breakfast', group: 'Morning', hour: 7,  minute: 0,  icon: '🥣', label: 'Breakfast',                chime: 'morning', type: 'chore' },
+            { id: 'water',     group: 'Morning', hour: 7,  minute: 5,  icon: '🚰', label: 'Water Bottle',             chime: 'morning', type: 'chore' },
             { id: 'brush-am',  group: 'Morning', hour: 7,  minute: 10, icon: '🪥', label: 'Brush teeth',              chime: 'morning', type: 'chore' },
             { id: 'shoes',     group: 'Morning', hour: 7,  minute: 15, icon: '👟👸', label: 'Shoes & Hair',           chime: 'morning', type: 'chore' },
             { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning', type: 'auto'  },
