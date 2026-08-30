@@ -5,6 +5,7 @@ __pycache__/
 .env
 reading-game-backend.log
 server.log
+lister_data.json
 venv/
 *.pyc
 

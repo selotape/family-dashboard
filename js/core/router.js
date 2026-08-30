@@ -68,9 +68,10 @@
                     }
                     break;
                 case 'lister':
-                    // Render/refresh the packing list immediately on open
-                    if (typeof Lister !== 'undefined' && Lister.render) {
-                        Lister.render();
+                    // Re-fetch from the server on every visit so changes made
+                    // from another device on the LAN show up here too.
+                    if (typeof Lister !== 'undefined' && Lister.init) {
+                        Lister.init();
                     }
                     break;
             }

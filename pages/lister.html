@@ -8,7 +8,14 @@
                     <div class="lister-progress-fill" id="lister-progress-fill"></div>
                 </div>
 
+                <div class="lister-status" id="lister-status"></div>
+
                 <div class="lister-templates" id="lister-templates"></div>
+
+                <form class="lister-ai-form" id="lister-ai-form">
+                    <input type="text" id="lister-ai-input" placeholder="✨ Start from the Pool list and add dolls for a picnic…" autocomplete="off">
+                    <button type="submit" class="lister-ai-btn" id="lister-ai-btn">✨ Generate</button>
+                </form>
 
                 <div class="lister-list" id="lister-list"></div>
 
@@ -18,7 +25,8 @@
                     <button type="submit" class="lister-add-btn">+ Add</button>
                 </form>
 
-                <div class="lister-actions">
+                <div class="lister-actions" id="lister-actions">
+                    <button class="lister-action-btn" id="lister-save-btn" type="button">💾 Save as reusable list</button>
                     <button class="lister-action-btn" id="lister-reset-btn" type="button">↺ Reset checks</button>
                 </div>
             </div>

@@ -134,7 +134,16 @@ The Math Game is a separate subsystem with its own module structure:
 - `lastTargetWeight` - Warm-up calculator last input
 - `deadliftMode` - Warm-up calculator mode preference
 - `mathGameProfiles` - Math game user profiles and progress
-- `listerActiveList` - Lister's current packing list (`{templateId, name, emoji, createdAt, items:[{id,emoji,label,assignee,checked}]}`); assignee is one of `parent`/`noga`/`dana`/`ella`
+
+Lister does **not** use localStorage — its state (active list + saved reusable
+lists) is persisted server-side in `lister_data.json` (gitignored, like
+`server.log`) via the `/api/lister/*` endpoints in `server.py`, so it's shared
+across every device on the LAN instead of being per-browser. Assignee is one
+of `parent`/`noga`/`dana`/`ella`. Built-in templates (e.g. "Base Pool") are
+defined in code (`LISTER_TEMPLATES` in `server.py`); user-saved reusable lists
+live in the data file. `/api/lister/generate` uses the same Anthropic client
+as the Reading Game to turn a free-text prompt (optionally referencing a
+named list) into a new item list.
 
 ### Audio Patterns
 

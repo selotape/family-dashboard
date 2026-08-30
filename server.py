@@ -12,6 +12,7 @@ import logging
 import webbrowser
 import threading
 import time
+import uuid
 from pathlib import Path
 from datetime import datetime
 
@@ -369,6 +370,320 @@ def api_health():
         'timestamp': datetime.utcnow().isoformat(),
         'anthropic_configured': client is not None
     })
+
+
+# ============================================================================
+# Lister — packing/prep checklists, persisted server-side (shared across
+# every device on the LAN, unlike a per-browser localStorage key).
+# ============================================================================
+
+LISTER_DATA_FILE = os.path.join(DIRECTORY, 'lister_data.json')
+lister_lock = threading.Lock()
+
+LISTER_ASSIGNEES = ['parent', 'noga', 'dana', 'ella']
+
+# Built-in templates. Versioned in code (like GRADE_CONFIGS above) rather than
+# in the data file — user-created reusable lists live in lister_data.json instead.
+LISTER_TEMPLATES = {
+    'base-pool': {
+        'id': 'base-pool',
+        'name': 'Base Pool',
+        'emoji': '🏊',
+        'items': [
+            {'id': 'sunscreen',     'emoji': '🧴', 'label': 'Sunscreen',       'assignee': 'parent'},
+            {'id': 'hats',          'emoji': '👒', 'label': 'Sun hats',        'assignee': 'parent'},
+            {'id': 'snacks',        'emoji': '🍎', 'label': 'Snacks',          'assignee': 'parent'},
+            {'id': 'water',         'emoji': '💧', 'label': 'Water bottles',   'assignee': 'parent'},
+            {'id': 'towels',        'emoji': '🏖️', 'label': 'Beach towels',    'assignee': 'parent'},
+            {'id': 'goggles',       'emoji': '🥽', 'label': 'Goggles',         'assignee': 'parent'},
+            {'id': 'swimsuit-noga', 'emoji': '🩱', 'label': "Noga's swimsuit", 'assignee': 'noga'},
+            {'id': 'swimsuit-dana', 'emoji': '🩱', 'label': "Dana's swimsuit", 'assignee': 'dana'},
+            {'id': 'swimsuit-ella', 'emoji': '🩱', 'label': "Ella's swimsuit", 'assignee': 'ella'},
+            {'id': 'toys',          'emoji': '🧸', 'label': 'Pool toys',       'assignee': 'parent'},
+            {'id': 'sunglasses',    'emoji': '🕶️', 'label': 'Sunglasses',      'assignee': 'parent'},
+            {'id': 'flipflops',     'emoji': '🩴', 'label': 'Flip-flops',      'assignee': 'parent'},
+        ]
+    }
+}
+LISTER_TEMPLATE_ORDER = ['base-pool']
+
+
+def _lister_sanitize_items(raw_items, max_items=40):
+    """Clean/validate a client- or AI-supplied item list before it's persisted."""
+    items = []
+    if not isinstance(raw_items, list):
+        return items
+    for it in raw_items[:max_items]:
+        if not isinstance(it, dict):
+            continue
+        label = str(it.get('label', '')).strip()[:60]
+        if not label:
+            continue
+        emoji = str(it.get('emoji', '📦')).strip()[:8] or '📦'
+        assignee = it.get('assignee') if it.get('assignee') in LISTER_ASSIGNEES else 'parent'
+        items.append({
+            'id': str(it.get('id') or uuid.uuid4().hex[:8])[:40],
+            'emoji': emoji,
+            'label': label,
+            'assignee': assignee,
+            'checked': bool(it.get('checked', False))
+        })
+    return items
+
+
+def _lister_list_from_items(items, name, emoji, source_type, source_id):
+    return {
+        'sourceType': source_type,
+        'sourceId': source_id,
+        'name': str(name)[:60],
+        'emoji': str(emoji)[:8] or '📋',
+        'createdAt': int(time.time() * 1000),
+        'items': _lister_sanitize_items(items)
+    }
+
+
+def _lister_default_data():
+    tpl = LISTER_TEMPLATES['base-pool']
+    return {
+        'activeList': _lister_list_from_items(tpl['items'], tpl['name'], tpl['emoji'], 'template', tpl['id']),
+        'savedLists': []
+    }
+
+
+def _lister_write_unlocked(data):
+    tmp_path = LISTER_DATA_FILE + '.tmp'
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp_path, LISTER_DATA_FILE)
+
+
+def _lister_load():
+    with lister_lock:
+        if not os.path.exists(LISTER_DATA_FILE):
+            data = _lister_default_data()
+            _lister_write_unlocked(data)
+            return data
+        try:
+            with open(LISTER_DATA_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if not isinstance(data, dict) or 'activeList' not in data:
+                raise ValueError('malformed lister data')
+            data.setdefault('savedLists', [])
+            return data
+        except Exception as e:
+            logger.error(f"Failed to read lister data, resetting: {e}")
+            data = _lister_default_data()
+            _lister_write_unlocked(data)
+            return data
+
+
+def _lister_save(data):
+    with lister_lock:
+        _lister_write_unlocked(data)
+
+
+def _lister_find_source(data, source_type, source_id):
+    """Return (name, emoji, items) for a builtin template or a saved list."""
+    if source_type == 'template':
+        tpl = LISTER_TEMPLATES.get(source_id)
+        return (tpl['name'], tpl['emoji'], tpl['items']) if tpl else None
+    if source_type == 'saved':
+        for saved in data.get('savedLists', []):
+            if saved['id'] == source_id:
+                return (saved['name'], saved['emoji'], saved['items'])
+        return None
+    return None
+
+
+def _lister_generate_with_claude(prompt, current_items, library_lists):
+    """Ask Claude to build a new item list from a free-text instruction, optionally
+    referencing one of the named lists (built-in templates + saved reusable lists)."""
+    if not client:
+        raise ValueError('AI generation not available - API key not configured')
+
+    system_prompt = f"""You help a family pack and prep for outings. You build a checklist as strict JSON.
+
+Family members items can be assigned to: {', '.join(LISTER_ASSIGNEES)}.
+- "parent" = adult, shared, or general items
+- "noga", "dana", "ella" = personal items for that specific girl only
+
+You are given:
+1. A library of existing named lists the instruction may reference by name.
+2. The family's currently active list (may be empty).
+3. A free-text instruction describing the list they want.
+
+Build the final item list the family should use, following the instruction (e.g.
+"start from the Pool list and add X" means take that named list's items as the
+base, then apply the requested change). Give each item ONE fitting emoji and a
+short label (2-5 words). Keep it focused and non-redundant, max 20 items.
+
+Respond with ONLY valid JSON, no other text, in this exact shape:
+{{
+  "name": "Short list name, e.g. Pool + Picnic",
+  "emoji": "One emoji representing the outing",
+  "items": [
+    {{"emoji": "🧴", "label": "Sunscreen", "assignee": "parent"}}
+  ]
+}}"""
+
+    user_payload = json.dumps({
+        'instruction': prompt,
+        'currentActiveList': [
+            {'emoji': it['emoji'], 'label': it['label'], 'assignee': it['assignee']} for it in current_items
+        ],
+        'namedLists': [
+            {
+                'name': lst['name'],
+                'items': [{'emoji': it['emoji'], 'label': it['label'], 'assignee': it['assignee']} for it in lst['items']]
+            }
+            for lst in library_lists
+        ]
+    }, ensure_ascii=False)
+
+    logger.info(f"Generating Lister list for prompt: {prompt}")
+
+    message = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=2000,
+        temperature=0.7,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_payload}]
+    )
+
+    response_text = message.content[0].text.strip()
+    if response_text.startswith('```json'):
+        response_text = response_text[7:]
+    if response_text.startswith('```'):
+        response_text = response_text[3:]
+    if response_text.endswith('```'):
+        response_text = response_text[:-3]
+    response_text = response_text.strip()
+
+    parsed = json.loads(response_text)
+    items = _lister_sanitize_items(parsed.get('items', []))
+    if not items:
+        raise ValueError('AI returned no items')
+
+    name = str(parsed.get('name', 'AI List'))[:60]
+    emoji = str(parsed.get('emoji', '✨'))[:8] or '✨'
+
+    logger.info(f"Generated Lister list '{name}' with {len(items)} items")
+    return {'name': name, 'emoji': emoji, 'items': items}
+
+
+@app.route('/api/lister/state', methods=['GET'])
+def api_lister_state():
+    """Everything the Lister tab needs on load: active list, saved reusable
+    lists, and the built-in template catalog."""
+    data = _lister_load()
+    return jsonify({
+        'success': True,
+        'activeList': data['activeList'],
+        'savedLists': data['savedLists'],
+        'templates': [LISTER_TEMPLATES[tid] for tid in LISTER_TEMPLATE_ORDER],
+        'assignees': LISTER_ASSIGNEES
+    })
+
+
+@app.route('/api/lister/active', methods=['POST'])
+def api_lister_save_active():
+    """Persist the current state of the active list (checks, added/removed items)."""
+    body = request.get_json(silent=True) or {}
+    data = _lister_load()
+    active = data['activeList']
+    active['name'] = str(body.get('name', active.get('name', 'List')))[:60]
+    active['emoji'] = str(body.get('emoji', active.get('emoji', '📋')))[:8] or '📋'
+    active['items'] = _lister_sanitize_items(body.get('items', []))
+    data['activeList'] = active
+    _lister_save(data)
+    return jsonify({'success': True, 'activeList': active})
+
+
+@app.route('/api/lister/new', methods=['POST'])
+def api_lister_new():
+    """Replace the active list with a fresh copy of a built-in template or a
+    saved reusable list (all checks cleared)."""
+    body = request.get_json(silent=True) or {}
+    source_type = body.get('sourceType')
+    source_id = body.get('sourceId')
+
+    data = _lister_load()
+    found = _lister_find_source(data, source_type, source_id)
+    if not found:
+        return jsonify({'success': False, 'error': 'Unknown list source'}), 400
+    name, emoji, items = found
+
+    data['activeList'] = _lister_list_from_items(items, name, emoji, source_type, source_id)
+    _lister_save(data)
+    return jsonify({'success': True, 'activeList': data['activeList']})
+
+
+@app.route('/api/lister/save-as', methods=['POST'])
+def api_lister_save_as():
+    """Save the current active list's items as a new, reusable named list."""
+    body = request.get_json(silent=True) or {}
+    name = str(body.get('name', '')).strip()[:60]
+    emoji = str(body.get('emoji', '📋')).strip()[:8] or '📋'
+    if not name:
+        return jsonify({'success': False, 'error': 'Name is required'}), 400
+
+    data = _lister_load()
+    items = _lister_sanitize_items(data['activeList'].get('items', []))
+    for it in items:
+        it['checked'] = False  # a saved list is a reusable template, not a snapshot
+
+    saved = {
+        'id': 'saved-' + uuid.uuid4().hex[:10],
+        'name': name,
+        'emoji': emoji,
+        'savedAt': int(time.time() * 1000),
+        'items': items
+    }
+    data['savedLists'].append(saved)
+    _lister_save(data)
+    return jsonify({'success': True, 'saved': saved, 'savedLists': data['savedLists']})
+
+
+@app.route('/api/lister/saved/<saved_id>', methods=['DELETE'])
+def api_lister_delete_saved(saved_id):
+    """Delete a saved reusable list."""
+    data = _lister_load()
+    before = len(data['savedLists'])
+    data['savedLists'] = [s for s in data['savedLists'] if s['id'] != saved_id]
+    if len(data['savedLists']) == before:
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+    _lister_save(data)
+    return jsonify({'success': True, 'savedLists': data['savedLists']})
+
+
+@app.route('/api/lister/generate', methods=['POST'])
+def api_lister_generate():
+    """AI-generate a list from a free-text prompt (e.g. "start from the Pool
+    list and add some dolls for a picnic"). Does not persist by itself — the
+    client commits the result via POST /api/lister/active."""
+    body = request.get_json(silent=True) or {}
+    prompt = str(body.get('prompt', '')).strip()
+    if not prompt:
+        return jsonify({'success': False, 'error': 'Prompt is required'}), 400
+
+    data = _lister_load()
+    current_items = _lister_sanitize_items(body.get('currentItems', data['activeList'].get('items', [])))
+
+    library = [
+        {'name': LISTER_TEMPLATES[tid]['name'], 'items': LISTER_TEMPLATES[tid]['items']}
+        for tid in LISTER_TEMPLATE_ORDER
+    ] + [
+        {'name': s['name'], 'items': s['items']} for s in data['savedLists']
+    ]
+
+    try:
+        result = _lister_generate_with_claude(prompt, current_items, library)
+        return jsonify({'success': True, 'list': result})
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Lister AI generation error: {e}")
+        return jsonify({'success': False, 'error': 'AI generation failed. Please try again.'}), 500
 
 
 # ============================================================================
