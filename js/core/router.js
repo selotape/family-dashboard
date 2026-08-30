@@ -67,6 +67,12 @@
                         RoutineTimer.update();
                     }
                     break;
+                case 'lister':
+                    // Render/refresh the packing list immediately on open
+                    if (typeof Lister !== 'undefined' && Lister.render) {
+                        Lister.render();
+                    }
+                    break;
             }
         },
 

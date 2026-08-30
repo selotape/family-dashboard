@@ -46,7 +46,8 @@ js/
     ├── todos.js            # Markdown todo loader (uses marked.js)
     ├── capybara-game.js    # Canvas-based platformer game
     ├── warmup-calculator.js # Starting Strength warm-up calculator
-    └── routine-timer.js    # Morning/evening routine timer with audio
+    ├── routine-timer.js    # Morning/evening routine timer with audio
+    └── lister.js           # Pre-trip packing/prep checklists (templated)
 
 pages/                      # HTML templates loaded dynamically by router
 ├── grandma.html
@@ -54,7 +55,8 @@ pages/                      # HTML templates loaded dynamically by router
 ├── todos.html
 ├── game.html
 ├── warmup.html
-└── math-game.html
+├── math-game.html
+└── lister.html
 ```
 
 ### Initialization Flow
@@ -132,6 +134,7 @@ The Math Game is a separate subsystem with its own module structure:
 - `lastTargetWeight` - Warm-up calculator last input
 - `deadliftMode` - Warm-up calculator mode preference
 - `mathGameProfiles` - Math game user profiles and progress
+- `listerActiveList` - Lister's current packing list (`{templateId, name, emoji, createdAt, items:[{id,emoji,label,assignee,checked}]}`); assignee is one of `parent`/`noga`/`dana`/`ella`
 
 ### Audio Patterns
 
