@@ -1233,6 +1233,7 @@
             background: transparent;
             border: none;
             color: #94a3b8;
+            font-family: inherit;
             font-size: 13px;
             font-weight: 600;
             padding: 4px 6px;
@@ -1612,6 +1613,7 @@
             border-radius: 10px;
             padding: 10px 14px;
             color: #f1f5f9;
+            font-family: inherit;
             font-size: 15px;
         }
         .lister-ai-form input[type="text"]::placeholder { color: #94a3b8; }
@@ -1767,6 +1769,7 @@
             border-radius: 10px;
             padding: 10px 14px;
             color: #f1f5f9;
+            font-family: inherit;
             font-size: 15px;
         }
         .lister-add-form input[type="text"]::placeholder { color: #64748b; }
@@ -1776,6 +1779,7 @@
             border-radius: 10px;
             padding: 10px 12px;
             color: #f1f5f9;
+            font-family: inherit;
             font-size: 15px;
         }
         .lister-add-btn {
