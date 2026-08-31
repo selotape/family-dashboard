@@ -67,6 +67,12 @@
                         RoutineTimer.update();
                     }
                     break;
+                case 'routines-kids':
+                    // Side-by-side per-kid variant of the Routines tab
+                    if (typeof RoutineTimerKids !== 'undefined' && RoutineTimerKids.init) {
+                        RoutineTimerKids.init();
+                    }
+                    break;
                 case 'lister':
                     // Re-fetch from the server on every visit so changes made
                     // from another device on the LAN show up here too.
