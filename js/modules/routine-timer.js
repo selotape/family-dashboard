@@ -257,6 +257,90 @@
             this.update();
         },
 
+        // ---- One-time extra tasks (e.g. "bedsheets from dryer") ----
+        // Unlike daily chores these are NOT reset at midnight - they're added
+        // once, live until checked off, then are gone for good.
+        EXTRAS_KEY: 'routineExtraTasks',
+
+        loadExtras: function() {
+            let tasks = null;
+            try {
+                tasks = JSON.parse(localStorage.getItem(this.EXTRAS_KEY));
+            } catch (e) {
+                tasks = null;
+            }
+            return Array.isArray(tasks) ? tasks : [];
+        },
+
+        saveExtras: function(tasks) {
+            localStorage.setItem(this.EXTRAS_KEY, JSON.stringify(tasks));
+        },
+
+        addExtraTask: function(group, text) {
+            text = (text || '').trim();
+            if (!text) return;
+            const tasks = this.loadExtras();
+            tasks.push({
+                id: 'extra-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                group: group,
+                text: text.slice(0, 120)
+            });
+            this.saveExtras(tasks);
+            this.renderExtras();
+        },
+
+        completeExtraTask: function(id) {
+            const tasks = this.loadExtras().filter(function(t) { return t.id !== id; });
+            this.saveExtras(tasks);
+        },
+
+        escapeHtml: function(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        },
+
+        renderExtrasBlockHtml: function(group) {
+            return '<div class="routine-extras" data-group="' + group + '">' +
+                '<div class="routine-extras-list" id="routine-extras-list-' + group + '"></div>' +
+                '<form class="routine-extras-add-form" data-group="' + group + '">' +
+                    '<input type="text" class="routine-extras-input" placeholder="+ one-time task…" autocomplete="off" maxlength="120">' +
+                '</form>' +
+            '</div>';
+        },
+
+        // Populate each group's extras list from storage; hides the list
+        // (but keeps the "+ add" input) when a group has no extra tasks.
+        renderExtras: function() {
+            const container = document.getElementById('routine-timeline');
+            if (!container) return;
+            const self = this;
+            const tasks = this.loadExtras();
+
+            container.querySelectorAll('.routine-extras').forEach(function(el) {
+                const group = el.getAttribute('data-group');
+                const listEl = el.querySelector('.routine-extras-list');
+                if (!listEl) return;
+                const groupTasks = tasks.filter(function(t) { return t.group === group; });
+
+                if (!groupTasks.length) {
+                    listEl.innerHTML = '';
+                    listEl.style.display = 'none';
+                    return;
+                }
+                listEl.style.display = '';
+                listEl.innerHTML = groupTasks.map(function(t) {
+                    return '<div class="routine-extra-item" data-id="' + t.id + '">' +
+                        '<label class="routine-extra-check">' +
+                            '<input type="checkbox">' +
+                            '<span class="routine-extra-check-box"></span>' +
+                        '</label>' +
+                        '<span class="routine-extra-text">' + self.escapeHtml(t.text) + '</span>' +
+                    '</div>';
+                }).join('');
+            });
+        },
+
         // ---- Collapsed-column persistence (per group name) ----
         loadGroupCollapse: function() {
             try {
@@ -325,21 +409,47 @@
                         '</div>';
                 });
 
-                html += '</div></div>';
+                html += '</div>' + this.renderExtrasBlockHtml(group) + '</div>';
             });
 
             container.innerHTML = html;
+            this.renderExtras();
 
             // Checkbox toggling via event delegation (attached once)
             container.addEventListener('change', (e) => {
                 const box = e.target;
                 if (box && box.matches && box.matches('input[type="checkbox"]')) {
-                    const row = box.closest('.routine-item');
-                    const id = row && row.getAttribute('data-id');
-                    if (id) {
-                        this.markItemDone(id, box.checked);
-                        this.update();
+                    const choreRow = box.closest('.routine-item');
+                    if (choreRow) {
+                        const id = choreRow.getAttribute('data-id');
+                        if (id) {
+                            this.markItemDone(id, box.checked);
+                            this.update();
+                        }
+                        return;
                     }
+                    const extraRow = box.closest('.routine-extra-item');
+                    if (extraRow && box.checked) {
+                        const id = extraRow.getAttribute('data-id');
+                        extraRow.classList.add('done');
+                        setTimeout(() => {
+                            this.completeExtraTask(id);
+                            this.renderExtras();
+                        }, 450);
+                    }
+                }
+            });
+
+            // One-time extra task add forms (event delegation)
+            container.addEventListener('submit', (e) => {
+                const form = e.target.closest && e.target.closest('.routine-extras-add-form');
+                if (!form) return;
+                e.preventDefault();
+                const input = form.querySelector('.routine-extras-input');
+                const group = form.getAttribute('data-group');
+                if (input && group) {
+                    this.addExtraTask(group, input.value);
+                    input.value = '';
                 }
             });
 

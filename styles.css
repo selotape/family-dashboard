@@ -1158,6 +1158,93 @@
         }
         .routine-item.is-auto.past .routine-marker::after { content: '✓'; }
 
+        /* One-time extra tasks ("bedsheets from dryer") */
+        .routine-extras {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,0.12);
+        }
+
+        .routine-extras-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .routine-extra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .routine-extra-item.done {
+            opacity: 0;
+            transform: translateX(8px) scale(0.97);
+        }
+
+        .routine-extra-text {
+            flex: 1;
+            min-width: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+            word-break: break-word;
+        }
+
+        .routine-extra-check { position: relative; flex-shrink: 0; width: 22px; height: 22px; cursor: pointer; }
+        .routine-extra-check input {
+            position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer;
+        }
+        .routine-extra-check-box {
+            display: block;
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            border: 2px solid rgba(255,255,255,0.35);
+            background: rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+        .routine-extra-check input:checked + .routine-extra-check-box {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+        .routine-extra-check input:checked + .routine-extra-check-box::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 11px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .routine-extra-check input:focus-visible + .routine-extra-check-box {
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
+        }
+
+        .routine-extras-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 6px;
+            transition: color 0.2s ease;
+        }
+        .routine-extras-input::placeholder { color: #64748b; }
+        .routine-extras-input:hover { color: #cbd5e1; }
+        .routine-extras-input:focus {
+            outline: none;
+            color: #f1f5f9;
+        }
+
         /* Per-routine accent colors (left border + active glow) */
         .routine-item.theme-morning { border-left-color: #22c55e; }
         .routine-item.theme-dinner  { border-left-color: #fbbf24; }

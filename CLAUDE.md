@@ -129,6 +129,7 @@ The Math Game is a separate subsystem with its own module structure:
 - `tabsCollapsed` - Whether the top tabs banner is collapsed (`'1'`/`'0'`)
 - `routineChores` - Routines daily chores (`{date, checked}`; each entry is per-girl `{noga,dana,ella}`, done when all three; auto-resets each new day)
 - `routineGroupsCollapsed` - Which routine columns (Morning/Afternoon) are collapsed (`{group: bool}`)
+- `routineExtraTasks` - One-time, per-group tasks added ad hoc under a routine column (e.g. "bedsheets from dryer"); array of `{id, group, text}`. Unlike `routineChores`, these do **not** auto-reset daily - a task lives until checked off, then is removed for good
 - `capybaraHighScore` - Capybara game high score
 - `gymConfig` - Warm-up calculator plate configuration
 - `lastTargetWeight` - Warm-up calculator last input
