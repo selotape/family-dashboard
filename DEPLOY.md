@@ -119,12 +119,28 @@ rm ~/.config/systemd/user/family-dashboard.service \
 systemctl --user daemon-reload
 ```
 
-## Accessing From Other Devices
+## Accessing From Other Devices (phone, tablet, laptop)
 
-The server binds `0.0.0.0`, so other devices on your network can reach it:
+The server binds `0.0.0.0`, so any device on the **same Wi-Fi / LAN** can reach it.
 
-```bash
-hostname -I                 # find this machine's IP
-# then browse to  http://YOUR_SERVER_IP:8080
-sudo ufw allow 8080/tcp     # only if a firewall is blocking it
-```
+1. Find this machine's IP:
+   ```bash
+   hostname -I | awk '{print $1}'
+   ```
+   (Currently `192.168.1.251` — it can change if the router reassigns DHCP
+   leases. Reserve a static lease in the router for a permanent address.)
+
+2. On the other device's browser, go to:
+   ```
+   http://192.168.1.251:8080
+   ```
+   Use plain `http://` (not `https`), include the `:8080` port, and make sure the
+   device is on the house Wi-Fi — not cellular data or a guest network.
+
+3. Only if it doesn't connect, open the firewall port on the server:
+   ```bash
+   sudo ufw allow 8080/tcp
+   ```
+
+Tip: on Android, bookmark it or "Add to Home screen" from Chrome's menu for a
+one-tap launcher.
