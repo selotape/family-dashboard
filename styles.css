@@ -1454,60 +1454,6 @@
             animation: chimeFlash 0.6s ease-in-out 5;
         }
 
-        /* --- Routines (By Kid): 3-column side-by-side variant --- */
-        .routine-kids-page { max-width: 1400px; }
-
-        .routine-kids-hint {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 14px;
-            margin: -8px 0 20px;
-        }
-
-        .routine-kids-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 18px;
-            align-items: start;
-        }
-
-        .routine-kid-col {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px;
-            padding: 14px;
-            min-width: 0;
-        }
-
-        .routine-kid-col-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 6px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            margin-bottom: 12px;
-        }
-        .routine-kid-emoji { font-size: 26px; line-height: 1; }
-        .routine-kid-name { font-size: 18px; font-weight: 800; color: #fff; }
-        .routine-kid-next {
-            margin-left: auto;
-            font-size: 12px;
-            font-weight: 600;
-            color: #94a3b8;
-            text-align: right;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 55%;
-        }
-
-        .routine-kid-timeline { gap: 12px; }
-        .routine-kid-timeline .routine-group { padding: 6px 8px 10px; }
-        .routine-kid-group-header { cursor: default; padding: 8px 4px 10px; }
-        .routine-kid-timeline .routine-item { padding: 12px 14px; gap: 10px; }
-        .routine-kid-timeline .routine-item-icon { font-size: 20px; }
-        .routine-kid-timeline .routine-item-label { font-size: 14px; }
-        .routine-kid-timeline .routine-item-time { font-size: 12px; }
 
         /* --- Shared keyframes (also used by other pages, keep defined) --- */
         @keyframes float {
