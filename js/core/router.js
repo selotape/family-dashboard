@@ -80,6 +80,12 @@
                         GameRoulette.init();
                     }
                     break;
+                case 'bathtub-roulette':
+                    // Same machine, bath-time games
+                    if (typeof BathtubRoulette !== 'undefined' && BathtubRoulette.init) {
+                        BathtubRoulette.init();
+                    }
+                    break;
             }
         },
 
