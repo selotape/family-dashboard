@@ -31,7 +31,6 @@ if sys.platform == 'win32':
 load_dotenv()
 
 # Configuration
-PORT = 8080
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 # Configure logging
@@ -44,6 +43,26 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+
+def resolve_port(default=8080):
+    """Port to serve on, from the PORT env var (see .env / DEPLOY.md).
+    Falls back to the default when it's unset or not a usable port number."""
+    raw = os.getenv('PORT')
+    if raw is None or not str(raw).strip():
+        return default
+    try:
+        port = int(str(raw).strip())
+    except ValueError:
+        logger.warning(f"PORT={raw!r} is not a number - using {default} instead")
+        return default
+    if not 1 <= port <= 65535:
+        logger.warning(f"PORT={port} is outside 1-65535 - using {default} instead")
+        return default
+    return port
+
+
+PORT = resolve_port()
 
 # Initialize Flask app
 app = Flask(__name__)
