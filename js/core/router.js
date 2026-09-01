@@ -74,6 +74,12 @@
                         Lister.init();
                     }
                     break;
+                case 'game-roulette':
+                    // Builds the slot machine on first open, then just refreshes stats
+                    if (typeof GameRoulette !== 'undefined' && GameRoulette.init) {
+                        GameRoulette.init();
+                    }
+                    break;
             }
         },
 

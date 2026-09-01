@@ -47,7 +47,8 @@ js/
     ├── capybara-game.js    # Canvas-based platformer game
     ├── warmup-calculator.js # Starting Strength warm-up calculator
     ├── routine-timer.js    # Morning/evening routine timer with audio
-    └── lister.js           # Pre-trip packing/prep checklists (templated)
+    ├── lister.js           # Pre-trip packing/prep checklists (templated)
+    └── game-roulette.js    # Family game night slot machine (10 games + SVG art)
 
 pages/                      # HTML templates loaded dynamically by router
 ├── grandma.html
@@ -56,7 +57,8 @@ pages/                      # HTML templates loaded dynamically by router
 ├── game.html
 ├── warmup.html
 ├── math-game.html
-└── lister.html
+├── lister.html
+└── game-roulette.html
 ```
 
 ### Initialization Flow
@@ -135,6 +137,7 @@ The Math Game is a separate subsystem with its own module structure:
 - `lastTargetWeight` - Warm-up calculator last input
 - `deadliftMode` - Warm-up calculator mode preference
 - `mathGameProfiles` - Math game user profiles and progress
+- `gameRouletteStats` - Game Roulette history (`{totalPulls, jackpots, lastJackpotId, played:{gameId:count}}`). `lastJackpotId` is excluded from the next jackpot draw so game night varies. Jackpot odds are rigged per pull (`JACKPOT_ODDS`) to average ~2 pulls and guarantee a win by the 4th. Game artwork is one inline SVG `<symbol>` sprite that every reel cell `<use>`s, so 180 on-screen illustrations cost 10 definitions (no external images)
 
 Lister does **not** use localStorage — its state (active list + saved reusable
 lists) is persisted server-side in `lister_data.json` (gitignored, like
