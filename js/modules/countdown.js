@@ -6,40 +6,52 @@
     window.CountdownTimer = {
         init: function() {
             this.update();
-            // Update every 60 seconds
-            setInterval(() => this.update(), 60000);
+            // Tick every second so the minute rolls over on time
+            setInterval(() => this.update(), 1000);
+        },
+
+        // Renders an exact days / hours / minutes countdown into a card.
+        // target must carry an explicit UTC offset so the count is the same
+        // on every device, whatever timezone its clock is set to.
+        renderCard: function(prefix, target, arrivedText) {
+            const numberEl = document.getElementById('days-' + prefix);
+            if (!numberEl) return;
+
+            const labelEl = document.getElementById('label-' + prefix);
+            const timeEl = document.getElementById('time-' + prefix);
+            const diff = target - new Date();
+
+            if (diff <= 0) {
+                numberEl.textContent = arrivedText;
+                if (labelEl) labelEl.textContent = '';
+                if (timeEl) timeEl.textContent = '';
+                return;
+            }
+
+            const totalMinutes = Math.floor(diff / 60000);
+            const days = Math.floor(totalMinutes / (60 * 24));
+            const hours = Math.floor(totalMinutes / 60) % 24;
+            const minutes = totalMinutes % 60;
+
+            numberEl.textContent = days;
+            if (labelEl) labelEl.textContent = days === 1 ? 'day to go' : 'days to go';
+            if (timeEl) {
+                timeEl.textContent = hours + (hours === 1 ? ' hour ' : ' hours ') +
+                    minutes + (minutes === 1 ? ' minute' : ' minutes');
+            }
         },
 
         update: function() {
-            const now = new Date();
-
             /* Grandma Ayelet - January 28, 2026 (commented out)
-            const ayeletEl = document.getElementById('days-ayelet');
-            if (ayeletEl) {
-                const ayeletDate = new Date('2026-01-28T00:00:00');
-                const ayeletDiff = ayeletDate - now;
-                const ayeletDays = Math.ceil(ayeletDiff / (1000 * 60 * 60 * 24));
-                ayeletEl.textContent = ayeletDays > 0 ? ayeletDays : "She's here!";
-            }
+            this.renderCard('ayelet', new Date('2026-01-28T00:00:00-05:00'), "She's here!");
             */
 
-            // Grandma Orly - September 14, 2026
-            const orlyEl = document.getElementById('days-orly');
-            if (orlyEl) {
-                const orlyDate = new Date('2026-09-14T00:00:00');
-                const orlyDiff = orlyDate - now;
-                const orlyDays = Math.ceil(orlyDiff / (1000 * 60 * 60 * 24));
-                orlyEl.textContent = orlyDays > 0 ? orlyDays : "She's here!";
-            }
+            // Grandma Orly - lands in Atlanta September 15, 2026 at 9:41 AM
+            // local time (EDT, UTC-4 - daylight time is still in effect).
+            this.renderCard('orly', new Date('2026-09-15T09:41:00-04:00'), "She's here!");
 
             /* Israel Flight - July 12, 2026 (commented out)
-            const israelEl = document.getElementById('days-israel');
-            if (israelEl) {
-                const israelDate = new Date('2026-07-12T00:00:00');
-                const israelDiff = israelDate - now;
-                const israelDays = Math.ceil(israelDiff / (1000 * 60 * 60 * 24));
-                israelEl.textContent = israelDays > 0 ? israelDays : "We're flying!";
-            }
+            this.renderCard('israel', new Date('2026-07-12T00:00:00-04:00'), "We're flying!");
             */
         }
     };

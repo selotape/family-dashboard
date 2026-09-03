@@ -182,6 +182,21 @@
             margin-top: 8px;
         }
 
+        .countdown-time {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e94560;
+            margin-top: 4px;
+        }
+
+        .countdown-card.orly .countdown-time {
+            color: #c084fc;
+        }
+
+        .countdown-card.israel .countdown-time {
+            color: #60a5fa;
+        }
+
         .countdown-date {
             margin-top: 20px;
             font-size: 14px;
@@ -1301,6 +1316,58 @@
         .routine-item.active.overdue .routine-item-countdown { background: #ef4444; }
         .routine-item.active.overdue { box-shadow: 0 0 24px rgba(239,68,68,0.45); border-color: rgba(239,68,68,0.6); }
 
+        /* ---- Strong countdown clock (Leave for school) ----
+           Big live mm:ss that escalates: neutral -> yellow (20 min) ->
+           orange (10 min) -> red + pop (5 min and once the time has passed). */
+        .routine-strong-clock {
+            font-family: 'Courier New', ui-monospace, monospace;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #e2e8f0;
+            background: rgba(255,255,255,0.10);
+            border: 2px solid rgba(255,255,255,0.20);
+            border-radius: 14px;
+            padding: 6px 14px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        .routine-strong-clock.warn {
+            color: #fde047;
+            background: rgba(250,204,21,0.16);
+            border-color: rgba(250,204,21,0.65);
+        }
+        .routine-strong-clock.alert {
+            color: #fdba74;
+            background: rgba(249,115,22,0.20);
+            border-color: rgba(249,115,22,0.75);
+        }
+        .routine-strong-clock.critical {
+            color: #fff;
+            background: #ef4444;
+            border-color: #fca5a5;
+            box-shadow: 0 0 20px rgba(239,68,68,0.55);
+            animation: strongPop 0.7s ease-in-out infinite;
+        }
+
+        /* The row itself joins in at the 5-minute mark (and stays legible even
+           though `past` normally dims it once the time has gone by) */
+        .routine-item.strong-critical {
+            opacity: 1;
+            border-color: rgba(239,68,68,0.7);
+            box-shadow: 0 0 26px rgba(239,68,68,0.40);
+        }
+        .routine-item.strong-critical .routine-item-icon {
+            animation: bounce 0.7s ease-in-out infinite;
+        }
+
+        @keyframes strongPop {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.12); }
+        }
+
         /* ---- Next Action widget ---- */
         .next-action { position: sticky; top: 12px; }
 
@@ -1428,6 +1495,43 @@
 
         .next-action-card.all-done { border-color: rgba(139,92,246,0.4); }
 
+        /* Strong countdown inside the Next Action card (mirrors the row clock).
+           Prefixed with .next-action-card to outrank the per-theme pill colours. */
+        .next-action-card .next-action-when.strong {
+            font-family: 'Courier New', ui-monospace, monospace;
+            font-size: 30px;
+            letter-spacing: 1px;
+            padding: 8px 22px;
+            border-radius: 16px;
+            font-variant-numeric: tabular-nums;
+            background: rgba(255,255,255,0.12);
+            border: 2px solid rgba(255,255,255,0.20);
+        }
+        .next-action-card .next-action-when.strong.warn {
+            color: #fde047;
+            background: rgba(250,204,21,0.16);
+            border-color: rgba(250,204,21,0.65);
+        }
+        .next-action-card .next-action-when.strong.alert {
+            color: #fdba74;
+            background: rgba(249,115,22,0.20);
+            border-color: rgba(249,115,22,0.75);
+        }
+        .next-action-card .next-action-when.strong.critical {
+            color: #fff;
+            background: #ef4444;
+            border-color: #fca5a5;
+            box-shadow: 0 0 20px rgba(239,68,68,0.55);
+            animation: strongPop 0.7s ease-in-out infinite;
+        }
+        .next-action-card.strong-critical {
+            border-color: rgba(239,68,68,0.7);
+            box-shadow: 0 12px 44px rgba(239,68,68,0.35);
+        }
+        .next-action-card.strong-critical .next-action-emoji {
+            animation: bounce 0.7s ease-in-out infinite;
+        }
+
         /* State: done (checked) - strikethrough + muted, overrides active/past look */
         .routine-item.done {
             opacity: 0.55;
@@ -1489,6 +1593,8 @@
             .routine-item { padding: 14px; gap: 10px; }
             .routine-item-icon { font-size: 28px; }
             .routine-item-label { font-size: 17px; }
+            .routine-strong-clock { font-size: 22px; padding: 5px 10px; }
+            .next-action-card .next-action-when.strong { font-size: 26px; }
         }
 
         /* ========================================

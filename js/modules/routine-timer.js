@@ -13,9 +13,11 @@
         schedule: [
             { id: 'dressed',   group: 'Morning', hour: 6,  minute: 55, icon: '👗', label: 'Get Dressed',              chime: 'morning', type: 'chore' },
             { id: 'breakfast', group: 'Morning', hour: 7,  minute: 0,  icon: '🥣', label: 'Breakfast',                chime: 'morning', type: 'chore' },
-            { id: 'brush-am',  group: 'Morning', hour: 7,  minute: 10, icon: '🪥', label: 'Brush teeth',              chime: 'morning', type: 'chore' },
-            { id: 'shoes',     group: 'Morning', hour: 7,  minute: 15, icon: '👟👸', label: 'Shoes & Hair',           chime: 'morning', type: 'chore' },
-            { id: 'leave',  group: 'Morning',   hour: 7,  minute: 20, icon: '🏫', label: 'Leave for school',          chime: 'morning', type: 'auto'  },
+            { id: 'brush-am',  group: 'Morning', hour: 7,  minute: 15, icon: '🪥', label: 'Brush teeth',              chime: 'morning', type: 'chore' },
+            { id: 'shoes',     group: 'Morning', hour: 7,  minute: 20, icon: '👟👸', label: 'Shoes & Hair',           chime: 'morning', type: 'chore' },
+            // The hard deadline of the morning: gets a big live mm:ss clock that
+            // goes yellow -> orange -> red-and-popping as it gets close.
+            { id: 'leave',  group: 'Morning',   hour: 7,  minute: 25, icon: '🏫', label: 'Leave for school',          chime: 'morning', type: 'auto', countdown: 'strong' },
             { id: 'cubby',  group: 'Afternoon', hour: 16, minute: 30, icon: '🎒', label: 'Backpacks into Cubby',       chime: 'morning', type: 'chore' },
             { id: 'homework', group: 'Afternoon', hour: 16, minute: 40, icon: '📚', label: 'Homework (20 min)',       chime: 'morning', type: 'chore' },
             { id: 'chore',  group: 'Afternoon', hour: 17, minute: 0,  icon: '🧹', label: 'Chore',                     chime: 'morning', type: 'chore' },
@@ -146,6 +148,57 @@
             const target = new Date();
             target.setHours(item.hour, item.minute, 0, 0);
             return Math.ceil((target - now) / (1000 * 60));
+        },
+
+        // ---- Strong countdown (items with countdown: 'strong') ----
+        // Shown as a live mm:ss clock for the last hour before the item, and for
+        // a short grace period after it, whether or not it's the next action.
+        STRONG_WINDOW_SEC: 60 * 60,
+        STRONG_GRACE_SEC: 10 * 60,
+
+        // Seconds until an item's time today (negative once it has passed).
+        getSecondsRemaining: function(item) {
+            const target = new Date();
+            target.setHours(item.hour, item.minute, 0, 0);
+            return Math.ceil((target - new Date()) / 1000);
+        },
+
+        // "18:42" / "1:05:09" - the clock face of the strong countdown.
+        // Minutes are always zero-padded so the box doesn't jump width at 9:59.
+        formatCountdownClock: function(secs) {
+            if (secs < 0) secs = 0;
+            const h = Math.floor(secs / 3600);
+            const m = Math.floor(secs / 60) % 60;
+            const s = secs % 60;
+            return (h ? h + ':' : '') +
+                   String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        },
+
+        // Urgency tier driving the colour: yellow at 20 min, orange at 10,
+        // red + popping at 5 (and once the deadline has passed).
+        strongTier: function(secs) {
+            if (secs <= 5 * 60) return 'critical';
+            if (secs <= 10 * 60) return 'alert';
+            if (secs <= 20 * 60) return 'warn';
+            return '';
+        },
+
+        // Text + tier for a strong item right now, or null when it's outside
+        // the window (too far off, already done) and shouldn't be shown.
+        getStrongState: function(item, isDone) {
+            if (!item || item.countdown !== 'strong' || isDone) return null;
+            const secs = this.getSecondsRemaining(item);
+            if (secs > this.STRONG_WINDOW_SEC || secs <= -this.STRONG_GRACE_SEC) return null;
+            return secs > 0
+                ? { text: this.formatCountdownClock(secs), tier: this.strongTier(secs) }
+                : { text: 'GO! 🏫', tier: 'critical' };
+        },
+
+        // Apply/clear the tier classes for a strong countdown on an element.
+        setStrongTier: function(el, tier) {
+            el.classList.toggle('warn', tier === 'warn');
+            el.classList.toggle('alert', tier === 'alert');
+            el.classList.toggle('critical', tier === 'critical');
         },
 
         // An item is "cleared" (no longer needs attention) when it's marked done,
@@ -399,6 +452,9 @@
                                 '<span class="routine-check-box"></span>' +
                             '</label>';
                     }
+                    const strongClock = item.countdown === 'strong'
+                        ? '<span class="routine-strong-clock" aria-live="polite"></span>'
+                        : '';
                     html +=
                         '<div class="routine-item theme-' + item.chime + (isAuto ? ' is-auto' : '') + '" data-id="' + item.id + '">' +
                             control +
@@ -408,6 +464,7 @@
                                 '<span class="routine-item-time">' + this.formatTime(item.hour, item.minute) + '</span>' +
                             '</div>' +
                             '<span class="routine-item-countdown"></span>' +
+                            strongClock +
                         '</div>';
                 });
 
@@ -554,7 +611,15 @@
                 eyebrow.textContent = isAuto ? 'Coming up' : 'Next action';
                 emoji.textContent = nextAction.icon;
                 label.textContent = nextAction.label;
-                when.textContent  = this.formatRelative(mins);
+
+                // Strong items take over the "when" pill with the same live clock
+                // (and colour) as their timeline row.
+                const strong = this.getStrongState(nextAction, false);
+                when.textContent = strong ? strong.text : this.formatRelative(mins);
+                when.classList.toggle('strong', !!strong);
+                this.setStrongTier(when, strong ? strong.tier : '');
+                card.classList.toggle('strong-critical', !!strong && strong.tier === 'critical');
+
                 time.textContent  = 'Scheduled ' + this.formatTime(nextAction.hour, nextAction.minute);
                 // Auto/non-negotiable items just happen — no girls, no button.
                 if (isAuto) {
@@ -576,7 +641,9 @@
                 }
             } else {
                 card.classList.add('all-done');
-                card.classList.remove('overdue', 'imminent', 'is-auto');
+                card.classList.remove('overdue', 'imminent', 'is-auto', 'strong-critical');
+                when.classList.remove('strong');
+                this.setStrongTier(when, '');
                 card.removeAttribute('data-theme');
                 eyebrow.textContent = 'All done';
                 emoji.textContent = '🌟';
@@ -628,9 +695,27 @@
                 const box = row.querySelector('input[type="checkbox"]');
                 if (box && box.checked !== isDone) box.checked = isDone;
 
+                // Big live mm:ss clock (Leave for school) - runs whether or not
+                // the item is the current next action, so the deadline is always
+                // on screen during the morning rush.
+                const strongEl = row.querySelector('.routine-strong-clock');
+                const strong = strongEl ? this.getStrongState(item, isDone) : null;
+                if (strongEl) {
+                    if (strong) {
+                        strongEl.textContent = strong.text;
+                        strongEl.style.display = '';
+                        this.setStrongTier(strongEl, strong.tier);
+                    } else {
+                        strongEl.textContent = '';
+                        strongEl.style.display = 'none';
+                        this.setStrongTier(strongEl, '');
+                    }
+                    row.classList.toggle('strong-critical', !!strong && strong.tier === 'critical');
+                }
+
                 const cd = row.querySelector('.routine-item-countdown');
                 if (cd) {
-                    if (isNext && !isDone) {
+                    if (isNext && !isDone && !strong) {
                         cd.textContent = this.formatRelative(mins);
                         cd.style.display = '';
                     } else {
