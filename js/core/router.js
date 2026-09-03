@@ -86,6 +86,12 @@
                         BathtubRoulette.init();
                     }
                     break;
+                case 'bedtime-roulette':
+                    // Same machine, calm-down-before-sleep activities
+                    if (typeof BedtimeRoulette !== 'undefined' && BedtimeRoulette.init) {
+                        BedtimeRoulette.init();
+                    }
+                    break;
             }
         },
 

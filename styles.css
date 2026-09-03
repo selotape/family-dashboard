@@ -4378,3 +4378,33 @@
 .gr-theme-bath .gr-bulbs i { background: #a5f3fc; box-shadow: 0 0 10px #22d3ee; }
 .gr-theme-bath .gr-bulbs i:nth-child(2n) { background: #f0abfc; box-shadow: 0 0 10px #e879f9; }
 .gr-theme-bath .gr-bulbs i:nth-child(3n) { background: #fef08a; box-shadow: 0 0 10px #facc15; }
+
+/* ---- Night theme: same machine, moonlit paint job ---- */
+.gr-theme-night .gr-machine {
+    background: linear-gradient(180deg, #4c1d95 0%, #312e81 45%, #1e1b4b 100%);
+    border-color: #c7d2fe;
+    box-shadow: 0 18px 50px rgba(76,29,149,0.55), inset 0 3px 0 rgba(255,255,255,0.22);
+}
+.gr-theme-night .gr-title-text {
+    background: linear-gradient(90deg, #c4b5fd, #a5b4fc, #fde68a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.gr-theme-night .gr-reels { background: #1e1b4b; }
+.gr-theme-night .gr-reel { background: linear-gradient(180deg, #eef2ff, #fff 45%, #eef2ff); }
+.gr-theme-night .gr-reel-name { color: #3730a3; }
+.gr-theme-night .gr-eye { border-color: #1e1b4b; }
+.gr-theme-night .gr-lever-slot { background: #1e1b4b; border-color: #4338ca; }
+.gr-theme-night .gr-lever-knob { background: radial-gradient(circle at 32% 30%, #fef3c7, #fbbf24 60%, #b45309); }
+.gr-theme-night .gr-message { color: #ede9fe; }
+.gr-theme-night .gr-pull-btn {
+    background: linear-gradient(180deg, #a78bfa, #7c3aed);
+    color: #f5f3ff;
+    border-color: #ede9fe;
+    box-shadow: 0 6px 0 #4c1d95, 0 12px 24px rgba(0,0,0,0.4);
+}
+.gr-theme-night .gr-pull-btn:active { box-shadow: 0 1px 0 #4c1d95; }
+.gr-theme-night .gr-bulbs i { background: #ddd6fe; box-shadow: 0 0 10px #a78bfa; }
+.gr-theme-night .gr-bulbs i:nth-child(2n) { background: #fef08a; box-shadow: 0 0 10px #facc15; }
+.gr-theme-night .gr-bulbs i:nth-child(3n) { background: #a5b4fc; box-shadow: 0 0 10px #818cf8; }

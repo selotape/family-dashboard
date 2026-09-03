@@ -50,7 +50,8 @@ js/
     ├── lister.js           # Pre-trip packing/prep checklists (templated)
     ├── roulette-engine.js  # Shared slot-machine (spin, odds, audio, upvotes)
     ├── game-roulette.js    # Family game night games + art (uses the engine)
-    └── bathtub-roulette.js # Bath-time games + art (uses the engine)
+    ├── bathtub-roulette.js # Bath-time games + art (uses the engine)
+    └── bedtime-roulette.js # Bedtime wind-down activities + art (uses the engine)
 
 pages/                      # HTML templates loaded dynamically by router
 ├── grandma.html
@@ -61,7 +62,8 @@ pages/                      # HTML templates loaded dynamically by router
 ├── math-game.html
 ├── lister.html
 ├── game-roulette.html
-└── bathtub-roulette.html
+├── bathtub-roulette.html
+└── bedtime-roulette.html
 ```
 
 ### Initialization Flow
@@ -140,11 +142,11 @@ The Math Game is a separate subsystem with its own module structure:
 - `lastTargetWeight` - Warm-up calculator last input
 - `deadliftMode` - Warm-up calculator mode preference
 - `mathGameProfiles` - Math game user profiles and progress
-- `gameRouletteStats` / `bathtubRouletteStats` - Roulette history, one key per tab (`{totalPulls, jackpots, lastJackpotId, played:{gameId:count}}`). `lastJackpotId` is excluded from the next jackpot draw so game night varies. Jackpot odds are rigged per pull (`JACKPOT_ODDS`) to average ~2 pulls and guarantee a win by the 4th. `votes` holds the kids' 👍 upvotes, which mildly weight the jackpot draw (up to 2.5x, capped at `MAX_VOTE_BOOST`). Game artwork is one inline SVG `<symbol>` sprite per tab that every reel cell `<use>`s, so 180 on-screen illustrations cost 10 definitions (no external images).
+- `gameRouletteStats` / `bathtubRouletteStats` / `bedtimeRouletteStats` - Roulette history, one key per tab (`{totalPulls, jackpots, lastJackpotId, played:{gameId:count}}`). `lastJackpotId` is excluded from the next jackpot draw so game night varies. Jackpot odds are rigged per pull (`JACKPOT_ODDS`) to average ~2 pulls and guarantee a win by the 4th. `votes` holds the kids' 👍 upvotes, which mildly weight the jackpot draw (up to 2.5x, capped at `MAX_VOTE_BOOST`). Game artwork is one inline SVG `<symbol>` sprite per tab that every reel cell `<use>`s, so 180 on-screen illustrations cost 10 definitions (no external images).
 
-Both roulette tabs share `roulette-engine.js`: it owns all machine behaviour and
+All three roulette tabs share `roulette-engine.js`: it owns all machine behaviour and
 scopes its DOM lookups to the page root (`cfg.pageId`) via **classes**, not ids, so
-the two pages can use identical markup. A tab is just data + config:
+the pages can use identical markup. A tab is just data + config:
 `RouletteEngine.create({pageId, storageKey, artPrefix, eyebrow, playLabel, games, sprite})`.
 Adding another roulette = one data module + one page + a tab + a router case;
 `roulette-engine.js` must load **before** the tabs that build on it
