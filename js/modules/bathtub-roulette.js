@@ -23,15 +23,38 @@
             scenarios: [
                 {
                     title: '🚁 Skye\'s cliff rescue',
-                    text: 'A tiny kitten is stuck at the very top of the cliff (the faucet!) and the water is rising. Fly up, scoop the kitten and glide it safely to the bubble beach.'
+                    text: 'A tiny kitten is stuck at the very top of the cliff (the faucet!) and the water is rising. Fly up, scoop the kitten and glide it safely to the bubble beach.',
+                    done: true
                 },
                 {
                     title: '🚒 Marshall\'s bubble volcano',
-                    text: 'The bubble volcano is erupting and foam is everywhere! Use your water cannon to wash the bubbles down before they cover all of Adventure Bay.'
+                    text: 'The bubble volcano is erupting and foam is everywhere! Use your water cannon to wash the bubbles down before they cover all of Adventure Bay.',
+                    done: true
                 },
                 {
                     title: '🌊 Zuma\'s sunken treasure',
-                    text: 'A treasure chest sank to the bottom of the bay. Dive down, count the treasures you find, and bring them up before the big wave comes!'
+                    text: 'A treasure chest sank to the bottom of the bay. Dive down, count the treasures you find, and bring them up before the big wave comes!',
+                    done: true
+                },
+                {
+                    title: '🚓 Chase\'s runaway ducky',
+                    text: 'A cheeky rubber ducky is zooming around the bay splashing everyone! Turn on your siren, herd it into the corner and walk it home to the duck dock.'
+                },
+                {
+                    title: '❄️ Everest\'s frozen faucet',
+                    text: 'The waterfall on the cliff froze solid and Adventure Bay is running dry. Dig through the snowy bubbles with your shovel until the water whooshes free again.'
+                },
+                {
+                    title: '🚜 Rubble\'s sinking sandbar',
+                    text: 'The little toy island is sinking and the toys are floating away! Stack cups into a strong wall to hold back the water and rescue every toy onto dry land.'
+                },
+                {
+                    title: '🐢 Zuma & Skye\'s foggy turtle hunt',
+                    text: 'Baby turtles got lost in the thick fog (the bubbles!). Skye spots them from up high and calls directions while Zuma dives to guide each one to the calm shallow end. Count them all!'
+                },
+                {
+                    title: '🌪️ The whole team vs. the bubble storm',
+                    text: 'A giant foam wave is rolling straight for Adventure Bay! Every pup grabs a cup and bails as fast as you can, sweeping the foam down the drain. Then howl together: "PAW Patrol saved the bay!"'
                 }
             ],
             equipment: [

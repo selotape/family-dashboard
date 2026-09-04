@@ -342,8 +342,10 @@
             if (!game.scenarios || !game.scenarios.length) return '';
             let html = '<h4 class="gr-card-h4">✨ Story starters</h4><div class="gr-scenarios">';
             game.scenarios.forEach(function(s) {
-                html += '<div class="gr-scenario">' +
-                    '<span class="gr-scenario-title">' + s.title + '</span>' +
+                var cls = 'gr-scenario' + (s.done ? ' gr-scenario--done' : '');
+                var check = s.done ? '<span class="gr-scenario-check">✅ done</span>' : '';
+                html += '<div class="' + cls + '">' +
+                    '<span class="gr-scenario-title">' + s.title + check + '</span>' +
                     '<span class="gr-scenario-text">' + s.text + '</span>' +
                 '</div>';
             });
