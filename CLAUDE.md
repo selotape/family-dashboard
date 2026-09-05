@@ -165,20 +165,26 @@ as the Reading Game to turn a free-text prompt (optionally referencing a
 named list) into a new item list.
 
 **Disney Watch Odyssey** (`disney-watch` tab) follows the same server-backed
-pattern. The 100-film *catalogue* (title, year, studio, `wiki` article title,
-scare `tier` of `cozy`/`peril`/`preview`, parent note) lives client-side in
-`disney-watch-data.js`, ordered gentlest-first. Only per-film *state* is
-persisted, in `disney_data.json` (gitignored) via `GET`/`POST /api/disney/state`
-— the client sends the whole films array (like Lister's `/active`) holding
-`{watched:{noga,dana,ella}, watchedDate:"YYYY-MM", order, poster, custom films}`.
-`DISNEY_WATCHED_SEED` in `server.py` mirrors `WATCHED_SEED` in the data module
-and seeds the file on first run. A film moves to the "Watched" section when it
-has a `watchedDate` ("All watched!" ticks all three girls + stamps the month);
-the Watchlist is drag-and-drop / ▲▼ reorderable. **Poster art is fetched live
-from Wikipedia** at runtime (`en.wikipedia.org/api/rest_v1/page/summary/<wiki>`,
-CORS-open; falls back to the REST title-search), then the resolved
-`upload.wikimedia.org` URL is cached back into `disney_data.json`. Offline or on
-a lookup miss, a coloured title-card is shown instead — no bundled images.
+pattern. The 98-film *catalogue* (title, year, studio, `wiki` article title,
+scare `tier` of `cozy`/`peril`/`preview`, parent note, `pop` popularity score)
+lives client-side in `disney-watch-data.js`. Only per-film *state* is persisted,
+in `disney_data.json` (gitignored) via `GET`/`POST /api/disney/state` — the
+client sends the whole films array (like Lister's `/active`) holding
+`{votes:{noga,dana,ella}, watched:{noga,dana,ella}, watchedDate:"YYYY-MM",
+poster, custom films}`. `DISNEY_WATCHED_SEED` in `server.py` mirrors
+`WATCHED_SEED` in the data module and seeds the file on first run.
+
+**Watchlist order = most 👍 girl-votes first, then `pop` (box office, weighted
+toward recent films), then title.** The three girls vote by tapping their animal
+(🦫 Noga / 🦊 Dana / 🐼 Ella) on a card; a 1-vote film outranks every 0-vote
+film. There is no manual reordering. A film moves to the "Watched" section when
+it has a `watchedDate` ("All watched!" ticks all three girls + stamps the
+month); attendance stays editable on the Watched card afterward. **Poster art is
+fetched live from Wikipedia** at runtime
+(`en.wikipedia.org/api/rest_v1/page/summary/<wiki>`, CORS-open; falls back to
+the REST title-search), then the resolved `upload.wikimedia.org` URL is cached
+back into `disney_data.json`. Offline or on a lookup miss, a coloured title-card
+is shown instead — no bundled images.
 
 ### Audio Patterns
 
