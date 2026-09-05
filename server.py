@@ -986,6 +986,7 @@ def _chefs_sanitize_recipes(raw_recipes, max_recipes=80):
             'steps': steps,
             'tips': tips,
             'checks': checks,
+            'made': bool(it.get('made', False)),  # whole recipe ticked off ("we made this")
             'createdAt': created,
         })
     return out

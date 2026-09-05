@@ -4733,6 +4733,38 @@
 }
 .chef-recipe.all-done .chef-recipe-progress { color: #86efac; background: rgba(74,222,128,0.16); }
 
+/* "Made it" toggle — crosses out the recipe name when ticked */
+.chef-made {
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer; user-select: none; white-space: nowrap;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px;
+    text-transform: uppercase; color: #94a3b8;
+}
+.chef-made input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.chef-made-box {
+    flex: 0 0 auto; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3); border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+}
+.chef-made input[type="checkbox"]:checked + .chef-made-box { background: #4ade80; border-color: #4ade80; }
+.chef-made input[type="checkbox"]:checked + .chef-made-box::after {
+    content: "✓"; color: #08240f; font-size: 12px; font-weight: 900;
+}
+.chef-made input[type="checkbox"]:focus-visible + .chef-made-box {
+    outline: 2px solid #7dd3fc; outline-offset: 2px;
+}
+.chef-recipe.made .chef-made { color: #86efac; }
+.chef-recipe.made { border-left-color: #4ade80; }
+.chef-recipe.made .chef-recipe-name {
+    text-decoration: line-through;
+    text-decoration-color: #4ade80;
+    text-decoration-thickness: 2px;
+    color: #94a3b8;
+}
+.chef-recipe.made .chef-recipe-name::before { content: "\201C"; }
+.chef-recipe.made .chef-recipe-name::after  { content: "\201D"; }
+
 .chef-recipe-body { padding: 4px 18px 20px; }
 .chef-recipe-blurb { color: #e2e8f0; font-size: 15px; line-height: 1.5; margin-bottom: 14px; }
 
@@ -4854,4 +4886,6 @@
     .chef-recipe-name { font-size: 16px; }
     .chef-recipe-body { padding: 4px 14px 18px; }
     .chef-form { padding-left: 12px; padding-right: 12px; }
+    .chef-made-label { display: none; }
+    .chef-recipe-summary { gap: 8px; }
 }

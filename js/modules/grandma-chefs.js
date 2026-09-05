@@ -123,6 +123,7 @@
                 steps: data.steps,
                 tips: data.tips,
                 checks: { ingredients: {}, steps: {} },
+                made: false,
                 createdAt: Date.now()
             });
             this._openIds[id] = true;
@@ -168,6 +169,18 @@
             r.checks = { ingredients: {}, steps: {} };
             this._openIds[id] = true;
             this.render();
+            this.persist();
+        },
+
+        // Whole-recipe "we made this" toggle — crosses out the recipe name.
+        // Independent of the step checklist; always un-doable. Targeted DOM
+        // update, no full re-render.
+        toggleMade: function(id, on) {
+            const r = this._find(id);
+            if (!r) return;
+            r.made = !!on;
+            const card = document.getElementById('recipe-' + id);
+            if (card) card.classList.toggle('made', !!on);
             this.persist();
         },
 
@@ -244,10 +257,12 @@
 
         buildCard: function(recipe) {
             if (this._editingId === recipe.id) return this.buildEditCard(recipe);
+            const self = this;
 
             const card = el('details', 'chef-recipe');
             card.id = 'recipe-' + recipe.id;
             if (this._openIds[recipe.id]) card.open = true;
+            if (recipe.made) card.classList.add('made');
 
             const stepsDone = this._countDone(recipe.checks && recipe.checks.steps, recipe.steps.length);
             if (recipe.steps.length > 0 && stepsDone === recipe.steps.length) card.classList.add('all-done');
@@ -263,6 +278,23 @@
             if (recipe.steps.length) {
                 summary.appendChild(el('span', 'chef-recipe-progress', stepsDone + '/' + recipe.steps.length + ' steps'));
             }
+
+            // "Made it" toggle — ticking it crosses out the recipe name above;
+            // untick to bring it back. Lives in the summary so it shows even
+            // when the card is collapsed. stopPropagation so it doesn't also
+            // open/close the card.
+            const madeLabel = el('label', 'chef-made');
+            madeLabel.title = 'Tick when you\'ve made this recipe';
+            const madeBox = document.createElement('input');
+            madeBox.type = 'checkbox';
+            madeBox.checked = !!recipe.made;
+            madeBox.addEventListener('change', function() { self.toggleMade(recipe.id, madeBox.checked); });
+            madeLabel.addEventListener('click', function(e) { e.stopPropagation(); });
+            madeLabel.appendChild(madeBox);
+            madeLabel.appendChild(el('span', 'chef-made-box'));
+            madeLabel.appendChild(el('span', 'chef-made-label', 'made it'));
+            summary.appendChild(madeLabel);
+
             card.appendChild(summary);
 
             const body = el('div', 'chef-recipe-body');
@@ -279,7 +311,6 @@
             }
 
             const actions = el('div', 'chef-actions');
-            const self = this;
             const resetBtn = el('button', 'chef-btn chef-btn-soft', '↺ Uncheck all');
             resetBtn.type = 'button';
             resetBtn.addEventListener('click', function() { self.resetChecks(recipe.id); });
