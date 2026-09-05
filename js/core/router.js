@@ -92,6 +92,13 @@
                         BedtimeRoulette.init();
                     }
                     break;
+                case 'disney-watch':
+                    // Re-fetch watch-list state from the server on every visit
+                    // so changes from another LAN device show up here too.
+                    if (typeof DisneyWatch !== 'undefined' && DisneyWatch.init) {
+                        DisneyWatch.init();
+                    }
+                    break;
             }
         },
 

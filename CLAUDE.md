@@ -51,7 +51,9 @@ js/
     ├── roulette-engine.js  # Shared slot-machine (spin, odds, audio, upvotes)
     ├── game-roulette.js    # Family game night games + art (uses the engine)
     ├── bathtub-roulette.js # Bath-time games + art (uses the engine)
-    └── bedtime-roulette.js # Bedtime wind-down activities + art (uses the engine)
+    ├── bedtime-roulette.js # Bedtime wind-down activities + art (uses the engine)
+    ├── disney-watch-data.js # Disney Watch Odyssey — 100-film catalogue + watched seed (data only)
+    └── disney-watch.js     # Disney Watch Odyssey — persistent watch list UI (server-backed)
 
 pages/                      # HTML templates loaded dynamically by router
 ├── grandma.html
@@ -63,7 +65,8 @@ pages/                      # HTML templates loaded dynamically by router
 ├── lister.html
 ├── game-roulette.html
 ├── bathtub-roulette.html
-└── bedtime-roulette.html
+├── bedtime-roulette.html
+└── disney-watch.html
 ```
 
 ### Initialization Flow
@@ -160,6 +163,22 @@ defined in code (`LISTER_TEMPLATES` in `server.py`); user-saved reusable lists
 live in the data file. `/api/lister/generate` uses the same Anthropic client
 as the Reading Game to turn a free-text prompt (optionally referencing a
 named list) into a new item list.
+
+**Disney Watch Odyssey** (`disney-watch` tab) follows the same server-backed
+pattern. The 100-film *catalogue* (title, year, studio, `wiki` article title,
+scare `tier` of `cozy`/`peril`/`preview`, parent note) lives client-side in
+`disney-watch-data.js`, ordered gentlest-first. Only per-film *state* is
+persisted, in `disney_data.json` (gitignored) via `GET`/`POST /api/disney/state`
+— the client sends the whole films array (like Lister's `/active`) holding
+`{watched:{noga,dana,ella}, watchedDate:"YYYY-MM", order, poster, custom films}`.
+`DISNEY_WATCHED_SEED` in `server.py` mirrors `WATCHED_SEED` in the data module
+and seeds the file on first run. A film moves to the "Watched" section when it
+has a `watchedDate` ("All watched!" ticks all three girls + stamps the month);
+the Watchlist is drag-and-drop / ▲▼ reorderable. **Poster art is fetched live
+from Wikipedia** at runtime (`en.wikipedia.org/api/rest_v1/page/summary/<wiki>`,
+CORS-open; falls back to the REST title-search), then the resolved
+`upload.wikimedia.org` URL is cached back into `disney_data.json`. Offline or on
+a lookup miss, a coloured title-card is shown instead — no bundled images.
 
 ### Audio Patterns
 

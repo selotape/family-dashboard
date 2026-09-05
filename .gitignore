@@ -6,6 +6,7 @@ __pycache__/
 reading-game-backend.log
 server.log
 lister_data.json
+disney_data.json
 venv/
 *.pyc
 

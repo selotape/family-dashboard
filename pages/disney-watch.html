@@ -1,0 +1,43 @@
+            <div class="disney-page">
+                <div class="disney-header">
+                    <h2 class="disney-title">🏰 Disney Watch Odyssey</h2>
+                    <p class="disney-tagline">One long journey, one film at a time — the list we build and finish together.</p>
+                    <div class="disney-progress-row">
+                        <span class="disney-progress-label" id="disney-progress-label"></span>
+                        <div class="disney-progress-bar"><div class="disney-progress-fill" id="disney-progress-fill"></div></div>
+                    </div>
+                </div>
+
+                <div class="disney-status" id="disney-status"></div>
+
+                <section class="disney-section">
+                    <div class="disney-section-head">
+                        <h3>🎬 The Watchlist</h3>
+                        <span class="disney-legend">
+                            <span class="disney-badge disney-badge-cozy">🫧 Cozy</span>
+                            <span class="disney-badge disney-badge-peril">⚡ Some peril</span>
+                            <span class="disney-badge disney-badge-preview">👀 Preview first</span>
+                        </span>
+                    </div>
+                    <div class="disney-grid" id="disney-watchlist"></div>
+                </section>
+
+                <form class="disney-add-form" id="disney-add-form">
+                    <input type="text" id="disney-add-title" placeholder="Add a film we want to watch…" autocomplete="off">
+                    <input type="number" id="disney-add-year" placeholder="Year" min="1930" max="2100" inputmode="numeric">
+                    <select id="disney-add-tier">
+                        <option value="cozy">🫧 Cozy</option>
+                        <option value="peril" selected>⚡ Some peril</option>
+                        <option value="preview">👀 Preview first</option>
+                    </select>
+                    <button type="submit" class="disney-add-btn">+ Add</button>
+                </form>
+
+                <section class="disney-section disney-section-watched">
+                    <div class="disney-section-head">
+                        <h3>✅ Watched</h3>
+                        <span class="disney-legend" id="disney-watched-count"></span>
+                    </div>
+                    <div class="disney-grid disney-grid-watched" id="disney-watched"></div>
+                </section>
+            </div>

@@ -706,6 +706,167 @@ def api_lister_generate():
 
 
 # ============================================================================
+# Disney Watch Odyssey — the family's long-term Disney/Pixar watch list.
+# The film *catalogue* lives client-side (js/modules/disney-watch-data.js);
+# the server only persists per-film state: who has watched it, the month,
+# the custom watch order, resolved poster URLs, and any user-added films.
+# Shared across every device on the LAN (like Lister), gitignored.
+# ============================================================================
+
+DISNEY_DATA_FILE = os.path.join(DIRECTORY, 'disney_data.json')
+disney_lock = threading.Lock()
+
+DISNEY_GIRLS = ['noga', 'dana', 'ella']
+DISNEY_TIERS = ['cozy', 'peril', 'preview']
+
+# Films the family has already watched. Mirrors WATCHED_SEED in
+# js/modules/disney-watch-data.js — seeds disney_data.json on first run.
+DISNEY_WATCHED_SEED = [
+    {'id': 'encanto', 'watchedDate': '2025-04',
+     'watched': {'noga': True, 'dana': True, 'ella': True}},
+    {'id': 'the-101-dalmatians-1961', 'custom': True,
+     'title': 'One Hundred and One Dalmatians', 'year': 1961, 'studio': 'Disney',
+     'tier': 'peril', 'note': 'Cruella de Vil and a stormy rescue; the classic animated one.',
+     'watchedDate': '2025-04', 'watched': {'noga': True, 'dana': True, 'ella': True}},
+    {'id': 'toy-story-5', 'custom': True,
+     'title': 'Toy Story 5', 'year': 2026, 'studio': 'Pixar', 'tier': 'peril',
+     'note': 'The newest one.',
+     'watchedDate': '2026-07', 'watched': {'dana': True, 'ella': True}},
+    {'id': 'mulan', 'watchedDate': '2026-08',
+     'watched': {'noga': True, 'dana': True, 'ella': True}},
+    {'id': 'moana', 'watchedDate': '2026-08',
+     'watched': {'noga': True, 'dana': True, 'ella': True}},
+    {'id': 'moana-2', 'watchedDate': '2026-08',
+     'watched': {'noga': True, 'dana': True, 'ella': True}},
+    {'id': 'frozen', 'watchedDate': '2026-09', 'watched': {'ella': True}},
+]
+
+_DISNEY_DATE_RE = None
+
+
+def _disney_valid_date(raw):
+    """Accept '' or 'YYYY-MM' or 'YYYY-MM-DD'; anything else -> ''."""
+    global _DISNEY_DATE_RE
+    if _DISNEY_DATE_RE is None:
+        import re
+        _DISNEY_DATE_RE = re.compile(r'^\d{4}-\d{2}(-\d{2})?$')
+    s = str(raw or '').strip()[:10]
+    return s if (s == '' or _DISNEY_DATE_RE.match(s)) else ''
+
+
+def _disney_sanitize_films(raw_films, max_films=400):
+    """Clean a client-supplied films array before persisting. The server does
+    not know the catalogue, so it keeps whatever metadata the client sends for
+    a film (needed for user-added 'custom' films) but always normalises it."""
+    out = []
+    if not isinstance(raw_films, list):
+        return out
+    seen = set()
+    for it in raw_films[:max_films]:
+        if not isinstance(it, dict):
+            continue
+        fid = str(it.get('id', '')).strip()[:64]
+        if not fid or fid in seen:
+            continue
+        seen.add(fid)
+
+        raw_watched = it.get('watched') or {}
+        watched = {g: bool(raw_watched.get(g, False)) for g in DISNEY_GIRLS}
+
+        entry = {
+            'id': fid,
+            'watched': watched,
+            'watchedDate': _disney_valid_date(it.get('watchedDate')),
+            'poster': '',
+            'hidden': bool(it.get('hidden', False)),
+        }
+
+        poster = str(it.get('poster', '')).strip()[:600]
+        if poster.startswith('http://') or poster.startswith('https://'):
+            entry['poster'] = poster
+
+        try:
+            entry['order'] = int(it.get('order'))
+        except (TypeError, ValueError):
+            pass
+
+        if it.get('custom'):
+            entry['custom'] = True
+            entry['title'] = str(it.get('title', '')).strip()[:120] or 'Untitled'
+            try:
+                entry['year'] = int(it.get('year'))
+            except (TypeError, ValueError):
+                entry['year'] = None
+            entry['studio'] = str(it.get('studio', 'Disney')).strip()[:40] or 'Disney'
+            entry['tier'] = it.get('tier') if it.get('tier') in DISNEY_TIERS else 'peril'
+            entry['note'] = str(it.get('note', '')).strip()[:400]
+
+        out.append(entry)
+    return out
+
+
+def _disney_default_data():
+    return {'films': _disney_sanitize_films(DISNEY_WATCHED_SEED),
+            'updatedAt': int(time.time() * 1000)}
+
+
+def _disney_write_unlocked(data):
+    tmp_path = DISNEY_DATA_FILE + '.tmp'
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp_path, DISNEY_DATA_FILE)
+
+
+def _disney_load():
+    with disney_lock:
+        if not os.path.exists(DISNEY_DATA_FILE):
+            data = _disney_default_data()
+            _disney_write_unlocked(data)
+            return data
+        try:
+            with open(DISNEY_DATA_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if not isinstance(data, dict) or 'films' not in data:
+                raise ValueError('malformed disney data')
+            data['films'] = _disney_sanitize_films(data.get('films', []))
+            return data
+        except Exception as e:
+            logger.error(f"Failed to read disney data, resetting: {e}")
+            data = _disney_default_data()
+            _disney_write_unlocked(data)
+            return data
+
+
+def _disney_save(data):
+    with disney_lock:
+        _disney_write_unlocked(data)
+
+
+@app.route('/api/disney/state', methods=['GET'])
+def api_disney_state():
+    """Everything the Disney Watch tab needs on load: the persisted per-film
+    state list. The client merges this with its built-in film catalogue."""
+    data = _disney_load()
+    return jsonify({
+        'success': True,
+        'films': data['films'],
+        'girls': DISNEY_GIRLS,
+        'updatedAt': data.get('updatedAt', 0),
+    })
+
+
+@app.route('/api/disney/state', methods=['POST'])
+def api_disney_save_state():
+    """Persist the whole per-film state array (checks, dates, order, resolved
+    poster URLs, custom films). Same whole-list approach as Lister's /active."""
+    body = request.get_json(silent=True) or {}
+    films = _disney_sanitize_films(body.get('films', []))
+    data = {'films': films, 'updatedAt': int(time.time() * 1000)}
+    _disney_save(data)
+    return jsonify({'success': True, 'films': films, 'updatedAt': data['updatedAt']})
+
+
+# ============================================================================
 # File Watcher
 # ============================================================================
 
