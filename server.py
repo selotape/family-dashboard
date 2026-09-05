@@ -871,6 +871,187 @@ def api_disney_save_state():
 
 
 # ============================================================================
+# Grandma's Little Chefs — the family's recipe book. The girls (and grownups)
+# type in recipes they want Grandma to cook, then tick off ingredients and
+# steps as they go ("what we did / what we still need to do"). The whole
+# recipe list is persisted server-side and shared across every device on the
+# LAN, like Lister/Disney. gitignored (chefs_data.json).
+#
+# Wire shape (client <-> server), one recipe:
+#   {id, title, emoji, blurb,
+#    ingredients: [str], steps: [str], tips: [str],
+#    checks: {ingredients: {"<idx>": true}, steps: {"<idx>": true}},
+#    createdAt}
+# Whole-array POST, same approach as Disney's /api/disney/state.
+# ============================================================================
+
+CHEFS_DATA_FILE = os.path.join(DIRECTORY, 'chefs_data.json')
+chefs_lock = threading.Lock()
+
+# Recipes the tab ships with (seed chefs_data.json on first run).
+CHEFS_SEED = [
+    {
+        'id': 'ketons-pickles',
+        'title': "Keton's Magic Pickles",
+        'emoji': '🥒',
+        'blurb': 'Crunchy sour pickles! We do a little work, then wait a whole week for the magic to happen.',
+        'ingredients': [
+            '🥒 1 kg (about 2 lb) small crunchy cucumbers, sliced',
+            '🌶️ 1 small green hot pepper, cut in half, seeds scooped out',
+            '🧄 Half a head of garlic',
+            '🌿 A little bunch of fresh dill',
+            '🥬 1 stick of celery, chopped',
+            '🍶 ⅓ cup (80 ml) white vinegar',
+            '🍬 1 big heaping spoon of sugar',
+            '🧂 2 spoons of salt',
+            '💧 Water',
+        ],
+        'steps': [
+            '🚿 Wash the cucumbers really, really well.',
+            '🫙 Pack the cucumbers into a big jar with the hot pepper, garlic, dill, and celery.',
+            '🥣 In a bowl, stir the vinegar, sugar, and salt until they melt away.',
+            '⬇️ Pour the bowl mix over the cucumbers in the jar.',
+            '💧 Add water until everything is hiding under the water. Close the lid tight!',
+            '🌡️ Leave the jar on the counter (NOT the fridge) for 1 whole week.',
+            '❄️ Move the jar to the fridge. Now… CRUNCH! 😋',
+        ],
+        'tips': [
+            '🧊 They stay yummy in the fridge for at least a couple of months.',
+            '🥬 You can pickle cabbage and cauliflower the same way — just cut them into bite-size pieces.',
+        ],
+    },
+]
+
+
+def _chefs_str_list(raw, limit, maxlen):
+    """A client-supplied list of lines -> a clean list of non-empty strings."""
+    out = []
+    if isinstance(raw, list):
+        for x in raw[:limit]:
+            s = str(x).strip()[:maxlen]
+            if s:
+                out.append(s)
+    return out
+
+
+def _chefs_idx_map(raw, n):
+    """Keep only {"<int idx>": true} entries whose index is within 0..n-1."""
+    out = {}
+    if isinstance(raw, dict):
+        for k, v in raw.items():
+            try:
+                ki = int(k)
+            except (TypeError, ValueError):
+                continue
+            if 0 <= ki < n and bool(v):
+                out[str(ki)] = True
+    return out
+
+
+def _chefs_sanitize_recipes(raw_recipes, max_recipes=80):
+    """Clean/validate a client-supplied recipe list before it's persisted."""
+    out = []
+    if not isinstance(raw_recipes, list):
+        return out
+    seen = set()
+    for it in raw_recipes[:max_recipes]:
+        if not isinstance(it, dict):
+            continue
+        rid = str(it.get('id') or ('r-' + uuid.uuid4().hex[:10]))[:48]
+        if not rid or rid in seen:
+            rid = 'r-' + uuid.uuid4().hex[:10]
+        seen.add(rid)
+
+        ingredients = _chefs_str_list(it.get('ingredients'), 60, 200)
+        steps = _chefs_str_list(it.get('steps'), 60, 400)
+        tips = _chefs_str_list(it.get('tips'), 30, 300)
+
+        raw_checks = it.get('checks') or {}
+        checks = {
+            'ingredients': _chefs_idx_map(raw_checks.get('ingredients'), len(ingredients)),
+            'steps': _chefs_idx_map(raw_checks.get('steps'), len(steps)),
+        }
+
+        try:
+            created = int(it.get('createdAt'))
+        except (TypeError, ValueError):
+            created = int(time.time() * 1000)
+
+        out.append({
+            'id': rid,
+            'title': str(it.get('title', '')).strip()[:120] or 'Untitled recipe',
+            'emoji': str(it.get('emoji', '🍳')).strip()[:8] or '🍳',
+            'blurb': str(it.get('blurb', '')).strip()[:400],
+            'ingredients': ingredients,
+            'steps': steps,
+            'tips': tips,
+            'checks': checks,
+            'createdAt': created,
+        })
+    return out
+
+
+def _chefs_default_data():
+    return {'recipes': _chefs_sanitize_recipes(CHEFS_SEED),
+            'updatedAt': int(time.time() * 1000)}
+
+
+def _chefs_write_unlocked(data):
+    tmp_path = CHEFS_DATA_FILE + '.tmp'
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp_path, CHEFS_DATA_FILE)
+
+
+def _chefs_load():
+    with chefs_lock:
+        if not os.path.exists(CHEFS_DATA_FILE):
+            data = _chefs_default_data()
+            _chefs_write_unlocked(data)
+            return data
+        try:
+            with open(CHEFS_DATA_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if not isinstance(data, dict) or 'recipes' not in data:
+                raise ValueError('malformed chefs data')
+            data['recipes'] = _chefs_sanitize_recipes(data.get('recipes', []))
+            return data
+        except Exception as e:
+            logger.error(f"Failed to read chefs data, resetting: {e}")
+            data = _chefs_default_data()
+            _chefs_write_unlocked(data)
+            return data
+
+
+def _chefs_save(data):
+    with chefs_lock:
+        _chefs_write_unlocked(data)
+
+
+@app.route('/api/chefs/state', methods=['GET'])
+def api_chefs_state():
+    """Everything the Grandma's Little Chefs tab needs on load: the full recipe
+    list with per-recipe checklist state."""
+    data = _chefs_load()
+    return jsonify({
+        'success': True,
+        'recipes': data['recipes'],
+        'updatedAt': data.get('updatedAt', 0),
+    })
+
+
+@app.route('/api/chefs/state', methods=['POST'])
+def api_chefs_save_state():
+    """Persist the whole recipe list (adds, edits, deletes, and ticked
+    ingredients/steps). Same whole-list approach as Disney's /state."""
+    body = request.get_json(silent=True) or {}
+    recipes = _chefs_sanitize_recipes(body.get('recipes', []))
+    data = {'recipes': recipes, 'updatedAt': int(time.time() * 1000)}
+    _chefs_save(data)
+    return jsonify({'success': True, 'recipes': recipes, 'updatedAt': data['updatedAt']})
+
+
+# ============================================================================
 # File Watcher
 # ============================================================================
 

@@ -54,7 +54,7 @@ js/
     ├── bedtime-roulette.js # Bedtime wind-down activities + art (uses the engine)
     ├── disney-watch-data.js # Disney Watch Odyssey — 100-film catalogue + watched seed (data only)
     ├── disney-watch.js     # Disney Watch Odyssey — persistent watch list UI (server-backed)
-    └── grandma-chefs.js    # Grandma's Little Chefs — recipe book; recipes are a hardcoded array, one collapsible card each
+    └── grandma-chefs.js    # Grandma's Little Chefs — family recipe book, one collapsible card each, tickable checklists (server-backed)
 
 pages/                      # HTML templates loaded dynamically by router
 ├── grandma.html
@@ -187,6 +187,21 @@ fetched live from Wikipedia** at runtime
 the REST title-search), then the resolved `upload.wikimedia.org` URL is cached
 back into `disney_data.json`. Offline or on a lookup miss, a coloured title-card
 is shown instead — no bundled images.
+
+**Grandma's Little Chefs** (`grandma-chefs` tab) is the same server-backed
+pattern, whole-list POST like Disney. The family types recipes straight into
+the page (add / edit / delete, no AI); each recipe is a collapsible card with
+two tickable checklists — 🛒 *What we need* (ingredients) and 👩‍🍳 *What we do*
+(steps) — so the girls check things off while cooking with Grandma. The full
+recipe list lives in `chefs_data.json` (gitignored) via `GET`/`POST
+/api/chefs/state`; a recipe is `{id, title, emoji, blurb, ingredients:[str],
+steps:[str], tips:[str], checks:{ingredients:{"<idx>":true}, steps:{...}},
+createdAt}`. `CHEFS_SEED` in `server.py` seeds the file on first run (the
+kid-translated Keton's Pickles recipe). No client-side data module — recipes
+are 100% user content, so unlike Disney there's no catalogue to keep in code.
+`GrandmaChefs.persist()` serialises saves (one POST in flight, re-flushes if
+another edit lands meanwhile) and never copies the response back over local
+state, so fast successive ticks don't clobber each other.
 
 ### Audio Patterns
 
