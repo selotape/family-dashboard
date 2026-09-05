@@ -53,7 +53,8 @@ js/
     ├── bathtub-roulette.js # Bath-time games + art (uses the engine)
     ├── bedtime-roulette.js # Bedtime wind-down activities + art (uses the engine)
     ├── disney-watch-data.js # Disney Watch Odyssey — 100-film catalogue + watched seed (data only)
-    └── disney-watch.js     # Disney Watch Odyssey — persistent watch list UI (server-backed)
+    ├── disney-watch.js     # Disney Watch Odyssey — persistent watch list UI (server-backed)
+    └── grandma-chefs.js    # Grandma's Little Chefs — recipe book; recipes are a hardcoded array, one collapsible card each
 
 pages/                      # HTML templates loaded dynamically by router
 ├── grandma.html
@@ -66,7 +67,8 @@ pages/                      # HTML templates loaded dynamically by router
 ├── game-roulette.html
 ├── bathtub-roulette.html
 ├── bedtime-roulette.html
-└── disney-watch.html
+├── disney-watch.html
+└── grandma-chefs.html
 ```
 
 ### Initialization Flow
