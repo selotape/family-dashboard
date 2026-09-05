@@ -273,6 +273,7 @@
             return '' +
             '<article class="disney-card tier-' + f.tier + '" draggable="true" data-id="' + f.id + '" style="--accent:' + f.accent + '">' +
                 '<div class="disney-poster" style="--accent:' + f.accent + '">' +
+                    '<span class="disney-rank" title="Recommended order">' + (i + 1) + '</span>' +
                     this.posterHTML(f) +
                     '<div class="disney-poster-fallback"><span class="disney-fallback-title">' + this.esc(f.title) + '</span>' +
                         (f.year ? '<span class="disney-fallback-year">' + f.year + '</span>' : '') + '</div>' +
@@ -342,6 +343,8 @@
                 else if (act === 'up') self.reorder(id, -1);
                 else if (act === 'down') self.reorder(id, 1);
                 else if (act === 'remove') self.removeCustom(id);
+                else if (act === 'jump-watched') self.jumpTo('.disney-section-watched');
+                else if (act === 'jump-top') self.jumpTo('.disney-header');
             });
 
             var form = document.getElementById('disney-add-form');
@@ -468,6 +471,10 @@
             burst.textContent = '✨🏰✨';
             page.appendChild(burst);
             setTimeout(function () { burst.remove(); }, 1200);
+        },
+        jumpTo: function (selector) {
+            var el = document.querySelector('#disney-watch ' + selector);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         },
         setStatus: function (msg, isErr) {
             var el = document.getElementById('disney-status');
