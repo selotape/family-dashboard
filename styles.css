@@ -4687,3 +4687,74 @@
     .disney-title { font-size: 24px; }
     .disney-note { display: none; }
 }
+
+/* ===== Grandma's Little Chefs ===== */
+.chefs-page { max-width: 720px; margin: 0 auto; }
+.chefs-header { text-align: center; margin-bottom: 10px; }
+.chefs-page-title { font-size: 26px; color: #fb923c; }
+.chefs-subtitle { margin-top: 6px; color: #cbd5e1; font-size: 15px; }
+.chefs-subtitle strong { color: #f8b4c0; }
+.chefs-count { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 700;
+    color: #94a3b8; letter-spacing: 0.5px; }
+.chefs-hint { text-align: center; font-size: 13px; color: #94a3b8; margin: 4px 0 16px; }
+
+.chefs-list { display: flex; flex-direction: column; gap: 12px; }
+
+.chef-recipe {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-left: 4px solid #fb923c;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.chef-recipe[open] { background: rgba(255,255,255,0.06); }
+
+.chef-recipe-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+.chef-recipe-summary::-webkit-details-marker { display: none; }
+.chef-recipe-summary:hover { background: rgba(255,255,255,0.05); }
+.chef-recipe-emoji { font-size: 26px; line-height: 1; }
+.chef-recipe-name { flex: 1; font-size: 18px; font-weight: 800; color: #f1f5f9; }
+.chef-recipe-asked { font-size: 12px; font-weight: 700; color: #94a3b8; white-space: nowrap; }
+
+.chef-recipe-body { padding: 4px 18px 20px; }
+.chef-recipe-blurb { color: #e2e8f0; font-size: 15px; line-height: 1.5; margin-bottom: 14px; }
+
+.chef-recipe-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chef-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(251,146,60,0.12);
+    border: 1px solid rgba(251,146,60,0.3);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12.5px; font-weight: 700; color: #fdba74;
+}
+.chef-chip-icon { font-size: 14px; }
+
+.chef-recipe-heading {
+    font-size: 15px; font-weight: 800; color: #38bdf8;
+    margin: 16px 0 8px;
+}
+.chef-ingredients, .chef-tips { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.chef-ingredients li, .chef-tips li {
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 14.5px; line-height: 1.45; color: #e2e8f0;
+}
+.chef-steps { padding-left: 22px; display: flex; flex-direction: column; gap: 9px; }
+.chef-steps li { font-size: 15px; line-height: 1.5; color: #e2e8f0; padding-left: 4px; }
+.chef-steps li::marker { color: #fb923c; font-weight: 800; }
+
+@media (max-width: 560px) {
+    .chef-recipe-name { font-size: 16px; }
+    .chef-recipe-asked { display: none; }
+    .chef-recipe-body { padding: 4px 14px 18px; }
+}

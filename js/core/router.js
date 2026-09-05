@@ -99,6 +99,12 @@
                         DisneyWatch.init();
                     }
                     break;
+                case 'grandma-chefs':
+                    // Renders the recipe cards (all data lives in the module)
+                    if (typeof GrandmaChefs !== 'undefined' && GrandmaChefs.init) {
+                        GrandmaChefs.init();
+                    }
+                    break;
             }
         },
 
