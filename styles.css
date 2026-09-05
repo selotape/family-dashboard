@@ -4572,8 +4572,6 @@
 .disney-card:hover { transform: translateY(-3px);
     border-color: color-mix(in srgb, var(--accent) 60%, transparent);
     box-shadow: 0 12px 30px rgba(0,0,0,0.35), 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
-.disney-card.dragging { opacity: .4; }
-.disney-card.drop-target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 
 .disney-poster { position: relative; aspect-ratio: 2 / 3; overflow: hidden;
     background: linear-gradient(160deg,
@@ -4598,6 +4596,12 @@
     font-size: 13px; font-weight: 800; color: #0b1020; line-height: 1;
     background: color-mix(in srgb, var(--accent) 88%, #fff);
     box-shadow: 0 2px 8px rgba(0,0,0,0.45), 0 0 0 2px rgba(11,16,32,0.55); }
+
+/* like tally — why this film sits where it does */
+.disney-likes { position: absolute; top: 8px; right: 8px; z-index: 3; height: 26px; padding: 0 9px;
+    display: flex; align-items: center; gap: 3px; border-radius: 999px; font-size: 12.5px; font-weight: 800;
+    color: #0b1020; background: #fde047; box-shadow: 0 2px 8px rgba(0,0,0,0.45), 0 0 0 2px rgba(11,16,32,0.55); }
+.disney-card:has(.disney-remove) .disney-likes { right: 38px; }
 
 /* fixed in-page jump control */
 .disney-jump { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: flex; flex-direction: column; gap: 8px; }
@@ -4630,15 +4634,23 @@
 .disney-girl.on { filter: none; background: color-mix(in srgb, var(--accent) 26%, transparent);
     border-color: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
 
-.disney-card-actions { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+/* vote row — the girls tap their animal to push a film up the list */
+.disney-vote-label { margin-top: auto; padding-top: 8px; font-size: 10.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px; color: #9aa6b6; }
+.disney-votes { display: flex; gap: 6px; }
+.disney-vote { flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px 0; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); cursor: pointer;
+    filter: grayscale(1) opacity(.55); transition: transform .12s ease, filter .15s ease, box-shadow .15s ease, background .15s ease; }
+.disney-vote:hover { filter: grayscale(.3) opacity(.95); transform: translateY(-1px); border-color: rgba(255,255,255,0.32); }
+.disney-vote.on { filter: none; transform: translateY(-1px);
+    background: color-mix(in srgb, var(--accent) 30%, transparent); border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 4px 12px rgba(0,0,0,0.3); }
+.disney-vote .disney-girl-emoji { font-size: 20px; line-height: 1; }
+
+.disney-card-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .disney-watched-btn { flex: 1; padding: 8px 10px; border: none; border-radius: 9px; cursor: pointer; font-weight: 700;
     font-size: 12.5px; color: #0b1020; background: linear-gradient(135deg, #7dd3fc, #c4b5fd); transition: filter .15s ease; }
 .disney-watched-btn:hover { filter: brightness(1.08); }
-.disney-reorder { display: flex; flex-direction: column; gap: 2px; }
-.disney-reorder button { width: 26px; height: 17px; border: 1px solid rgba(255,255,255,0.16);
-    background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 9px; cursor: pointer; border-radius: 5px; padding: 0; }
-.disney-reorder button:hover:not(:disabled) { background: rgba(255,255,255,0.16); }
-.disney-reorder button:disabled { opacity: .3; cursor: default; }
 
 .disney-card-done { opacity: .92; }
 .disney-card-done .disney-poster-img { filter: grayscale(.55) brightness(.9); }

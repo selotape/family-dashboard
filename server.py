@@ -773,9 +773,13 @@ def _disney_sanitize_films(raw_films, max_films=400):
         raw_watched = it.get('watched') or {}
         watched = {g: bool(raw_watched.get(g, False)) for g in DISNEY_GIRLS}
 
+        raw_votes = it.get('votes') or {}
+        votes = {g: bool(raw_votes.get(g, False)) for g in DISNEY_GIRLS}
+
         entry = {
             'id': fid,
             'watched': watched,
+            'votes': votes,
             'watchedDate': _disney_valid_date(it.get('watchedDate')),
             'poster': '',
             'hidden': bool(it.get('hidden', False)),

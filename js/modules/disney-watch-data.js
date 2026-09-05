@@ -152,6 +152,37 @@
         { id: 'frozen',         date: '2026-09', girls: ['ella'] }
     ];
 
+    // Popularity score (0-100): roughly worldwide box office with a firm nudge
+    // toward recent films. Drives the *default* watch order — the family didn't
+    // like "gentlest first". The live order is then: most 👍 likes, then this.
+    var POP = {
+        'inside-out-2': 100, 'frozen-ii': 96, 'frozen': 95, 'incredibles-2': 94, 'moana-2': 94,
+        'toy-story-4': 92, 'zootopia': 92, 'encanto': 92, 'moana': 91, 'finding-dory': 90,
+        'coco': 90, 'zootopia-2': 89, 'finding-nemo': 89, 'inside-out': 88, 'the-lion-king': 88,
+        'big-hero-6': 87, 'up': 86, 'monsters-university': 85, 'ralph-breaks-the-internet': 84,
+        'the-incredibles': 84, 'tangled': 84, 'wall-e': 83, 'monsters-inc': 83, 'elemental': 83,
+        'ratatouille': 82, 'brave': 82, 'wreck-it-ralph': 81, 'turning-red': 80, 'toy-story-2': 79,
+        'aladdin': 79, 'cars': 78, 'soul': 78, 'luca': 78, 'toy-story': 76, 'cars-2': 76,
+        'raya-and-the-last-dragon': 76, 'beauty-and-the-beast': 75, 'cars-3': 74, 'wish': 74,
+        'mulan': 73, 'the-little-mermaid': 72, 'a-bugs-life': 71, 'lightyear': 71, 'lilo-and-stitch': 70,
+        'hercules': 70, 'onward': 70, 'the-good-dinosaur': 68, 'the-hunchback-of-notre-dame': 68,
+        'the-jungle-book': 67, 'snow-white': 66, 'the-princess-and-the-frog': 66, 'chicken-little': 62,
+        'emperors-new-groove': 62, 'lady-and-the-tramp': 60, 'bambi': 58, 'meet-the-robinsons': 58,
+        'atlantis-the-lost-empire': 56, 'peter-pan': 56, 'strange-world': 56, 'pinocchio': 56,
+        'the-aristocats': 54, 'sleeping-beauty': 54, 'planes': 50, 'treasure-planet': 50,
+        'robin-hood': 48, 'home-on-the-range': 46, 'the-rescuers': 46, 'return-to-never-land': 46,
+        'the-jungle-book-2': 46, 'many-adventures-pooh': 44, 'the-sword-in-the-stone': 44,
+        'oliver-and-company': 44, 'planes-fire-and-rescue': 44, 'the-lion-king-ii': 42,
+        'the-great-mouse-detective': 40, 'the-rescuers-down-under': 40, 'fantasia-2000': 40,
+        'winnie-the-pooh-2011': 40, 'tinker-bell': 36, 'lion-king-1half': 32, 'mulan-ii': 30,
+        '101-dalmatians-ii': 30, 'tinker-bell-lost-treasure': 30, 'tinker-bell-great-fairy-rescue': 30,
+        'secret-of-the-wings': 30, 'cinderella-iii': 28, 'tinker-bell-neverbeast': 28, 'the-pirate-fairy': 28,
+        'cinderella-ii': 26, 'lilo-and-stitch-2': 26, 'bambi-ii': 26, 'lady-and-the-tramp-ii': 26,
+        'tarzan-ii': 24, 'the-little-mermaid-ariels-beginning': 24, 'pocahontas-ii': 24,
+        'kronks-new-groove': 22, 'leroy-and-stitch': 22, 'belles-magical-world': 18
+    };
+    CATALOG.forEach(function (c) { c.pop = (typeof POP[c.id] === 'number') ? POP[c.id] : 45; });
+
     window.DisneyWatchData = {
         TIERS: TIERS,
         PALETTE: PALETTE,

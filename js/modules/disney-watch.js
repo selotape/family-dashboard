@@ -1,9 +1,13 @@
 // Disney Watch Odyssey
 // A beautiful, persistent watch list of Disney / Pixar / Disneytoon animated
 // features for three scaredy-cat girls. Catalogue data lives in
-// disney-watch-data.js; per-film state (checks, month, order, posters, custom
-// films) is persisted server-side via /api/disney/state (shared on the LAN,
-// survives restarts). Poster art is fetched live from Wikipedia.
+// disney-watch-data.js; per-film state (girl votes, watched checks, month,
+// posters, custom films) is persisted server-side via /api/disney/state
+// (shared on the LAN, survives restarts). Poster art is fetched live from
+// Wikipedia.
+//
+// Watchlist order = most 👍 girl-votes first, then popularity/revenue score
+// (`pop`, recency-weighted). The girls vote by tapping their animal.
 (function () {
     'use strict';
 
@@ -14,7 +18,6 @@
         girls: DATA ? DATA.GIRLS : [],
         _saveTimer: null,
         _built: false,
-        _dragId: null,
 
         // ---- backend (XHR + Promise, same shape as Lister) ----
         _request: function (method, body) {
@@ -61,6 +64,12 @@
             var savedById = {};
             savedFilms.forEach(function (s) { savedById[s.id] = s; });
 
+            function trio(src) {
+                return {
+                    noga: !!(src && src.noga), dana: !!(src && src.dana), ella: !!(src && src.ella)
+                };
+            }
+
             var list = [];
             DATA.CATALOG.forEach(function (cat, i) {
                 var s = savedById[cat.id] || {};
@@ -69,14 +78,11 @@
                     id: cat.id, title: cat.title, year: cat.year, studio: cat.studio,
                     wiki: cat.wiki, tier: cat.tier, note: cat.note, custom: false,
                     catIndex: i, accent: DATA.accentFor(i),
-                    watched: {
-                        noga: !!(s.watched && s.watched.noga),
-                        dana: !!(s.watched && s.watched.dana),
-                        ella: !!(s.watched && s.watched.ella)
-                    },
+                    pop: (typeof cat.pop === 'number') ? cat.pop : 45,
+                    votes: trio(s.votes),
+                    watched: trio(s.watched),
                     watchedDate: s.watchedDate || '',
-                    poster: s.poster || '',
-                    order: (typeof s.order === 'number') ? s.order : i
+                    poster: s.poster || ''
                 });
             });
 
@@ -89,14 +95,11 @@
                     studio: s.studio || 'Disney', wiki: (s.title || '') + ' (film)',
                     tier: s.tier || 'peril', note: s.note || '', custom: true,
                     catIndex: 9999, accent: DATA.accentFor(id.length + k),
-                    watched: {
-                        noga: !!(s.watched && s.watched.noga),
-                        dana: !!(s.watched && s.watched.dana),
-                        ella: !!(s.watched && s.watched.ella)
-                    },
+                    pop: (typeof s.pop === 'number') ? s.pop : 50,
+                    votes: trio(s.votes),
+                    watched: trio(s.watched),
                     watchedDate: s.watchedDate || '',
-                    poster: s.poster || '',
-                    order: (typeof s.order === 'number') ? s.order : 9999 + k
+                    poster: s.poster || ''
                 });
             });
 
@@ -105,9 +108,18 @@
 
         isWatched: function (f) { return !!f.watchedDate; },
 
+        likeCount: function (f) {
+            return (f.votes.noga ? 1 : 0) + (f.votes.dana ? 1 : 0) + (f.votes.ella ? 1 : 0);
+        },
+
         watchlist: function () {
+            var self = this;
             return this.films.filter(function (f) { return !f.watchedDate; })
-                .sort(function (a, b) { return (a.order - b.order) || (a.catIndex - b.catIndex); });
+                .sort(function (a, b) {
+                    return (self.likeCount(b) - self.likeCount(a)) ||
+                           ((b.pop || 0) - (a.pop || 0)) ||
+                           a.title.localeCompare(b.title);
+                });
         },
         watched: function () {
             return this.films.filter(function (f) { return !!f.watchedDate; })
@@ -127,12 +139,12 @@
             var self = this;
             var payload = this.films.map(function (f) {
                 var e = {
-                    id: f.id, watched: f.watched, watchedDate: f.watchedDate,
-                    poster: f.poster || '', order: f.order
+                    id: f.id, votes: f.votes, watched: f.watched,
+                    watchedDate: f.watchedDate, poster: f.poster || ''
                 };
                 if (f.custom) {
                     e.custom = true; e.title = f.title; e.year = f.year;
-                    e.studio = f.studio; e.tier = f.tier; e.note = f.note;
+                    e.studio = f.studio; e.tier = f.tier; e.note = f.note; e.pop = f.pop;
                 }
                 return e;
             });
@@ -147,6 +159,11 @@
             f.watched[girl] = !f.watched[girl];
             this.render(); this.queueSave();
         },
+        toggleVote: function (id, girl) {
+            var f = this.find(id); if (!f) return;
+            f.votes[girl] = !f.votes[girl];
+            this.render(); this.queueSave();
+        },
         markWatched: function (id) {
             var f = this.find(id); if (!f) return;
             var any = f.watched.noga || f.watched.dana || f.watched.ella;
@@ -158,10 +175,7 @@
         moveBack: function (id) {
             var f = this.find(id); if (!f) return;
             f.watchedDate = '';
-            // drop to bottom of the watchlist
-            var max = 0;
-            this.films.forEach(function (x) { if (x.order > max) max = x.order; });
-            f.order = max + 1;
+            // re-enters the watchlist at its votes/popularity position
             this.render(); this.queueSave();
         },
         editDate: function (id) {
@@ -174,39 +188,17 @@
             f.watchedDate = next;
             this.render(); this.queueSave();
         },
-        reorder: function (id, dir) {
-            var wl = this.watchlist();
-            var idx = -1;
-            for (var i = 0; i < wl.length; i++) { if (wl[i].id === id) { idx = i; break; } }
-            var swapWith = idx + dir;
-            if (idx < 0 || swapWith < 0 || swapWith >= wl.length) return;
-            var a = wl[idx], b = wl[swapWith];
-            var tmp = a.order; a.order = b.order; b.order = tmp;
-            this.render(); this.queueSave();
-        },
-        dropReorder: function (draggedId, targetId) {
-            if (!draggedId || draggedId === targetId) return;
-            var wl = this.watchlist();
-            var ids = wl.map(function (f) { return f.id; });
-            var from = ids.indexOf(draggedId), to = ids.indexOf(targetId);
-            if (from < 0 || to < 0) return;
-            ids.splice(to, 0, ids.splice(from, 1)[0]);
-            var self = this;
-            ids.forEach(function (fid, i) { self.find(fid).order = i; });
-            this.render(); this.queueSave();
-        },
         addCustom: function (title, year, tier) {
             title = (title || '').trim();
             if (!title) return;
             var id = 'custom-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-            var maxOrder = 0;
-            this.films.forEach(function (f) { if (f.order > maxOrder) maxOrder = f.order; });
             this.films.push({
                 id: id, title: title, year: year || null, studio: 'Disney',
                 wiki: title + ' (film)', tier: tier || 'peril', note: '', custom: true,
-                catIndex: 9999, accent: DATA.accentFor(id.length),
+                catIndex: 9999, accent: DATA.accentFor(id.length), pop: 50,
+                votes: { noga: false, dana: false, ella: false },
                 watched: { noga: false, dana: false, ella: false },
-                watchedDate: '', poster: '', order: maxOrder + 1
+                watchedDate: '', poster: ''
             });
             this.render(); this.queueSave();
             this.resolvePosters();
@@ -258,6 +250,16 @@
             }).join('') + '</div>';
         },
 
+        voteRowHTML: function (f) {
+            return '<div class="disney-vote-label">👍 Who wants to watch this?</div>' +
+                '<div class="disney-votes">' + this.girls.map(function (g) {
+                    var on = f.votes[g.id];
+                    return '<button class="disney-vote' + (on ? ' on' : '') + '" data-act="vote" data-id="' +
+                        f.id + '" data-girl="' + g.id + '" title="' + g.name + (on ? ' wants to watch this' : ' — tap to vote') +
+                        '" aria-pressed="' + on + '"><span class="disney-girl-emoji">' + g.emoji + '</span></button>';
+                }).join('') + '</div>';
+        },
+
         posterHTML: function (f) {
             var initials = this.esc(f.title);
             if (f.poster) {
@@ -270,10 +272,12 @@
 
         cardHTML: function (f, i, n) {
             var t = DATA.TIERS[f.tier] || DATA.TIERS.peril;
+            var likes = this.likeCount(f);
             return '' +
-            '<article class="disney-card tier-' + f.tier + '" draggable="true" data-id="' + f.id + '" style="--accent:' + f.accent + '">' +
+            '<article class="disney-card tier-' + f.tier + '" data-id="' + f.id + '" style="--accent:' + f.accent + '">' +
                 '<div class="disney-poster" style="--accent:' + f.accent + '">' +
-                    '<span class="disney-rank" title="Recommended order">' + (i + 1) + '</span>' +
+                    '<span class="disney-rank" title="Order — most likes first, then popularity">' + (i + 1) + '</span>' +
+                    (likes ? '<span class="disney-likes" title="' + likes + ' vote' + (likes === 1 ? '' : 's') + '">👍 ' + likes + '</span>' : '') +
                     this.posterHTML(f) +
                     '<div class="disney-poster-fallback"><span class="disney-fallback-title">' + this.esc(f.title) + '</span>' +
                         (f.year ? '<span class="disney-fallback-year">' + f.year + '</span>' : '') + '</div>' +
@@ -285,14 +289,9 @@
                         (f.year ? ' <span class="disney-year">(' + f.year + ')</span>' : '') + '</div>' +
                     '<div class="disney-studio">' + this.esc(f.studio) + '</div>' +
                     (f.note ? '<p class="disney-note">' + this.esc(f.note) + '</p>' : '') +
-                    this.girlChecksHTML(f) +
+                    this.voteRowHTML(f) +
                     '<div class="disney-card-actions">' +
-                        '<button class="disney-watched-btn" data-act="mark" data-id="' + f.id + '">' +
-                            (f.watched.noga || f.watched.dana || f.watched.ella ? '✓ Watched' : 'All watched!') + '</button>' +
-                        '<span class="disney-reorder">' +
-                            '<button data-act="up" data-id="' + f.id + '" title="Move up"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
-                            '<button data-act="down" data-id="' + f.id + '" title="Move down"' + (i === n - 1 ? ' disabled' : '') + '>▼</button>' +
-                        '</span>' +
+                        '<button class="disney-watched-btn" data-act="mark" data-id="' + f.id + '">✅ All watched!</button>' +
                     '</div>' +
                 '</div>' +
             '</article>';
@@ -336,12 +335,11 @@
                 if (!btn) return;
                 var id = btn.getAttribute('data-id');
                 var act = btn.getAttribute('data-act');
-                if (act === 'girl') self.toggleGirl(id, btn.getAttribute('data-girl'));
+                if (act === 'vote') self.toggleVote(id, btn.getAttribute('data-girl'));
+                else if (act === 'girl') self.toggleGirl(id, btn.getAttribute('data-girl'));
                 else if (act === 'mark') self.markWatched(id);
                 else if (act === 'back') self.moveBack(id);
                 else if (act === 'date') self.editDate(id);
-                else if (act === 'up') self.reorder(id, -1);
-                else if (act === 'down') self.reorder(id, 1);
                 else if (act === 'remove') self.removeCustom(id);
                 else if (act === 'jump-watched') self.jumpTo('.disney-section-watched');
                 else if (act === 'jump-top') self.jumpTo('.disney-header');
@@ -356,35 +354,6 @@
                 self.addCustom(title.value, parseInt(year.value, 10) || null, tier.value);
                 title.value = ''; year.value = '';
             });
-
-            // drag-and-drop reorder within the watchlist
-            var grid = document.getElementById('disney-watchlist');
-            if (grid) {
-                grid.addEventListener('dragstart', function (e) {
-                    var card = e.target.closest('.disney-card');
-                    if (!card) return;
-                    self._dragId = card.getAttribute('data-id');
-                    card.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
-                });
-                grid.addEventListener('dragend', function () {
-                    self._dragId = null;
-                    grid.querySelectorAll('.dragging,.drop-target').forEach(function (el) {
-                        el.classList.remove('dragging', 'drop-target');
-                    });
-                });
-                grid.addEventListener('dragover', function (e) {
-                    e.preventDefault();
-                    var card = e.target.closest('.disney-card');
-                    grid.querySelectorAll('.drop-target').forEach(function (el) { el.classList.remove('drop-target'); });
-                    if (card && card.getAttribute('data-id') !== self._dragId) card.classList.add('drop-target');
-                });
-                grid.addEventListener('drop', function (e) {
-                    e.preventDefault();
-                    var card = e.target.closest('.disney-card');
-                    if (card) self.dropReorder(self._dragId, card.getAttribute('data-id'));
-                });
-            }
         },
 
         // ---- poster resolution via Wikipedia (live, cached server-side) ----
