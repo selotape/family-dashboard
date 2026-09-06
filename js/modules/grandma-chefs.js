@@ -23,6 +23,70 @@
             .filter(function(s) { return s.length; });
     }
 
+    // ---- Ingredient quantity scaling (view-only "×N" multiplier) ----
+    const FRACS = '½⅓⅔¼¾⅛⅜⅝⅞⅕⅖⅗⅘⅙⅚';
+    const FRAC_VAL = {
+        '½': 0.5, '⅓': 1 / 3, '⅔': 2 / 3, '¼': 0.25, '¾': 0.75,
+        '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875,
+        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8, '⅙': 1 / 6, '⅚': 5 / 6
+    };
+    // value -> nearest tidy cooking fraction glyph
+    const NICE = [[0, ''], [0.125, '⅛'], [1 / 6, '⅙'], [0.25, '¼'], [1 / 3, '⅓'],
+        [0.375, '⅜'], [0.5, '½'], [0.625, '⅝'], [2 / 3, '⅔'], [0.75, '¾'],
+        [5 / 6, '⅚'], [0.875, '⅞'], [1, '']];
+
+    function fmtQty(v) {
+        v = Math.round(v * 1000) / 1000;
+        let whole = Math.floor(v + 1e-9);
+        const frac = v - whole;
+        let best = NICE[0], bestD = 1;
+        for (let i = 0; i < NICE.length; i++) {
+            const d = Math.abs(frac - NICE[i][0]);
+            if (d < bestD) { bestD = d; best = NICE[i]; }
+        }
+        if (bestD <= 0.06) {
+            if (best[0] === 1) whole += 1;
+            const g = best[0] === 1 ? '' : best[1];
+            if (whole === 0) return g || '0';
+            return g ? whole + g : String(whole);
+        }
+        return String(Math.round(v * 100) / 100); // odd leftover -> short decimal
+    }
+
+    const QTY_RE = new RegExp(
+        '(\\d+)\\s*([' + FRACS + '])' +      // 1½
+        '|([' + FRACS + '])' +              // ½
+        '|(\\d+)\\s+(\\d+)\\/(\\d+)' +      // 1 1/2
+        '|(\\d+)\\/(\\d+)' +               // 1/2
+        '|(\\d+(?:\\.\\d+)?)',             // 12  or  1.5
+        'g');
+
+    // Multiply every quantity in an ingredient line by m. Leaves cut sizes
+    // ("3×4 cm") and temperatures ("190°C") alone. Single pass, so a scaled
+    // number is never scaled again.
+    function scaleIngredient(text, m) {
+        if (!m || m === 1) return text;
+        return String(text).replace(QTY_RE, function(match, d1, f1, f2, w3, n3, d3, n4, d4, plain, offset, full) {
+            let v;
+            if (f1) v = parseInt(d1, 10) + FRAC_VAL[f1];
+            else if (f2) v = FRAC_VAL[f2];
+            else if (w3) v = parseInt(w3, 10) + parseInt(n3, 10) / parseInt(d3, 10);
+            else if (n4) v = parseInt(n4, 10) / parseInt(d4, 10);
+            else {
+                const after = full.slice(offset + match.length);
+                const before = full.slice(0, offset);
+                if (/^\s*°/.test(after)) return match;                 // temperature
+                if (/^\s*[×x]\s*\d/.test(after)) return match;         // "3×4"
+                if (/\d\s*[×x]\s*$/.test(before)) return match;        // "…×4"
+                v = parseFloat(plain);
+            }
+            return fmtQty(v * m);
+        });
+    }
+
+    const MULT_OPTS = [[1, '×1'], [1.5, '×1½'], [2, '×2'], [3, '×3']];
+    function prettyMult(m) { return m === 1.5 ? '1½' : String(m); }
+
     window.GrandmaChefs = {
         recipes: null,
         _openIds: {},      // recipe id -> card left expanded across re-renders
@@ -30,6 +94,7 @@
         _addOpen: false,   // "Add a recipe" form left open across re-renders
         _saving: false,    // a POST /state is in flight
         _saveQueued: false, // another save was requested while one was in flight
+        _mult: {},         // recipe id -> ingredient multiplier (1 / 1.5 / 2 / 3), view-only, not persisted
 
         init: function() { this.load(); },
 
@@ -223,13 +288,15 @@
         // ---- Rendering ----
         buildChecklist: function(recipe, kind, heading) {
             const items = recipe[kind] || [];
-            const wrap = el('div', 'chef-checklist');
+            const wrap = el('div', 'chef-checklist chef-checklist-' + kind);
+            const mult = (kind === 'ingredients' && this._mult[recipe.id]) || 1;
 
             const h = el('h3', 'chef-recipe-heading');
             h.appendChild(document.createTextNode(heading + ' '));
             const count = el('span', 'chef-count chef-count-' + kind);
             count.textContent = this._countDone(recipe.checks && recipe.checks[kind], items.length) + '/' + items.length;
             h.appendChild(count);
+            if (mult !== 1) h.appendChild(el('span', 'chef-count chef-mult-badge', '×' + prettyMult(mult)));
             wrap.appendChild(h);
 
             const self = this;
@@ -249,10 +316,42 @@
                 row.appendChild(el('span', 'chef-check-box'));
 
                 if (kind === 'steps') row.appendChild(el('span', 'chef-check-num', (idx + 1) + '.'));
-                row.appendChild(el('span', 'chef-check-text', text));
+                row.appendChild(el('span', 'chef-check-text', mult === 1 ? text : scaleIngredient(text, mult)));
                 wrap.appendChild(row);
             });
             return wrap;
+        },
+
+        // The "×N" pill row above the ingredient list. View-only: it never
+        // touches recipe.ingredients, just how they're displayed.
+        buildMultiplier: function(recipe) {
+            const self = this;
+            const cur = this._mult[recipe.id] || 1;
+            const wrap = el('div', 'chef-mult');
+            wrap.appendChild(el('span', 'chef-mult-label', '✕ Multiply amounts'));
+            MULT_OPTS.forEach(function(opt) {
+                const btn = el('button', 'chef-mult-btn' + (opt[0] === cur ? ' active' : ''), opt[1]);
+                btn.type = 'button';
+                btn.setAttribute('data-mult', String(opt[0]));
+                btn.addEventListener('click', function() { self.setMultiplier(recipe.id, opt[0]); });
+                wrap.appendChild(btn);
+            });
+            return wrap;
+        },
+
+        setMultiplier: function(id, m) {
+            const r = this._find(id);
+            if (!r) return;
+            if (m === 1) delete this._mult[id];
+            else this._mult[id] = m;
+
+            const card = document.getElementById('recipe-' + id);
+            if (!card) return;
+            card.querySelectorAll('.chef-mult-btn').forEach(function(b) {
+                b.classList.toggle('active', parseFloat(b.getAttribute('data-mult')) === m);
+            });
+            const oldList = card.querySelector('.chef-checklist-ingredients');
+            if (oldList) oldList.replaceWith(this.buildChecklist(r, 'ingredients', '🛒 What we need'));
         },
 
         buildCard: function(recipe) {
@@ -300,7 +399,10 @@
             const body = el('div', 'chef-recipe-body');
             if (recipe.blurb) body.appendChild(el('p', 'chef-recipe-blurb', recipe.blurb));
 
-            if (recipe.ingredients.length) body.appendChild(this.buildChecklist(recipe, 'ingredients', '🛒 What we need'));
+            if (recipe.ingredients.length) {
+                body.appendChild(this.buildMultiplier(recipe));
+                body.appendChild(this.buildChecklist(recipe, 'ingredients', '🛒 What we need'));
+            }
             if (recipe.steps.length) body.appendChild(this.buildChecklist(recipe, 'steps', '👩‍🍳 What we do'));
 
             if (recipe.tips.length) {

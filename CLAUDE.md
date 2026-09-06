@@ -198,7 +198,12 @@ recipe list lives in `chefs_data.json` (gitignored) via `GET`/`POST
 steps:[str], tips:[str], checks:{ingredients:{"<idx>":true}, steps:{...}},
 made:bool, createdAt}`. `made` is a whole-recipe "we made this" toggle in the
 card header — it strikes through the recipe name (shown in curly quotes) and
-is always un-doable, independent of the per-step checklist. `CHEFS_SEED` in `server.py` seeds the file on first run (the
+is always un-doable, independent of the per-step checklist. Each card also has
+a **×1 / ×1½ / ×2 / ×3 multiplier** above the ingredients: `scaleIngredient()`
+regex-scales every quantity in each ingredient line (fractions → tidy glyphs,
+ranges like "2–3" scale both ends; cut sizes "3×4 cm" and temps "190°C" left
+alone). It's view-only — `_mult[id]` in memory, never sent to the server, and
+the step list is untouched. `CHEFS_SEED` in `server.py` seeds the file on first run (the
 kid-translated Keton's Pickles recipe). No client-side data module — recipes
 are 100% user content, so unlike Disney there's no catalogue to keep in code.
 `GrandmaChefs.persist()` serialises saves (one POST in flight, re-flushes if

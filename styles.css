@@ -4778,6 +4778,37 @@
     margin-left: 4px;
 }
 
+/* "×N" ingredient multiplier */
+.chef-mult {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    margin: 18px 0 0;
+}
+.chef-mult + .chef-checklist .chef-recipe-heading { margin-top: 10px; }
+.chef-mult-label {
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px;
+    text-transform: uppercase; color: #94a3b8; margin-right: 2px;
+}
+.chef-mult-btn {
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.05);
+    color: #cbd5e1;
+    border-radius: 999px;
+    padding: 4px 13px;
+    font-size: 13px; font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.chef-mult-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.chef-mult-btn:active { transform: scale(0.94); }
+.chef-mult-btn.active {
+    background: linear-gradient(135deg, #fb923c, #f472b6);
+    border-color: transparent; color: #0b1020;
+}
+.chef-mult-badge {
+    color: #fdba74 !important;
+    background: rgba(251,146,60,0.16) !important;
+}
+
 /* Checklists — "what we need" + "what we do" */
 .chef-checklist { display: flex; flex-direction: column; gap: 6px; }
 .chef-check-row {
