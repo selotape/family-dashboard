@@ -194,6 +194,26 @@
                 { icon: '🍾', label: 'Plastic bottles', query: 'plastic water bottles' },
                 { icon: '⚽', label: 'Soft foam ball', query: 'foam ball kids' }
             ]
+        },
+        {
+            id: 'duck-balance',
+            name: 'Duck Balance Balloon',
+            emoji: '🦆',
+            color: '#06b6d4',
+            tagline: 'Balance the balloon on the duck — longest wins!',
+            time: '10 min',
+            players: '2+ players',
+            steps: [
+                'Blow up a balloon and grab a rubber duck — one of each per player.',
+                'Hold the duck flat on your palm and rest the balloon on its head or back.',
+                'Hands off the balloon! Everyone counts out loud together: one… two… three…',
+                'Whoever balances longest wins. Level up: stand on one leg! 🦩'
+            ],
+            equipment: [
+                { icon: '🦆', label: 'Rubber ducks', query: 'rubber duck bath toys' },
+                { icon: '🎈', label: 'Balloons', query: 'party balloons' },
+                { icon: '⏲️', label: 'Timer (optional)', query: 'kitchen timer' }
+            ]
         }
     ];
 
@@ -277,6 +297,18 @@
             '<path d="M24 32h12M54 40h12" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>' +
             '<circle cx="94" cy="90" r="18" fill="#eab308"/>' +
             '<circle cx="89" cy="84" r="3.2" fill="#854d0e"/><circle cx="99" cy="86" r="3.2" fill="#854d0e"/><circle cx="93" cy="94" r="3.2" fill="#854d0e"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-duck-balance" viewBox="0 0 120 120">' +
+            '<ellipse cx="48" cy="34" rx="18" ry="22" fill="#ef4444"/>' +
+            '<ellipse cx="41" cy="26" rx="5" ry="8" fill="#fca5a5" opacity=".75"/>' +
+            '<path d="M44 55h8l-4 7z" fill="#b91c1c"/>' +
+            '<path d="M20 30c-3-4-3-9 0-13M76 30c3-4 3-9 0-13" stroke="#06b6d4" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+            '<ellipse cx="54" cy="92" rx="32" ry="17" fill="#facc15" stroke="#ca8a04" stroke-width="4"/>' +
+            '<path d="M26 84c-8-4-14-2-16 4 6 5 12 5 17 2z" fill="#facc15" stroke="#ca8a04" stroke-width="4" stroke-linejoin="round"/>' +
+            '<circle cx="76" cy="70" r="14" fill="#facc15" stroke="#ca8a04" stroke-width="4"/>' +
+            '<path d="M88 66h16l-6 7-10 1z" fill="#f97316" stroke="#ea580c" stroke-width="3" stroke-linejoin="round"/>' +
+            '<circle cx="79" cy="65" r="3" fill="#422006"/>' +
         '</symbol>';
 
     window.GameRoulette = RouletteEngine.create({
