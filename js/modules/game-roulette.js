@@ -1,12 +1,301 @@
 // Family Game Roulette
 // Data + artwork for the game-night slot machine. All the machine behaviour
 // (spinning, odds, audio, confetti, upvotes) lives in roulette-engine.js.
+//
+// Games flagged `retired: true` drop out of the machine but stay in the
+// "all games" gallery, crossed out, in case the family wants one back.
 (function() {
     'use strict';
 
     const GAMES = [
         {
+            id: 'blanket-fort',
+            name: 'Blanket Fort Challenge',
+            emoji: '🏰',
+            color: '#8b5cf6',
+            tagline: 'Ten minutes, every cushion in the house — build!',
+            time: '25 min',
+            players: '2+ players',
+            steps: [
+                'Raid the house for blankets, cushions, chairs and clothes pegs.',
+                'Set a 10-minute timer and build the biggest fort you can.',
+                'When the timer beeps everyone squeezes inside — it only counts if you ALL fit!',
+                'Eat a snack in there. Bonus points for a secret doorbell 🔔'
+            ],
+            equipment: [
+                { icon: '🛏️', label: 'Big blankets', query: 'large fleece throw blanket' },
+                { icon: '📎', label: 'Clothes pegs', query: 'clothespins' },
+                { icon: '✨', label: 'Fairy lights', query: 'battery fairy lights' },
+                { icon: '⏲️', label: 'Timer', query: 'kitchen timer' }
+            ]
+        },
+        {
+            id: 'who-am-i',
+            name: 'Who Am I?',
+            emoji: '🤔',
+            color: '#f43f5e',
+            tagline: 'A sticky note on your head — guess who you are!',
+            time: '15 min',
+            players: '3+ players',
+            steps: [
+                'Everyone writes a character on a sticky note — Elsa, a shark, Savta, anyone!',
+                'Stick it on somebody else\'s forehead. No peeking at your own.',
+                'Take turns asking yes-or-no questions: "Am I an animal?" "Do I have fur?"',
+                'First to guess themselves wins — then swap notes and go again.'
+            ],
+            equipment: [
+                { icon: '🗒️', label: 'Sticky notes', query: 'sticky notes' },
+                { icon: '🖍️', label: 'Markers', query: 'washable markers kids' }
+            ]
+        },
+        {
+            id: 'flashlight-hunt',
+            name: 'Flashlight Treasure Hunt',
+            emoji: '🔦',
+            color: '#facc15',
+            tagline: 'Lights out! Hunt the hidden treasure in the dark.',
+            time: '20 min',
+            players: '2+ players',
+            steps: [
+                'One player hides a small shiny toy somewhere in the room.',
+                'Turn off every single light and hand out the flashlights.',
+                'Hunt! The hider calls out "warmer" and "colder" while you creep around.',
+                'Whoever finds it gets to hide it next 🔦'
+            ],
+            equipment: [
+                { icon: '🔦', label: 'Flashlights', query: 'kids flashlight' },
+                { icon: '💚', label: 'Glow sticks', query: 'glow sticks' }
+            ]
+        },
+        {
+            id: 'pillow-course',
+            name: 'Pillow Obstacle Course',
+            emoji: '🛋️',
+            color: '#fb923c',
+            tagline: 'Hop, crawl, spin — and beat the clock!',
+            time: '20 min',
+            players: '2+ players',
+            steps: [
+                'Build a course down the hallway: pillows to hop, a chair to crawl under, a cushion to spin on.',
+                'Add one silly rule at each station — "bark like a dog here!"',
+                'Time every runner while the rest of the family cheers.',
+                'Two tries each. The fastest run wins the Golden Pillow 🏆'
+            ],
+            equipment: [
+                { icon: '🛏️', label: 'Throw pillows', query: 'throw pillows' },
+                { icon: '🩹', label: 'Masking tape', query: 'masking tape' },
+                { icon: '⏲️', label: 'Timer', query: 'kitchen timer' }
+            ]
+        },
+        {
+            id: 'story-chain',
+            name: 'One-Word Story',
+            emoji: '📖',
+            color: '#22d3ee',
+            tagline: 'Build a wild story one single word at a time.',
+            time: '10 min',
+            players: '2+ players',
+            steps: [
+                'Sit in a circle. The first person says ONE word: "Once…"',
+                'Go around the circle, each person adding exactly one more word.',
+                'No thinking for longer than three seconds — whatever pops out, stays!',
+                'Keep going until somebody says "end", then try to retell the whole thing 😂'
+            ],
+            equipment: []
+        },
+        {
+            id: 'taste-test',
+            name: 'Blindfold Taste Test',
+            emoji: '👅',
+            color: '#84cc16',
+            tagline: 'Can you name it with your eyes shut?',
+            time: '15 min',
+            players: '2+ players',
+            steps: [
+                'A grown-up lines up six snacks in little bowls — fruit, cracker, cheese, yogurt.',
+                'Blindfold the taster and hand them one spoonful at a time.',
+                'Guess what it is! One point for every right answer.',
+                'Swap places. Sneaky trick: put the SAME thing in two bowls 🤫'
+            ],
+            equipment: [
+                { icon: '😴', label: 'Blindfold', query: 'kids sleep mask' },
+                { icon: '🥣', label: 'Little bowls', query: 'small prep bowls set' },
+                { icon: '🥄', label: 'Spoons', query: 'small tasting spoons' }
+            ]
+        },
+        {
+            id: 'sock-match',
+            name: 'Sock Match Race',
+            emoji: '🧺',
+            color: '#f472b6',
+            tagline: 'Tip out the laundry and match the pairs fastest!',
+            time: '10 min',
+            players: '2+ players',
+            steps: [
+                'Dump a whole basket of clean socks into one big mountain on the floor.',
+                'Ready, set, GO — everybody grabs socks and finds matching pairs.',
+                'Roll each pair into a ball and stack it in your own pile.',
+                'When the mountain is gone, most pairs wins. (Ima wins either way 😄)'
+            ],
+            equipment: [
+                { icon: '🧺', label: 'Laundry basket', query: 'laundry basket' },
+                { icon: '🧦', label: 'Lots of socks', query: 'kids socks multipack' }
+            ]
+        },
+        {
+            id: 'shadow-puppets',
+            name: 'Shadow Puppet Theatre',
+            emoji: '🐇',
+            color: '#6366f1',
+            tagline: 'Two hands, one lamp, a blank wall — showtime!',
+            time: '20 min',
+            players: '2+ players',
+            steps: [
+                'Point a lamp at a blank wall and switch off all the other lights.',
+                'Practise your creatures: a rabbit, a bird, a snapping crocodile.',
+                'Put on a two-minute show while everyone else guesses the animals.',
+                'Level up: cut paper puppets, tape them to sticks and give them voices 🎭'
+            ],
+            equipment: [
+                { icon: '🔦', label: 'Flashlight', query: 'kids flashlight' },
+                { icon: '📇', label: 'Card stock', query: 'black card stock paper' },
+                { icon: '🥢', label: 'Craft sticks', query: 'wooden craft sticks' }
+            ]
+        },
+        {
+            id: 'cookie-face',
+            name: 'Cookie Face',
+            emoji: '🍪',
+            color: '#d97706',
+            tagline: 'Forehead to mouth — and absolutely no hands!',
+            time: '10 min',
+            players: '1+ players',
+            steps: [
+                'Lean your head back and let a grown-up balance a cookie on your forehead.',
+                'GO! Wiggle it down to your mouth using only your face muscles.',
+                'No hands allowed. If it falls off, start again with the same cookie.',
+                'Fastest cookie-eater wins — although really everybody wins 🍪'
+            ],
+            equipment: [
+                { icon: '🍪', label: 'Round cookies', query: 'oreo cookies' },
+                { icon: '⏲️', label: 'Timer', query: 'kitchen timer' }
+            ]
+        },
+        {
+            id: 'treasure-map',
+            name: 'Treasure Map Hunt',
+            emoji: '🗺️',
+            color: '#0ea5e9',
+            tagline: 'Draw the map, hide the loot, send them hunting!',
+            time: '25 min',
+            players: '2+ players',
+            steps: [
+                'One player hides a "treasure" — a toy, a sweet, a secret note — somewhere in the house.',
+                'Draw a map of the rooms with a big red ✗ on the spot. Crumple it for pirate vibes!',
+                'Hand the map over and say nothing at all. The map has to do the work.',
+                'Found it? Then the finder hides the next treasure 🏴‍☠️'
+            ],
+            equipment: [
+                { icon: '📄', label: 'Paper', query: 'printer paper' },
+                { icon: '🖍️', label: 'Markers', query: 'washable markers kids' },
+                { icon: '🧰', label: 'Treasure box', query: 'small treasure chest box' }
+            ]
+        },
+        {
+            id: 'animal-orchestra',
+            name: 'Animal Orchestra',
+            emoji: '🐸',
+            color: '#10b981',
+            tagline: 'Moo, ribbit, meow — the conductor decides!',
+            time: '10 min',
+            players: '3+ players',
+            steps: [
+                'Everyone picks an animal noise. No two players may pick the same one!',
+                'One player is the conductor and holds a wooden spoon as a baton.',
+                'Baton pointed at you = make your noise. Baton swept across everyone = full orchestra!',
+                'Baton held high means LOUD, held low means tiny whispers. Then swap conductors 🎼'
+            ],
+            equipment: [
+                { icon: '🥄', label: 'Wooden spoon', query: 'wooden spoon' },
+                { icon: '🎺', label: 'Kazoos (optional)', query: 'kazoos for kids' }
+            ]
+        },
+        {
+            id: 'cup-tower',
+            name: 'Cup Tower Showdown',
+            emoji: '🥤',
+            color: '#ef4444',
+            tagline: 'Stack the pyramid, unstack it, do it faster!',
+            time: '15 min',
+            players: '2+ players',
+            steps: [
+                'Give every player ten plastic cups.',
+                'On "go", stack a pyramid: four cups, then three, then two, then one on top.',
+                'Now take it back down into one neat tower — that half counts too!',
+                'Fastest stacker takes the round. Best of five wins the crown 👑'
+            ],
+            equipment: [
+                { icon: '🥤', label: 'Plastic cups', query: 'plastic stacking cups kids' }
+            ]
+        },
+        {
+            id: 'mirror-me',
+            name: 'Mirror Me',
+            emoji: '🪞',
+            color: '#a3e635',
+            tagline: 'Copy every move — can anyone tell who is leading?',
+            time: '10 min',
+            players: '3+ players',
+            steps: [
+                'Two players stand facing each other. One leads, the other is the mirror.',
+                'Move slooowly — brush your hair, pull a face — and the mirror copies exactly.',
+                'A third player watches and tries to guess who is really leading.',
+                'Swap roles. Bonus round: the whole family in one long mirror line!'
+            ],
+            equipment: []
+        },
+        {
+            id: 'shrinking-island',
+            name: 'Shrinking Island',
+            emoji: '📰',
+            color: '#e879f9',
+            tagline: 'The music stops — get on your island, quick!',
+            time: '15 min',
+            players: '2+ players',
+            steps: [
+                'Spread one big sheet of newspaper on the floor per player — those are the islands.',
+                'Music on: dance around the room. Music off: jump onto your island!',
+                'After every round fold your island in half. It gets tiny very fast.',
+                'Last player still balancing on their island wins 🏝️'
+            ],
+            equipment: [
+                { icon: '📰', label: 'Newspaper', query: 'newsprint paper sheets' },
+                { icon: '🔊', label: 'Speaker', query: 'bluetooth speaker' }
+            ]
+        },
+        {
+            id: 'laser-maze',
+            name: 'Laser Maze',
+            emoji: '🕸️',
+            color: '#c026d3',
+            tagline: 'Crawl through the spy web — touch nothing!',
+            time: '25 min',
+            players: '2+ players',
+            steps: [
+                'Tape yarn across a hallway — high, low and criss-cross, like spy lasers.',
+                'Take turns crawling, rolling and stepping through without touching a strand.',
+                'One touch and the audience sounds the alarm. BZZZT! 🚨',
+                'Cleared it? Add three more strings and run the maze again.'
+            ],
+            equipment: [
+                { icon: '🧶', label: 'Yarn', query: 'red yarn ball' },
+                { icon: '🩹', label: 'Masking tape', query: 'masking tape' },
+                { icon: '🔔', label: 'Alarm bell', query: 'desk call bell' }
+            ]
+        },
+        {
             id: 'hangman',
+            retired: true,
             name: 'Hangman',
             emoji: '✏️',
             color: '#f59e0b',
@@ -27,6 +316,7 @@
         },
         {
             id: 'charades',
+            retired: true,
             name: 'Charades',
             emoji: '🎭',
             color: '#ec4899',
@@ -48,6 +338,7 @@
         },
         {
             id: 'freeze-dance',
+            retired: true,
             name: 'Freeze Dance',
             emoji: '🕺',
             color: '#38bdf8',
@@ -66,6 +357,7 @@
         },
         {
             id: 'balloon',
+            retired: true,
             name: 'Balloon Keep-Up',
             emoji: '🎈',
             color: '#ef4444',
@@ -84,6 +376,7 @@
         },
         {
             id: 'sock-hoops',
+            retired: true,
             name: 'Sock Basketball',
             emoji: '🧦',
             color: '#f97316',
@@ -103,6 +396,7 @@
         },
         {
             id: 'pictionary',
+            retired: true,
             name: 'Pictionary',
             emoji: '🎨',
             color: '#a855f7',
@@ -123,6 +417,7 @@
         },
         {
             id: 'memory-tray',
+            retired: true,
             name: 'Memory Tray',
             emoji: '🔍',
             color: '#14b8a6',
@@ -142,6 +437,7 @@
         },
         {
             id: 'simon-says',
+            retired: true,
             name: 'Simon Says',
             emoji: '🙌',
             color: '#22c55e',
@@ -158,6 +454,7 @@
         },
         {
             id: 'paper-planes',
+            retired: true,
             name: 'Paper Plane Derby',
             emoji: '✈️',
             color: '#60a5fa',
@@ -178,6 +475,7 @@
         },
         {
             id: 'bowling',
+            retired: true,
             name: 'Indoor Bowling',
             emoji: '🎳',
             color: '#eab308',
@@ -197,6 +495,7 @@
         },
         {
             id: 'duck-balance',
+            retired: true,
             name: 'Duck Balance Balloon',
             emoji: '🦆',
             color: '#06b6d4',
@@ -219,6 +518,163 @@
 
     // Kid-friendly flat illustrations, one <symbol> per game.
     const SPRITE =
+        '<symbol id="gr-art-blanket-fort" viewBox="0 0 120 120">' +
+            '<path d="M60 18v-12h18l-5 6 5 6z" fill="#f59e0b"/>' +
+            '<path d="M60 18 14 92c8 6 15 6 23 0s15-6 23 0 15 6 23 0 15-6 23 0z" fill="#ede9fe" stroke="#8b5cf6" stroke-width="4" stroke-linejoin="round"/>' +
+            '<path d="M46 92V76a14 14 0 0 1 28 0v16z" fill="#7c3aed"/>' +
+            '<circle cx="44" cy="58" r="3.5" fill="#c4b5fd"/><circle cx="76" cy="58" r="3.5" fill="#c4b5fd"/>' +
+            '<circle cx="60" cy="44" r="3.5" fill="#c4b5fd"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-who-am-i" viewBox="0 0 120 120">' +
+            '<circle cx="60" cy="72" r="32" fill="#ffe4e6" stroke="#f43f5e" stroke-width="4"/>' +
+            '<circle cx="49" cy="70" r="4.5" fill="#9f1239"/><circle cx="71" cy="70" r="4.5" fill="#9f1239"/>' +
+            '<path d="M48 86c7 7 17 7 24 0" stroke="#9f1239" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+            '<g transform="rotate(-7 60 32)">' +
+                '<rect x="34" y="14" width="52" height="36" rx="4" fill="#fef08a" stroke="#eab308" stroke-width="4"/>' +
+                '<path d="M53 27c0-5 4-8 8-8s8 3 8 8c0 5-7 5-7 10" stroke="#a16207" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+                '<circle cx="62" cy="43" r="2.8" fill="#a16207"/>' +
+            '</g>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-flashlight-hunt" viewBox="0 0 120 120">' +
+            '<path d="M82 42 114 26v68L82 78z" fill="#fef9c3" opacity=".8"/>' +
+            '<path d="M98 48l4 10 11 4-11 4-4 10-4-10-11-4 11-4z" fill="#fde047"/>' +
+            '<rect x="26" y="46" width="50" height="28" rx="8" fill="#94a3b8" stroke="#334155" stroke-width="4"/>' +
+            '<rect x="12" y="52" width="16" height="16" rx="4" fill="#64748b" stroke="#334155" stroke-width="4"/>' +
+            '<path d="M74 38h10v44H74z" fill="#facc15" stroke="#ca8a04" stroke-width="4" stroke-linejoin="round"/>' +
+            '<path d="M38 54h18" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-pillow-course" viewBox="0 0 120 120">' +
+            '<path d="M18 100c14-6 22-16 34-22s22-18 40-26" stroke="#fdba74" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="7 9"/>' +
+            '<rect x="10" y="70" width="44" height="30" rx="13" fill="#ffedd5" stroke="#fb923c" stroke-width="4"/>' +
+            '<g transform="rotate(-12 72 60)">' +
+                '<rect x="50" y="45" width="44" height="30" rx="13" fill="#fed7aa" stroke="#fb923c" stroke-width="4"/>' +
+            '</g>' +
+            '<path d="M96 22v56" stroke="#ea580c" stroke-width="5" stroke-linecap="round"/>' +
+            '<path d="M96 22h22l-7 9 7 9H96z" fill="#f97316"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-story-chain" viewBox="0 0 120 120">' +
+            '<path d="M12 42c16-8 32-8 48 2v56c-16-10-32-10-48-2z" fill="#cffafe" stroke="#06b6d4" stroke-width="4" stroke-linejoin="round"/>' +
+            '<path d="M108 42c-16-8-32-8-48 2v56c16-10 32-10 48-2z" fill="#ecfeff" stroke="#06b6d4" stroke-width="4" stroke-linejoin="round"/>' +
+            '<g stroke="#67e8f9" stroke-width="4" stroke-linecap="round">' +
+                '<path d="M22 58h26M22 70h22M72 58h26M72 70h22"/>' +
+            '</g>' +
+            '<circle cx="34" cy="24" r="4" fill="#67e8f9"/>' +
+            '<circle cx="54" cy="16" r="6" fill="#22d3ee"/>' +
+            '<circle cx="78" cy="22" r="4.5" fill="#06b6d4"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-taste-test" viewBox="0 0 120 120">' +
+            '<circle cx="50" cy="52" r="30" fill="#ecfccb" stroke="#84cc16" stroke-width="4"/>' +
+            '<rect x="24" y="42" width="52" height="16" rx="8" fill="#4d7c0f"/>' +
+            '<path d="M40 70c6 7 14 7 20 0" stroke="#3f6212" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+            '<ellipse cx="84" cy="88" rx="14" ry="10" fill="#a3e635" stroke="#4d7c0f" stroke-width="4"/>' +
+            '<path d="M96 95l14 12" stroke="#4d7c0f" stroke-width="6" stroke-linecap="round"/>' +
+            '<circle cx="82" cy="86" r="4" fill="#4d7c0f" opacity=".5"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-sock-match" viewBox="0 0 120 120">' +
+            '<g stroke="#db2777" stroke-width="4" stroke-linejoin="round">' +
+                '<path d="M24 10h15v21c0 6 11 7 11 17s-7 13-13 13-13-5-13-13z" fill="#f9a8d4"/>' +
+                '<path d="M66 10h15v21c0 6 11 7 11 17s-7 13-13 13-13-5-13-13z" fill="#fbcfe8"/>' +
+            '</g>' +
+            '<path d="M30 74h60l-8 32H38z" fill="#fdf2f8" stroke="#f472b6" stroke-width="4" stroke-linejoin="round"/>' +
+            '<path d="M26 74h68" stroke="#f472b6" stroke-width="6" stroke-linecap="round"/>' +
+            '<path d="M46 84v16M60 84v16M74 84v16" stroke="#f9a8d4" stroke-width="3.5" stroke-linecap="round"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-shadow-puppets" viewBox="0 0 120 120">' +
+            '<rect x="14" y="12" width="92" height="80" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="4"/>' +
+            '<path d="M52 52c-7-14-5-25 1-27 6-2 10 9 11 21z" fill="#312e81"/>' +
+            '<path d="M66 46c-3-17 1-25 7-25 6 1 7 13 3 25z" fill="#312e81"/>' +
+            '<ellipse cx="66" cy="68" rx="23" ry="18" fill="#312e81"/>' +
+            '<circle cx="78" cy="64" r="3.5" fill="#eef2ff"/>' +
+            '<circle cx="26" cy="104" r="9" fill="#facc15" stroke="#6366f1" stroke-width="3"/>' +
+            '<path d="M38 100l12-6M38 108h14" stroke="#a5b4fc" stroke-width="3.5" stroke-linecap="round"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-cookie-face" viewBox="0 0 120 120">' +
+            '<circle cx="56" cy="70" r="32" fill="#fef3c7" stroke="#d97706" stroke-width="4"/>' +
+            '<circle cx="45" cy="68" r="4.5" fill="#92400e"/><circle cx="67" cy="68" r="4.5" fill="#92400e"/>' +
+            '<ellipse cx="56" cy="86" rx="10" ry="7.5" fill="#92400e"/>' +
+            '<circle cx="56" cy="21" r="15" fill="#c2842a" stroke="#78350f" stroke-width="4"/>' +
+            '<circle cx="50" cy="17" r="3.4" fill="#431407"/><circle cx="62" cy="20" r="3.4" fill="#431407"/>' +
+            '<circle cx="55" cy="28" r="3.4" fill="#431407"/>' +
+            '<path d="M44 40l-6 6M68 40l6 6" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round"/>' +
+            '<path d="M94 56c7 6 7 16 0 22" stroke="#fbbf24" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-treasure-map" viewBox="0 0 120 120">' +
+            '<rect x="12" y="20" width="96" height="80" rx="8" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="4"/>' +
+            '<path d="M28 88c13-6 4-25 17-31s22 8 35-7" stroke="#0284c7" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="6 8"/>' +
+            '<path d="M70 40l18 18M88 40l-18 18" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>' +
+            '<circle cx="90" cy="84" r="9" fill="none" stroke="#0284c7" stroke-width="3"/>' +
+            '<path d="M90 73v22M79 84h22" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>' +
+            '<path d="M22 46l8-12 8 12z" fill="#7dd3fc"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-animal-orchestra" viewBox="0 0 120 120">' +
+            '<ellipse cx="50" cy="76" rx="34" ry="26" fill="#d1fae5" stroke="#10b981" stroke-width="4"/>' +
+            '<circle cx="34" cy="46" r="13" fill="#d1fae5" stroke="#10b981" stroke-width="4"/>' +
+            '<circle cx="66" cy="46" r="13" fill="#d1fae5" stroke="#10b981" stroke-width="4"/>' +
+            '<circle cx="34" cy="46" r="5" fill="#065f46"/><circle cx="66" cy="46" r="5" fill="#065f46"/>' +
+            '<path d="M36 82c8 8 20 8 28 0" stroke="#065f46" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+            '<path d="M96 22v36" stroke="#047857" stroke-width="4" stroke-linecap="round"/>' +
+            '<ellipse cx="90" cy="60" rx="8" ry="6" fill="#047857"/>' +
+            '<path d="M96 22c8 2 12 5 13 10" stroke="#047857" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-cup-tower" viewBox="0 0 120 120">' +
+            '<g fill="#fee2e2" stroke="#ef4444" stroke-width="4" stroke-linejoin="round">' +
+                '<path d="M16 74h24l-3 26H19z"/><path d="M48 74h24l-3 26H51z"/><path d="M80 74h24l-3 26H83z"/>' +
+                '<path d="M32 42h24l-3 26H35z"/><path d="M64 42h24l-3 26H67z"/>' +
+                '<path d="M48 10h24l-3 26H51z"/>' +
+            '</g>' +
+            '<g stroke="#fca5a5" stroke-width="3" stroke-linecap="round">' +
+                '<path d="M22 84h14M54 84h14M86 84h14M38 52h14M70 52h14M54 20h14"/>' +
+            '</g>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-mirror-me" viewBox="0 0 120 120">' +
+            '<path d="M60 10v100" stroke="#65a30d" stroke-width="4" stroke-dasharray="7 9" stroke-linecap="round"/>' +
+            '<circle cx="30" cy="48" r="18" fill="#ecfccb" stroke="#84cc16" stroke-width="4"/>' +
+            '<path d="M8 106V94c0-13 10-22 22-22s22 9 22 22v12z" fill="#ecfccb" stroke="#84cc16" stroke-width="4" stroke-linejoin="round"/>' +
+            '<circle cx="90" cy="48" r="18" fill="#f7fee7" stroke="#84cc16" stroke-width="4"/>' +
+            '<path d="M112 106V94c0-13-10-22-22-22s-22 9-22 22v12z" fill="#f7fee7" stroke="#84cc16" stroke-width="4" stroke-linejoin="round"/>' +
+            '<circle cx="25" cy="46" r="3.5" fill="#4d7c0f"/><circle cx="36" cy="46" r="3.5" fill="#4d7c0f"/>' +
+            '<circle cx="84" cy="46" r="3.5" fill="#4d7c0f"/><circle cx="95" cy="46" r="3.5" fill="#4d7c0f"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-shrinking-island" viewBox="0 0 120 120">' +
+            '<g transform="rotate(-5 60 82)">' +
+                '<rect x="22" y="54" width="76" height="56" rx="5" fill="#fae8ff" stroke="#e879f9" stroke-width="4"/>' +
+                '<path d="M60 56v52" stroke="#f0abfc" stroke-width="3" stroke-dasharray="6 7"/>' +
+                '<g fill="#c026d3">' +
+                    '<ellipse cx="43" cy="88" rx="8" ry="12"/>' +
+                    '<circle cx="37" cy="74" r="2.6"/><circle cx="43" cy="72" r="2.6"/><circle cx="49" cy="74" r="2.6"/>' +
+                    '<ellipse cx="77" cy="88" rx="8" ry="12"/>' +
+                    '<circle cx="71" cy="74" r="2.6"/><circle cx="77" cy="72" r="2.6"/><circle cx="83" cy="74" r="2.6"/>' +
+                '</g>' +
+            '</g>' +
+            '<path d="M92 12v28" stroke="#c026d3" stroke-width="4" stroke-linecap="round"/>' +
+            '<ellipse cx="86" cy="42" rx="8" ry="6" fill="#c026d3"/>' +
+            '<path d="M92 12c8 2 12 5 13 10" stroke="#c026d3" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+            '<path d="M22 34c5-6 5-13 0-19M38 40c7-10 7-22 0-32" stroke="#f0abfc" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+        '</symbol>' +
+
+        '<symbol id="gr-art-laser-maze" viewBox="0 0 120 120">' +
+            '<rect x="12" y="12" width="96" height="96" rx="12" fill="#fdf4ff" stroke="#c026d3" stroke-width="4"/>' +
+            '<g stroke="#f472b6" stroke-width="4" stroke-linecap="round">' +
+                '<path d="M14 34l92 26M106 28L14 60M14 90h92M38 14v92M84 14v92"/>' +
+            '</g>' +
+            '<circle cx="60" cy="72" r="11" fill="#a21caf"/>' +
+            '<path d="M42 100c2-13 12-19 20-19s16 6 18 19z" fill="#a21caf"/>' +
+            '<circle cx="56" cy="70" r="2.6" fill="#fdf4ff"/><circle cx="65" cy="70" r="2.6" fill="#fdf4ff"/>' +
+        '</symbol>' +
+
         '<symbol id="gr-art-hangman" viewBox="0 0 120 120">' +
             '<rect x="22" y="14" width="76" height="92" rx="9" fill="#fffbeb" stroke="#f59e0b" stroke-width="4"/>' +
             '<circle cx="60" cy="42" r="11" fill="none" stroke="#78350f" stroke-width="4"/>' +
@@ -317,6 +773,7 @@
         artPrefix: 'gr-art-',
         eyebrow: '🎉 Tonight you\'re playing…',
         playLabel: '✅ We\'re playing this!',
+        galleryNoun: 'games',
         games: GAMES,
         sprite: SPRITE
     });

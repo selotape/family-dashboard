@@ -4341,6 +4341,40 @@
 .gr-gallery-body { padding: 4px 16px 16px; }
 .gr-gallery-body .gr-steps { margin-bottom: 14px; }
 
+/* Retired games: out of the machine, still here for a rainy day. */
+.gr-gallery-divider {
+    margin: 16px 2px 4px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.2px;
+}
+.gr-gallery-item--retired {
+    opacity: 0.6;
+    border-left-color: #64748b;
+}
+.gr-gallery-item--retired:hover,
+.gr-gallery-item--retired[open] { opacity: 1; }
+.gr-gallery-item--retired .gr-gallery-name {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    text-decoration-color: #94a3b8;
+    color: #cbd5e1;
+}
+.gr-gallery-item--retired .gr-art-mini { filter: grayscale(0.75); }
+.gr-gallery-badge {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(148,163,184,0.18);
+    border: 1px solid rgba(148,163,184,0.35);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+}
+
 /* ---- Confetti ---- */
 .gr-confetti {
     position: fixed;
