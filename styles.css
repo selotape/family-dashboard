@@ -4952,6 +4952,34 @@
     padding: 8px 18px;
 }
 
+.prek-level-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.prek-level-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.prek-level-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.prek-level-btn.prek-level-active {
+    background: #38bdf8;
+    color: #0f172a;
+}
+
 .prek-modes {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

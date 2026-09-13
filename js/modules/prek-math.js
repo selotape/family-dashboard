@@ -1,9 +1,11 @@
 // Pre-K Math
 // Trivial, no-pressure math mini-games for a pre-k kid: counting small groups,
 // naming basic shapes, spotting "more", and matching a numeral to a quantity.
-// Numbers stay in 1-5. Wrong answers never advance or penalize - the child
-// just tries again on the same question until they get it. Fully client-side
-// (no server), only a running star count is remembered in localStorage.
+// A Level toggle (1-5 vs 1-10, plus two extra shapes) lets it grow with the
+// kid without changing the mechanics. Wrong answers never advance or
+// penalize - the child just tries again on the same question until they get
+// it. Fully client-side (no server); star count and chosen level are
+// remembered in localStorage.
 (function() {
     'use strict';
 
@@ -12,9 +14,18 @@
         { id: 'circle', name: 'Circle' },
         { id: 'square', name: 'Square' },
         { id: 'triangle', name: 'Triangle' },
-        { id: 'star', name: 'Star' }
+        { id: 'star', name: 'Star' },
+        { id: 'rectangle', name: 'Rectangle' },
+        { id: 'heart', name: 'Heart' }
     ];
     const SHAPE_COLORS = ['#38bdf8', '#fb923c', '#e94560', '#4ade80', '#fbbf24', '#c084fc'];
+
+    // Level 1 = the original trivial range; Level 2 widens numbers to 1-10
+    // and unlocks two extra shapes for slightly more challenge.
+    const LEVELS = {
+        1: { max: 5, shapes: SHAPES.slice(0, 4) },
+        2: { max: 10, shapes: SHAPES }
+    };
 
     const MODES = [
         { id: 'count', emoji: '🔢', label: 'Count!' },
@@ -62,6 +73,13 @@
             case 'star':
                 inner = '<polygon points="50,5 61,37 95,37 68,57 78,90 50,70 22,90 32,57 5,37 39,37" fill="' + color + '"/>';
                 break;
+            case 'rectangle':
+                inner = '<rect x="5" y="25" width="90" height="50" rx="10" fill="' + color + '"/>';
+                break;
+            case 'heart':
+                inner = '<path d="M50,88 C50,88 10,60 10,35 C10,18 25,10 38,15 C45,18 50,25 50,25 ' +
+                    'C50,25 55,18 62,15 C75,10 90,18 90,35 C90,60 50,88 50,88 Z" fill="' + color + '"/>';
+                break;
         }
         return '<svg viewBox="0 0 100 100" width="' + size + '" height="' + size + '" aria-hidden="true">' + inner + '</svg>';
     }
@@ -77,6 +95,7 @@
     window.PreKMath = {
         _initialized: false,
         stars: 0,
+        level: 1,
         mode: null,
         current: null,
         audioCtx: null,
@@ -89,14 +108,42 @@
             }
             this._initialized = true;
             this.stars = parseInt(localStorage.getItem('prekMathStars') || '0', 10) || 0;
+            const savedLevel = parseInt(localStorage.getItem('prekMathLevel') || '1', 10);
+            this.level = LEVELS[savedLevel] ? savedLevel : 1;
             this.renderStars();
             this.renderModes();
+            this.bindLevelToggle();
             this.enableAudioOnClick();
 
             const back = document.getElementById('prek-back');
             if (back) back.addEventListener('click', this.showModes.bind(this));
 
             this.showModes();
+        },
+
+        // ---- Level toggle ----
+        bindLevelToggle: function() {
+            const wrap = document.getElementById('prek-level-toggle');
+            if (!wrap) return;
+            wrap.querySelectorAll('.prek-level-btn').forEach(function(btn) {
+                btn.addEventListener('click', this.setLevel.bind(this, parseInt(btn.dataset.level, 10)));
+            }, this);
+            this.renderLevelToggle();
+        },
+
+        setLevel: function(level) {
+            if (!LEVELS[level]) return;
+            this.level = level;
+            localStorage.setItem('prekMathLevel', String(level));
+            this.renderLevelToggle();
+        },
+
+        renderLevelToggle: function() {
+            const wrap = document.getElementById('prek-level-toggle');
+            if (!wrap) return;
+            wrap.querySelectorAll('.prek-level-btn').forEach(function(btn) {
+                btn.classList.toggle('prek-level-active', parseInt(btn.dataset.level, 10) === this.level);
+            }, this);
         },
 
         // ---- Audio (Web Audio API, matches the app's routine-timer pattern) ----
@@ -166,17 +213,17 @@
 
         showModes: function() {
             this.mode = null;
-            const modes = document.getElementById('prek-modes');
+            const picker = document.getElementById('prek-picker');
             const game = document.getElementById('prek-game');
-            if (modes) modes.hidden = false;
+            if (picker) picker.hidden = false;
             if (game) game.hidden = true;
         },
 
         startMode: function(modeId) {
             this.mode = modeId;
-            const modes = document.getElementById('prek-modes');
+            const picker = document.getElementById('prek-picker');
             const game = document.getElementById('prek-game');
-            if (modes) modes.hidden = true;
+            if (picker) picker.hidden = true;
             if (game) game.hidden = false;
             this.nextQuestion();
         },
@@ -198,33 +245,37 @@
         },
 
         buildCount: function() {
-            const n = rand(1, 5);
+            const max = LEVELS[this.level].max;
+            const n = rand(1, max);
             const obj = pick(OBJECTS);
-            const choices = shuffle([n].concat(distractors(n, 2, 1, 5)));
+            const choices = shuffle([n].concat(distractors(n, 2, 1, max)));
             return { type: 'count', obj: obj, n: n, choices: choices, correct: n };
         },
 
         buildShapes: function() {
-            const shape = pick(SHAPES);
+            const pool = LEVELS[this.level].shapes;
+            const shape = pick(pool);
             const color = pick(SHAPE_COLORS);
-            const wrong = shuffle(SHAPES.filter(function(s) { return s.id !== shape.id; })).slice(0, 2);
+            const wrong = shuffle(pool.filter(function(s) { return s.id !== shape.id; })).slice(0, 2);
             const choices = shuffle([shape].concat(wrong));
             return { type: 'shapes', shape: shape, color: color, choices: choices, correct: shape.id };
         },
 
         buildMore: function() {
+            const max = LEVELS[this.level].max;
             const obj = pick(OBJECTS);
-            const a = rand(1, 5);
+            const a = rand(1, max);
             let b;
-            do { b = rand(1, 5); } while (b === a);
+            do { b = rand(1, max); } while (b === a);
             const correctKey = a > b ? 'a' : 'b';
             return { type: 'more', obj: obj, a: a, b: b, correct: correctKey };
         },
 
         buildMatch: function() {
-            const n = rand(1, 5);
+            const max = LEVELS[this.level].max;
+            const n = rand(1, max);
             const obj = pick(OBJECTS);
-            const choices = shuffle([n].concat(distractors(n, 2, 1, 5)));
+            const choices = shuffle([n].concat(distractors(n, 2, 1, max)));
             return { type: 'match', obj: obj, numeral: n, choices: choices, correct: n };
         },
 
