@@ -511,9 +511,8 @@
         // ---- Audio (Web Audio API, unlocked by the first pull) ----
         enableAudio: function() {
             if (!this.audioCtx) {
-                const Ctx = window.AudioContext || window.webkitAudioContext;
-                if (!Ctx) return;
-                this.audioCtx = new Ctx();
+                this.audioCtx = window.AudioKit.context();
+                return;
             }
             if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
         },
@@ -522,10 +521,10 @@
             if (!this.audioCtx) return;
             const ctx = this.audioCtx;
             const start = ctx.currentTime + (delay || 0);
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
+            const v = window.AudioKit.voice();
+            if (!v) return;
+            const osc = v.osc;
+            const gain = v.gain;
             osc.type = type || 'sine';
             osc.frequency.setValueAtTime(freq, start);
             gain.gain.setValueAtTime(volume || 0.12, start);

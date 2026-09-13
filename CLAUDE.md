@@ -41,7 +41,8 @@ The application uses a **script tag + IIFE pattern** (not ES6 modules) for brows
 js/
 ├── core/
 │   ├── router.js           # Tab navigation & lazy page loading
-│   └── api.js              # Shared XHR+Promise transport (Api.request/Api.client) for the server-backed tabs
+│   ├── api.js              # Shared XHR+Promise transport (Api.request/Api.client) for the server-backed tabs
+│   └── audio.js            # Shared Web Audio setup (AudioKit.context/unlock/voice); owns no sound design
 └── modules/
     ├── countdown.js        # Grandma visit countdown timer
     ├── todos.js            # Markdown todo loader (uses marked.js)
@@ -181,6 +182,22 @@ favourite can be revived by deleting the one flag. Game Roulette currently ships
 15 active games plus the original 11, retired. A tab that passes `galleryNoun`
 also gets a self-counting gallery toggle label, so the count in the page
 template never goes stale.
+
+Every tab that makes noise goes through `js/core/audio.js`. `AudioKit` owns
+only the plumbing the six audio modules used to each hand-roll: one lazily
+created **shared** `AudioContext` for the whole page (`context()` — browsers
+cap concurrent contexts, and this app would otherwise open up to eight), the
+unlock-on-first-gesture listener dance (`unlock()`), and the
+oscillator+gain+connect preamble (`voice()`, which returns `{ctx, osc, gain,
+start}`). It deliberately knows **nothing** about any specific sound: every
+frequency, waveform, gain envelope and timing stays hand-tuned in the module
+that owns it, and each module keeps its own playback gate — reading-game's
+`isSoundEnabled()` user setting, math-game's `muted`, routine-timer's
+`audioEnabled` plus its page-visibility check, capybara's lazy first-use
+init. `context()` returns `null` rather than throwing when Web Audio is
+missing, so callers keep their `if (!ctx) return;` guards. The three roulette
+instances share that one context; an instance clearing its own cached handle
+only drops its local reference and never affects the other two.
 
 Lister, Disney Watch and Grandma's Chefs are the three server-backed tabs, and
 the storage boilerplate isn't duplicated across them. On the server,

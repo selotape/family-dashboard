@@ -16,24 +16,19 @@
 
         // Audio functions
         initAudio: function() {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            // iOS Safari requires resume after user gesture
-            if (this.audioCtx.state === 'suspended') {
-                this.audioCtx.resume();
-            }
+            // iOS Safari requires resume after user gesture - AudioKit.context()
+            // handles both creation and resume-if-suspended.
+            this.audioCtx = window.AudioKit.context();
         },
 
         playSound: function(type) {
-            if (!this.audioCtx) return;
-            // Ensure audio context is running (iOS fix)
-            if (this.audioCtx.state === 'suspended') {
-                this.audioCtx.resume();
-            }
-            const ctx = this.audioCtx;
-            const oscillator = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
+            // AudioKit.voice() creates+connects on the shared context, which
+            // is already resumed-if-suspended (iOS fix) inside AudioKit.context().
+            const v = window.AudioKit.voice();
+            if (!v) return;
+            const ctx = v.ctx;
+            const oscillator = v.osc;
+            const gainNode = v.gain;
 
             if (type === 'jump') {
                 oscillator.frequency.setValueAtTime(300, ctx.currentTime);

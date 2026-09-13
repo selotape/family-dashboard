@@ -7,9 +7,8 @@ const AudioManager = {
     muted: false,
 
     init() {
-        try {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (e) {
+        this.ctx = window.AudioKit.context();
+        if (!this.ctx) {
             console.log('Web Audio API not supported');
         }
     },
@@ -17,10 +16,10 @@ const AudioManager = {
     playSound(type) {
         if (!this.ctx || this.muted) return;
 
-        const oscillator = this.ctx.createOscillator();
-        const gainNode = this.ctx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(this.ctx.destination);
+        const v = window.AudioKit.voice();
+        if (!v) return;
+        const oscillator = v.osc;
+        const gainNode = v.gain;
 
         switch (type) {
             case 'jump':
@@ -60,10 +59,10 @@ const AudioManager = {
                 // Play a happy melody
                 const notes = [523, 659, 784, 1047];
                 notes.forEach((freq, i) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
+                    const nv = window.AudioKit.voice();
+                    if (!nv) return;
+                    const osc = nv.osc;
+                    const gain = nv.gain;
                     osc.frequency.value = freq;
                     gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.15);
                     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.15 + 0.3);

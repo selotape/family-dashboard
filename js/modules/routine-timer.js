@@ -52,17 +52,13 @@
             setInterval(() => this.update(), 1000);
 
             // Enable audio on first user interaction
-            const enableAudio = () => {
+            window.AudioKit.unlock(['click', 'touchstart', 'keydown'], () => {
                 if (!this.audioEnabled) {
-                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.audioCtx = window.AudioKit.context();
                     this.audioEnabled = true;
                     console.log('🔊 Audio enabled!');
                 }
-            };
-
-            document.addEventListener('click', enableAudio, { once: true });
-            document.addEventListener('touchstart', enableAudio, { once: true });
-            document.addEventListener('keydown', enableAudio, { once: true });
+            });
         },
 
         initAudio: function() {
@@ -94,10 +90,10 @@
             for (let i = 0; i < 3; i++) {
                 const startTime = ctx.currentTime + (i * (sound.duration + beepGap));
 
-                const oscillator = ctx.createOscillator();
-                const gainNode = ctx.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(ctx.destination);
+                const v = window.AudioKit.voice();
+                if (!v) return;
+                const oscillator = v.osc;
+                const gainNode = v.gain;
 
                 oscillator.type = sound.type;
 

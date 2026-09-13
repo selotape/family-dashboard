@@ -43,6 +43,7 @@ family-dashboard/
 ├── js/
 │   ├── core/router.js  # Tab navigation & lazy page loading
 │   ├── core/api.js     # Shared XHR+Promise transport for the server-backed tabs
+│   ├── core/audio.js   # Shared Web Audio setup (AudioKit: context/unlock/voice)
 │   └── modules/        # One file per feature (countdown, routines, lister, …)
 ├── pages/              # HTML templates loaded on demand by the router
 ├── math-game-*.js      # Math Adventure subsystem (load order matters)

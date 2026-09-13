@@ -149,26 +149,25 @@
         // ---- Audio (Web Audio API, matches the app's routine-timer pattern) ----
         enableAudioOnClick: function() {
             const self = this;
-            const enable = function() {
+            window.AudioKit.unlock(['click'], function() {
                 if (!self.audioEnabled) {
-                    self.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    self.audioCtx = window.AudioKit.context();
                     self.audioEnabled = true;
                 }
-            };
-            document.addEventListener('click', enable, { once: true });
+            });
         },
 
         playTone: function(freq, dur, type) {
             if (!this.audioCtx) return;
             const ctx = this.audioCtx;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
+            const v = window.AudioKit.voice();
+            if (!v) return;
+            const osc = v.osc;
+            const gain = v.gain;
             osc.type = type || 'sine';
             osc.frequency.value = freq;
             gain.gain.setValueAtTime(0.16, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
             osc.start();
             osc.stop(ctx.currentTime + dur);
         },

@@ -14,16 +14,14 @@
          */
         init: function() {
             var self = this;
-            var enableAudio = function() {
+            // Enable audio on first click
+            window.AudioKit.unlock(['click'], function() {
                 if (!self.audioEnabled) {
-                    self.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    self.audioCtx = window.AudioKit.context();
                     self.audioEnabled = true;
                     console.log('Reading Game Audio initialized');
                 }
-            };
-
-            // Enable audio on first click
-            document.addEventListener('click', enableAudio, { once: true });
+            });
         },
 
         /**
@@ -41,22 +39,22 @@
             if (!this.audioEnabled || !this.isSoundEnabled()) return;
 
             try {
-                var oscillator = this.audioCtx.createOscillator();
-                var gainNode = this.audioCtx.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(this.audioCtx.destination);
+                var v = window.AudioKit.voice();
+                if (!v) return;
+                var oscillator = v.osc;
+                var gainNode = v.gain;
+                var ctx = v.ctx;
 
                 oscillator.type = type || 'sine';
                 oscillator.frequency.value = frequency;
 
                 // Envelope for smoother sound
-                gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.3, this.audioCtx.currentTime + 0.01);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + duration);
+                gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
 
-                oscillator.start(this.audioCtx.currentTime);
-                oscillator.stop(this.audioCtx.currentTime + duration);
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + duration);
             } catch (e) {
                 console.error('Error playing tone:', e);
             }
