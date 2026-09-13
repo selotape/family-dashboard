@@ -49,6 +49,12 @@
                         WarmUp.init();
                     }
                     break;
+                case 'prek-math':
+                    // Fully client-side; guards its own re-init on repeat visits
+                    if (typeof PreKMath !== 'undefined' && PreKMath.init) {
+                        PreKMath.init();
+                    }
+                    break;
                 case 'math-game':
                     // Math game needs to be initialized when page loads
                     if (typeof MathGame !== 'undefined' && MathGame.init && !MathGame.canvas) {
