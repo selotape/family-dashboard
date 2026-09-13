@@ -3,6 +3,10 @@
 // pull the lever until three reels land on the same card (jackpot), then that's
 // what you're doing. Odds are rigged so the jackpot arrives in ~2 pulls.
 //
+// Games carrying `retired: true` are kept out of the reels and the jackpot
+// draw, but still show up (crossed out) in the all-games gallery, so a family
+// favourite can always be brought back.
+//
 // Each tab supplies its own games, artwork sprite and copy via create():
 //   window.MyRoulette = RouletteEngine.create({
 //       pageId, storageKey, artPrefix, eyebrow, games, sprite
@@ -100,7 +104,9 @@
             const el = this.$('.gr-stats');
             if (!el) return;
             const stats = this.loadStats();
-            const playedCount = Object.keys(stats.played).length;
+            const playedCount = this.games.filter(function(g) {
+                return stats.played[g.id];
+            }).length;
             el.textContent = stats.jackpots
                 ? '🎰 ' + stats.jackpots + (stats.jackpots === 1 ? ' jackpot' : ' jackpots') + ' so far · 🎮 ' +
                   playedCount + ' of ' + this.games.length + ' tried'
@@ -418,12 +424,20 @@
             if (!el) return;
             const self = this;
             let html = '';
-            this.games.forEach(function(game) {
+            let dividerDone = false;
+            this.allGames.forEach(function(game) {
+                if (game.retired && !dividerDone) {
+                    dividerDone = true;
+                    html += '<div class="gr-gallery-divider">🗄️ Retired classics — still great, ' +
+                        'just resting. Ask to bring one back!</div>';
+                }
                 html +=
-                    '<details class="gr-gallery-item" style="--gr-c:' + game.color + '">' +
+                    '<details class="gr-gallery-item' + (game.retired ? ' gr-gallery-item--retired' : '') +
+                            '" style="--gr-c:' + game.color + '">' +
                         '<summary>' +
                             self.artHtml(game, 'gr-art-mini') +
                             '<span class="gr-gallery-name">' + game.name + '</span>' +
+                            (game.retired ? '<span class="gr-gallery-badge">retired</span>' : '') +
                             '<span class="gr-gallery-votes">👍 <span class="gr-vote-count" data-game="' + game.id + '">' +
                                 self.votesFor(game.id) + '</span></span>' +
                             '<span class="gr-gallery-time">' + game.time + '</span>' +
@@ -438,6 +452,13 @@
                     '</details>';
             });
             el.innerHTML = html;
+
+            // Tabs that pass a noun get a self-counting toggle label, so the
+            // number never goes stale when games are added or retired.
+            const toggle = this.$('.gr-gallery-toggle');
+            if (toggle && this.cfg.galleryNoun) {
+                toggle.textContent = '🔎 Peek at all ' + this.allGames.length + ' ' + this.cfg.galleryNoun;
+            }
         },
 
         setMessage: function(text) {
@@ -614,7 +635,9 @@
         create: function(config) {
             const instance = Object.create(proto);
             instance.cfg = config;
-            instance.games = config.games;
+            instance.allGames = config.games;
+            // Retired games stay in the gallery but never reach the reels.
+            instance.games = config.games.filter(function(g) { return !g.retired; });
             instance.playLabel = config.playLabel;
             if (config.jackpotOdds) instance.JACKPOT_ODDS = config.jackpotOdds;
             // per-instance state

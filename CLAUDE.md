@@ -156,6 +156,14 @@ the pages can use identical markup. A tab is just data + config:
 Adding another roulette = one data module + one page + a tab + a router case;
 `roulette-engine.js` must load **before** the tabs that build on it
 
+A game carrying `retired: true` is dropped from the reels, the jackpot draw and
+the "x of y tried" counter, but still renders in the all-games gallery — struck
+through, greyed out and badged, under a "Retired classics" divider — so an old
+favourite can be revived by deleting the one flag. Game Roulette currently ships
+15 active games plus the original 11, retired. A tab that passes `galleryNoun`
+also gets a self-counting gallery toggle label, so the count in the page
+template never goes stale.
+
 Lister does **not** use localStorage — its state (active list + saved reusable
 lists) is persisted server-side in `lister_data.json` (gitignored, like
 `server.log`) via the `/api/lister/*` endpoints in `server.py`, so it's shared
