@@ -36,12 +36,13 @@ and how to reach the dashboard from a phone/tablet on the same Wi-Fi
 
 ```
 family-dashboard/
-├── index.html          # Shell: nav tabs + script load order
-├── styles.css          # All styling (dark theme, responsive)
+├── index.html          # Shell: nav tabs + script/style load order
+├── css/                # 13 per-feature stylesheets (dark theme, responsive) — link order in index.html matters
 ├── app.js              # 3-phase init: router, background timers, lazy modules
 ├── server.py           # Dev/prod server: static files + /api/* + file watch
 ├── js/
 │   ├── core/router.js  # Tab navigation & lazy page loading
+│   ├── core/api.js     # Shared XHR+Promise transport for the server-backed tabs
 │   └── modules/        # One file per feature (countdown, routines, lister, …)
 ├── pages/              # HTML templates loaded on demand by the router
 ├── math-game-*.js      # Math Adventure subsystem (load order matters)
@@ -62,7 +63,7 @@ This dashboard works on all modern browsers:
 To make changes:
 1. **For a feature's behavior**: edit its module in `js/modules/`
 2. **For a feature's markup**: edit its template in `pages/`
-3. **For styling**: edit `styles.css`
+3. **For styling**: edit the relevant file under `css/` (one per tab, plus `base.css` for shared chrome — see CLAUDE.md for which file covers which tab)
 4. **For nav tabs / script load order**: edit `index.html`
 5. Refresh the browser to see updates — no build process required
 

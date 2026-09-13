@@ -1,0 +1,676 @@
+/* Routines tab styles.
+   Keep this file in its load-order slot: it defines shared @keyframes
+   (float, urgentPulse, bounce, etc.) that other pages' rules rely on. */
+
+/* ========================================
+   ROUTINES TIMELINE STYLES
+   Full-day timeline with checkable chores
+   ======================================== */
+
+.routines-page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+}
+
+.routines-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.routines-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.routine-clock {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    font-size: 18px;
+    color: #f1f5f9;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px;
+    padding: 6px 14px;
+    white-space: nowrap;
+}
+
+.routines-page-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    margin: 0;
+}
+
+.routine-reset-btn {
+    background: rgba(255,255,255,0.08);
+    color: #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.routine-reset-btn:hover {
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+}
+.routine-reset-btn:active { transform: scale(0.96); }
+
+/* Layout: whole-day timeline (left) + Next Action widget (right) */
+.routines-body {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 22px;
+    align-items: start;
+}
+
+.routine-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.routine-group {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 18px;
+    padding: 8px 12px 14px;
+}
+
+.routine-group-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 6px 12px;
+}
+.routine-group-header:hover { color: #fff; }
+
+.routine-group-chevron {
+    font-size: 14px;
+    opacity: 0.8;
+    transition: transform 0.2s ease;
+}
+.routine-group.collapsed .routine-group-chevron { transform: rotate(-90deg); }
+
+.routine-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.routine-group.collapsed .routine-group-items { display: none; }
+
+@media (max-width: 720px) {
+    .routines-body { grid-template-columns: 1fr; }
+    /* Put the call-to-action first on small screens */
+    .next-action { position: static; order: -1; }
+}
+
+/* Item row */
+.routine-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-left: 5px solid rgba(255,255,255,0.15);
+    transition: background 0.3s ease, opacity 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.routine-item-icon {
+    font-size: 34px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.routine-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.routine-item-label {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.routine-item-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.routine-item-countdown {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    background: rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 5px 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Custom checkbox */
+.routine-check {
+    position: relative;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+.routine-check input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+.routine-check-box {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    border: 2px solid rgba(255,255,255,0.35);
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+.routine-check input:checked + .routine-check-box {
+    background: #22c55e;
+    border-color: #22c55e;
+}
+.routine-check input:checked + .routine-check-box::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 5px;
+    width: 7px;
+    height: 13px;
+    border: solid #fff;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+.routine-check input:focus-visible + .routine-check-box {
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
+}
+
+/* Non-negotiable (auto) items: non-clickable status marker, subtler row */
+.routine-item.is-auto { cursor: default; background: rgba(255,255,255,0.035); }
+
+.routine-marker {
+    position: relative;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255,255,255,0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1;
+}
+.routine-item.is-auto.active .routine-marker {
+    border-style: solid;
+    border-color: rgba(255,255,255,0.55);
+    color: #fff;
+}
+.routine-item.is-auto.active .routine-marker::after { content: '●'; font-size: 9px; }
+.routine-item.is-auto.past .routine-marker {
+    border-style: solid;
+    border-color: rgba(34,197,94,0.5);
+    color: #22c55e;
+}
+.routine-item.is-auto.past .routine-marker::after { content: '✓'; }
+
+/* One-time extra tasks ("bedsheets from dryer") */
+.routine-extras {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+}
+
+.routine-extras-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.routine-extra-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.routine-extra-item.done {
+    opacity: 0;
+    transform: translateX(8px) scale(0.97);
+}
+
+.routine-extra-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+.routine-extra-check { position: relative; flex-shrink: 0; width: 22px; height: 22px; cursor: pointer; }
+.routine-extra-check input {
+    position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer;
+}
+.routine-extra-check-box {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid rgba(255,255,255,0.35);
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+.routine-extra-check input:checked + .routine-extra-check-box {
+    background: #22c55e;
+    border-color: #22c55e;
+}
+.routine-extra-check input:checked + .routine-extra-check-box::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 11px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.routine-extra-check input:focus-visible + .routine-extra-check-box {
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
+}
+
+.routine-extras-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 6px;
+    transition: color 0.2s ease;
+}
+.routine-extras-input::placeholder { color: #64748b; }
+.routine-extras-input:hover { color: #cbd5e1; }
+.routine-extras-input:focus {
+    outline: none;
+    color: #f1f5f9;
+}
+
+/* Per-routine accent colors (left border + active glow) */
+.routine-item.theme-morning { border-left-color: #22c55e; }
+.routine-item.theme-dinner  { border-left-color: #fbbf24; }
+.routine-item.theme-shower  { border-left-color: #22d3d8; }
+.routine-item.theme-bed     { border-left-color: #8b5cf6; }
+
+/* State: future (default look already applies) */
+.routine-item.future { opacity: 0.9; }
+
+/* State: past (dimmed, not yet checked) */
+.routine-item.past {
+    opacity: 0.45;
+}
+
+/* State: active (the next-up item) */
+.routine-item.active {
+    background: rgba(255,255,255,0.12);
+    transform: scale(1.02);
+}
+.routine-item.active .routine-item-label { color: #fff; }
+.routine-item.active.theme-morning { box-shadow: 0 0 24px rgba(34,197,94,0.45);  border-color: rgba(34,197,94,0.6); }
+.routine-item.active.theme-dinner  { box-shadow: 0 0 24px rgba(251,191,36,0.45); border-color: rgba(251,191,36,0.6); }
+.routine-item.active.theme-shower  { box-shadow: 0 0 24px rgba(34,211,216,0.45); border-color: rgba(34,211,216,0.6); }
+.routine-item.active.theme-bed     { box-shadow: 0 0 24px rgba(139,92,246,0.45); border-color: rgba(139,92,246,0.6); }
+.routine-item.active .routine-item-icon { animation: float 3s ease-in-out infinite; }
+.routine-item.active.theme-morning .routine-item-countdown { background: #22c55e; }
+.routine-item.active.theme-dinner  .routine-item-countdown { background: #f97316; }
+.routine-item.active.theme-shower  .routine-item-countdown { background: #3b82f6; }
+.routine-item.active.theme-bed     .routine-item-countdown { background: #7c3aed; }
+
+/* Pulsing "live" dot on the active item's countdown = where we are now */
+.routine-item.active .routine-item-countdown::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    margin-right: 7px;
+    vertical-align: middle;
+    animation: routineNowPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes routineNowPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.6); }
+}
+
+/* State: active + imminent (<=5 min) -> pulse */
+.routine-item.active.urgent { animation: urgentPulse 0.8s ease-in-out infinite; }
+
+/* Overdue (missed chore that is the current action) -> red countdown */
+.routine-item.active.overdue .routine-item-countdown { background: #ef4444; }
+.routine-item.active.overdue { box-shadow: 0 0 24px rgba(239,68,68,0.45); border-color: rgba(239,68,68,0.6); }
+
+/* ---- Strong countdown clock (Leave for school) ----
+   Big live mm:ss that escalates: neutral -> yellow (20 min) ->
+   orange (10 min) -> red + pop (5 min and once the time has passed). */
+.routine-strong-clock {
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #e2e8f0;
+    background: rgba(255,255,255,0.10);
+    border: 2px solid rgba(255,255,255,0.20);
+    border-radius: 14px;
+    padding: 6px 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+.routine-strong-clock.warn {
+    color: #fde047;
+    background: rgba(250,204,21,0.16);
+    border-color: rgba(250,204,21,0.65);
+}
+.routine-strong-clock.alert {
+    color: #fdba74;
+    background: rgba(249,115,22,0.20);
+    border-color: rgba(249,115,22,0.75);
+}
+.routine-strong-clock.critical {
+    color: #fff;
+    background: #ef4444;
+    border-color: #fca5a5;
+    box-shadow: 0 0 20px rgba(239,68,68,0.55);
+    animation: strongPop 0.7s ease-in-out infinite;
+}
+
+/* The row itself joins in at the 5-minute mark (and stays legible even
+   though `past` normally dims it once the time has gone by) */
+.routine-item.strong-critical {
+    opacity: 1;
+    border-color: rgba(239,68,68,0.7);
+    box-shadow: 0 0 26px rgba(239,68,68,0.40);
+}
+.routine-item.strong-critical .routine-item-icon {
+    animation: bounce 0.7s ease-in-out infinite;
+}
+
+@keyframes strongPop {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.12); }
+}
+
+/* ---- Next Action widget ---- */
+.next-action { position: sticky; top: 12px; }
+
+.next-action-card {
+    background: linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 22px;
+    padding: 22px 20px 24px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.next-action-eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+.next-action-emoji { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+.next-action-label { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+
+.next-action-when {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    background: rgba(255,255,255,0.16);
+    border-radius: 999px;
+    padding: 6px 16px;
+    margin-bottom: 10px;
+}
+.next-action-time { font-size: 13px; color: #94a3b8; margin-bottom: 16px; }
+
+/* Per-girl checkboxes inside the Next Action widget */
+.next-action-girls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+.na-girl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.na-girl:hover { background: rgba(255,255,255,0.10); }
+.na-girl input { position: absolute; opacity: 0; width: 0; height: 0; }
+.na-girl-box {
+    flex-shrink: 0;
+    position: relative;
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid rgba(255,255,255,0.35);
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+.na-girl input:checked + .na-girl-box { background: #22c55e; border-color: #22c55e; }
+.na-girl input:checked + .na-girl-box::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 11px;
+    border: solid #fff;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+.na-girl input:focus-visible + .na-girl-box { box-shadow: 0 0 0 3px rgba(59,130,246,0.5); }
+.na-girl-emoji { font-size: 20px; line-height: 1; }
+.na-girl-name { font-size: 15px; font-weight: 700; color: #e2e8f0; }
+
+.next-action-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: #22c55e;
+    color: #06240f;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.1s ease;
+}
+.next-action-btn:hover { filter: brightness(1.08); }
+.next-action-btn:active { transform: scale(0.98); }
+
+/* Note shown for non-negotiable (auto) items instead of a button */
+.next-action-note {
+    font-size: 13px;
+    font-weight: 700;
+    color: #cbd5e1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+/* Theme accent by routine */
+.next-action-card[data-theme="morning"] { border-color: rgba(34,197,94,0.55);  box-shadow: 0 12px 44px rgba(34,197,94,0.30); }
+.next-action-card[data-theme="dinner"]  { border-color: rgba(251,191,36,0.55); box-shadow: 0 12px 44px rgba(251,191,36,0.28); }
+.next-action-card[data-theme="shower"]  { border-color: rgba(34,211,216,0.55); box-shadow: 0 12px 44px rgba(34,211,216,0.28); }
+.next-action-card[data-theme="bed"]     { border-color: rgba(139,92,246,0.55); box-shadow: 0 12px 44px rgba(139,92,246,0.30); }
+.next-action-card[data-theme="morning"] .next-action-when { background: #22c55e; }
+.next-action-card[data-theme="dinner"]  .next-action-when { background: #f97316; }
+.next-action-card[data-theme="shower"]  .next-action-when { background: #3b82f6; }
+.next-action-card[data-theme="bed"]     .next-action-when { background: #7c3aed; }
+
+/* Overdue (missed chore) */
+.next-action-card.overdue { border-color: rgba(239,68,68,0.6); box-shadow: 0 12px 44px rgba(239,68,68,0.30); }
+.next-action-card.overdue .next-action-when { background: #ef4444; color: #fff; }
+
+/* Imminent: gently float the emoji */
+.next-action-card.imminent .next-action-emoji { animation: float 3s ease-in-out infinite; }
+
+.next-action-card.all-done { border-color: rgba(139,92,246,0.4); }
+
+/* Strong countdown inside the Next Action card (mirrors the row clock).
+   Prefixed with .next-action-card to outrank the per-theme pill colours. */
+.next-action-card .next-action-when.strong {
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-size: 30px;
+    letter-spacing: 1px;
+    padding: 8px 22px;
+    border-radius: 16px;
+    font-variant-numeric: tabular-nums;
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.20);
+}
+.next-action-card .next-action-when.strong.warn {
+    color: #fde047;
+    background: rgba(250,204,21,0.16);
+    border-color: rgba(250,204,21,0.65);
+}
+.next-action-card .next-action-when.strong.alert {
+    color: #fdba74;
+    background: rgba(249,115,22,0.20);
+    border-color: rgba(249,115,22,0.75);
+}
+.next-action-card .next-action-when.strong.critical {
+    color: #fff;
+    background: #ef4444;
+    border-color: #fca5a5;
+    box-shadow: 0 0 20px rgba(239,68,68,0.55);
+    animation: strongPop 0.7s ease-in-out infinite;
+}
+.next-action-card.strong-critical {
+    border-color: rgba(239,68,68,0.7);
+    box-shadow: 0 12px 44px rgba(239,68,68,0.35);
+}
+.next-action-card.strong-critical .next-action-emoji {
+    animation: bounce 0.7s ease-in-out infinite;
+}
+
+/* State: done (checked) - strikethrough + muted, overrides active/past look */
+.routine-item.done {
+    opacity: 0.55;
+    box-shadow: none;
+    transform: none;
+    animation: none;
+}
+.routine-item.done .routine-item-label {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+.routine-item.done .routine-item-icon { filter: grayscale(0.6); }
+
+.routine-status {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #c4b5fd;
+    min-height: 24px;
+}
+
+/* Chime notification flash - loops 5 times for ~3 seconds total */
+.routine-item.chime-flash {
+    animation: chimeFlash 0.6s ease-in-out 5;
+}
+
+
+/* --- Shared keyframes (also used by other pages, keep defined) --- */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+@keyframes urgentPulse {
+    0%, 100% { transform: scale(1.02); }
+    50% { transform: scale(1.05); }
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+@keyframes chimeFlash {
+    0%, 100% { filter: brightness(1); transform: scale(1); }
+    50% { filter: brightness(1.4); transform: scale(1.03); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .routines-page-title { font-size: 24px; }
+    .routine-item { padding: 14px; gap: 10px; }
+    .routine-item-icon { font-size: 28px; }
+    .routine-item-label { font-size: 17px; }
+    .routine-strong-clock { font-size: 22px; padding: 5px 10px; }
+    .next-action-card .next-action-when.strong { font-size: 26px; }
+}
+

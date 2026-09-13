@@ -40,7 +40,8 @@ The application uses a **script tag + IIFE pattern** (not ES6 modules) for brows
 ```
 js/
 ├── core/
-│   └── router.js           # Tab navigation & lazy page loading
+│   ├── router.js           # Tab navigation & lazy page loading
+│   └── api.js              # Shared XHR+Promise transport (Api.request/Api.client) for the server-backed tabs
 └── modules/
     ├── countdown.js        # Grandma visit countdown timer
     ├── todos.js            # Markdown todo loader (uses marked.js)
@@ -70,6 +71,22 @@ pages/                      # HTML templates loaded dynamically by router
 ├── disney-watch.html
 └── grandma-chefs.html
 ```
+
+### Stylesheets
+
+Styling is split per feature under `css/`, linked from `index.html` in this
+exact order — **the order is load-bearing, not cosmetic**: later files
+override earlier ones, and `routines.css` defines `@keyframes` (`float`,
+`urgentPulse`, `bounce`) that other pages' animations depend on, so it must
+stay ahead of them.
+
+`base.css`, `countdown.css`, `todos.css`, `capybara-game.css`, `warmup.css`,
+`routines.css`, `lister.css`, `math-game.css`, `reading-game.css`,
+`roulette.css`, `disney-watch.css`, `grandma-chefs.css`, `prek-math.css`
+
+`base.css` holds the reset, body, tabs, topbar and page-container rules every
+tab relies on. `roulette.css` covers all three roulette tabs (game/bathtub/
+bedtime), including the bath and night themes.
 
 ### Initialization Flow
 
@@ -130,7 +147,8 @@ The Math Game is a separate subsystem with its own module structure:
 ```
 
 2. Add script tag to index.html (in feature modules section)
-3. Add lazy-load call in `js/core/router.js` initializePage() switch statement
+3. Add a row to the `PAGES` registry in `js/core/router.js` — `{module, method}`,
+   plus `defer`/`skipIf` only if the tab needs them (see math-game/reading-game)
 4. Create page template in `pages/feature-name.html`
 5. Add tab button in index.html nav section
 
@@ -163,6 +181,16 @@ favourite can be revived by deleting the one flag. Game Roulette currently ships
 15 active games plus the original 11, retired. A tab that passes `galleryNoun`
 also gets a self-counting gallery toggle label, so the count in the page
 template never goes stale.
+
+Lister, Disney Watch and Grandma's Chefs are the three server-backed tabs, and
+the storage boilerplate isn't duplicated across them. On the server,
+`server.py` implements one `JsonStore` class (atomic write-then-rename, one
+`threading.Lock` per store, a per-feature `default` seeder and `repair`
+validator) and each tab gets its own instance — `lister_store`, `disney_store`,
+`chefs_store`. On the client they likewise share `js/core/api.js`'s
+XHR+Promise `Api.client(basePath)` transport, but each module binds its own
+client lazily (`this.api()`, on first use rather than at load time) so it
+stays independent of script load order.
 
 Lister does **not** use localStorage — its state (active list + saved reusable
 lists) is persisted server-side in `lister_data.json` (gitignored, like

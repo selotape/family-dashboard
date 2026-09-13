@@ -19,26 +19,17 @@
         _saveTimer: null,
         _built: false,
 
-        // ---- backend (XHR + Promise, same shape as Lister) ----
+        // ---- backend (shared transport in js/core/api.js) ----
+        // Fixed single-resource API (no path arg) — adapt to the shared
+        // client's generic get/post shape.
+        // Bound lazily, not at parse time (load-order independence).
+        _api: null,
+        api: function () {
+            if (!this._api) this._api = window.Api.client('/api/disney');
+            return this._api;
+        },
         _request: function (method, body) {
-            var url = window.location.origin + '/api/disney/state';
-            return new Promise(function (resolve, reject) {
-                var xhr = new XMLHttpRequest();
-                var t = setTimeout(function () { xhr.abort(); reject(new Error('Request timed out')); }, 20000);
-                xhr.open(method, url, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onload = function () {
-                    clearTimeout(t);
-                    try {
-                        var res = JSON.parse(xhr.responseText);
-                        if (xhr.status >= 200 && xhr.status < 300) resolve(res);
-                        else reject(new Error(res.error || ('Server error: ' + xhr.status)));
-                    } catch (e) { reject(new Error('Invalid response from server')); }
-                };
-                xhr.onerror = function () { clearTimeout(t); reject(new Error('Network error — is the server running?')); };
-                xhr.onabort = function () { clearTimeout(t); };
-                xhr.send(body ? JSON.stringify(body) : undefined);
-            });
+            return method === 'GET' ? this.api().get('/state') : this.api().post('/state', body);
         },
 
         init: function () {

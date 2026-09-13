@@ -6,13 +6,29 @@
     <title>Visbord Family Dashboard</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Stylesheets: split per feature. ORDER IS LOAD-BEARING —
+         later files override earlier ones, and routines.css defines
+         @keyframes that other pages use. Keep this sequence. -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/countdown.css">
+    <link rel="stylesheet" href="css/todos.css">
+    <link rel="stylesheet" href="css/capybara-game.css">
+    <link rel="stylesheet" href="css/warmup.css">
+    <link rel="stylesheet" href="css/routines.css">
+    <link rel="stylesheet" href="css/lister.css">
+    <link rel="stylesheet" href="css/math-game.css">
+    <link rel="stylesheet" href="css/reading-game.css">
+    <link rel="stylesheet" href="css/roulette.css">
+    <link rel="stylesheet" href="css/disney-watch.css">
+    <link rel="stylesheet" href="css/grandma-chefs.css">
+    <link rel="stylesheet" href="css/prek-math.css">
 </head>
 <body>
     <header class="topbar">
         <span class="topbar-title">🏠 Family Dashboard</span>
         <button class="tabs-toggle" id="tabs-toggle" aria-controls="tabs-nav" aria-expanded="true">Hide menu ▲</button>
     </header>
+    <!-- New tab? Also add a row to the PAGES table in js/core/router.js -->
     <nav class="tabs" id="tabs-nav">
         <button class="tab active" data-page="grandma">👵 Grandma Countdown</button>
         <button class="tab" data-page="routines">⏰ Routines</button>
@@ -35,6 +51,7 @@
 
     <!-- Core Infrastructure (MUST load first) -->
     <script src="js/core/router.js"></script>
+    <script src="js/core/api.js"></script>
 
     <!-- Feature Modules (order doesn't matter) -->
     <script src="js/modules/countdown.js"></script>

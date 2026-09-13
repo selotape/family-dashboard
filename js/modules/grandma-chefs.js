@@ -98,38 +98,15 @@
 
         init: function() { this.load(); },
 
-        // ---- Backend calls (XHR + Promise, same pattern as Lister) ----
-        _request: function(method, path, body) {
-            const url = window.location.origin + '/api/chefs' + path;
-            return new Promise(function(resolve, reject) {
-                const xhr = new XMLHttpRequest();
-                const timeoutId = setTimeout(function() {
-                    xhr.abort();
-                    reject(new Error('Request timed out'));
-                }, 20000);
-
-                xhr.open(method, url, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onload = function() {
-                    clearTimeout(timeoutId);
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (xhr.status >= 200 && xhr.status < 300) resolve(response);
-                        else reject(new Error(response.error || ('Server error: ' + xhr.status)));
-                    } catch (e) {
-                        reject(new Error('Invalid response from server'));
-                    }
-                };
-                xhr.onerror = function() {
-                    clearTimeout(timeoutId);
-                    reject(new Error('Network error — is the server running?'));
-                };
-                xhr.onabort = function() { clearTimeout(timeoutId); };
-                xhr.send(body ? JSON.stringify(body) : undefined);
-            });
+        // ---- Backend calls (shared transport in js/core/api.js) ----
+        // Bound lazily, not at parse time (load-order independence).
+        _api: null,
+        api: function() {
+            if (!this._api) this._api = window.Api.client('/api/chefs');
+            return this._api;
         },
-        apiGet: function(path) { return this._request('GET', path); },
-        apiPost: function(path, body) { return this._request('POST', path, body); },
+        apiGet: function(path) { return this.api().get(path); },
+        apiPost: function(path, body) { return this.api().post(path, body); },
 
         // ---- Loading / saving ----
         load: function() {

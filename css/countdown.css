@@ -1,0 +1,145 @@
+/* Grandma Countdown tab styles. */
+
+/* Grandma Countdown */
+.countdown-page-title {
+    text-align: center;
+    font-size: 24px;
+    color: #e94560;
+    margin-bottom: 30px;
+}
+
+.grandmas-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.countdown-card {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.countdown-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.countdown-card.ayelet {
+    border-color: rgba(233, 69, 96, 0.3);
+}
+
+.countdown-card.orly {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.countdown-card.israel {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.countdown-emoji {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.countdown-title {
+    font-size: 22px;
+    margin-bottom: 6px;
+    color: #e94560;
+}
+
+.countdown-card.orly .countdown-title {
+    color: #a855f7;
+}
+
+.countdown-card.israel .countdown-title {
+    color: #3b82f6;
+}
+
+.countdown-subtitle {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.countdown-number {
+    font-size: 80px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #e94560, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.countdown-card.orly .countdown-number {
+    background: linear-gradient(135deg, #a855f7, #c084fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.countdown-card.israel .countdown-number {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.countdown-label {
+    font-size: 18px;
+    color: #aaa;
+    margin-top: 8px;
+}
+
+.countdown-time {
+    font-size: 20px;
+    font-weight: bold;
+    color: #e94560;
+    margin-top: 4px;
+}
+
+.countdown-card.orly .countdown-time {
+    color: #c084fc;
+}
+
+.countdown-card.israel .countdown-time {
+    color: #60a5fa;
+}
+
+.countdown-date {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+@media (max-width: 600px) {
+    .tabs {
+        padding: 8px;
+        gap: 6px;
+    }
+    .tab {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    .content {
+        padding: 20px 12px;
+    }
+    .countdown-number {
+        font-size: 64px;
+    }
+    .countdown-card {
+        padding: 24px 16px;
+    }
+}
+
+@media (max-width: 380px) {
+    .tab {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+}
+

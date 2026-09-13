@@ -45,6 +45,49 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class JsonStore:
+    """Atomic, lock-guarded JSON file store. One instance per feature data file.
+
+    `default` builds the seed data when the file is missing or unreadable;
+    `repair` (optional) is given the loaded dict and returns the cleaned dict,
+    and must raise if the data is malformed (the store then re-seeds).
+    """
+    def __init__(self, path, default, repair=None, label=None):
+        self.path = path
+        self.default = default
+        self.repair = repair
+        self.label = label or os.path.basename(path)
+        self.lock = threading.Lock()
+
+    def _write_unlocked(self, data):
+        tmp_path = self.path + '.tmp'
+        with open(tmp_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_path, self.path)
+
+    def load(self):
+        with self.lock:
+            if not os.path.exists(self.path):
+                data = self.default()
+                self._write_unlocked(data)
+                return data
+            try:
+                with open(self.path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if self.repair is not None:
+                    data = self.repair(data)
+                return data
+            except Exception as e:
+                logger.error(f"Failed to read {self.label} data, resetting: {e}")
+                data = self.default()
+                self._write_unlocked(data)
+                return data
+
+    def save(self, data):
+        with self.lock:
+            self._write_unlocked(data)
+
+
 def resolve_port(default=8080):
     """Port to serve on, from the PORT env var (see .env / DEPLOY.md).
     Falls back to the default when it's unset or not a usable port number."""
@@ -397,7 +440,6 @@ def api_health():
 # ============================================================================
 
 LISTER_DATA_FILE = os.path.join(DIRECTORY, 'lister_data.json')
-lister_lock = threading.Lock()
 
 LISTER_ASSIGNEES = ['parent', 'noga', 'dana', 'ella']
 
@@ -469,36 +511,14 @@ def _lister_default_data():
     }
 
 
-def _lister_write_unlocked(data):
-    tmp_path = LISTER_DATA_FILE + '.tmp'
-    with open(tmp_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp_path, LISTER_DATA_FILE)
+def _lister_repair(data):
+    if not isinstance(data, dict) or 'activeList' not in data:
+        raise ValueError('malformed lister data')
+    data.setdefault('savedLists', [])
+    return data
 
 
-def _lister_load():
-    with lister_lock:
-        if not os.path.exists(LISTER_DATA_FILE):
-            data = _lister_default_data()
-            _lister_write_unlocked(data)
-            return data
-        try:
-            with open(LISTER_DATA_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if not isinstance(data, dict) or 'activeList' not in data:
-                raise ValueError('malformed lister data')
-            data.setdefault('savedLists', [])
-            return data
-        except Exception as e:
-            logger.error(f"Failed to read lister data, resetting: {e}")
-            data = _lister_default_data()
-            _lister_write_unlocked(data)
-            return data
-
-
-def _lister_save(data):
-    with lister_lock:
-        _lister_write_unlocked(data)
+lister_store = JsonStore(LISTER_DATA_FILE, _lister_default_data, _lister_repair, 'lister')
 
 
 def _lister_find_source(data, source_type, source_id):
@@ -594,7 +614,7 @@ Respond with ONLY valid JSON, no other text, in this exact shape:
 def api_lister_state():
     """Everything the Lister tab needs on load: active list, saved reusable
     lists, and the built-in template catalog."""
-    data = _lister_load()
+    data = lister_store.load()
     return jsonify({
         'success': True,
         'activeList': data['activeList'],
@@ -608,13 +628,13 @@ def api_lister_state():
 def api_lister_save_active():
     """Persist the current state of the active list (checks, added/removed items)."""
     body = request.get_json(silent=True) or {}
-    data = _lister_load()
+    data = lister_store.load()
     active = data['activeList']
     active['name'] = str(body.get('name', active.get('name', 'List')))[:60]
     active['emoji'] = str(body.get('emoji', active.get('emoji', '📋')))[:8] or '📋'
     active['items'] = _lister_sanitize_items(body.get('items', []))
     data['activeList'] = active
-    _lister_save(data)
+    lister_store.save(data)
     return jsonify({'success': True, 'activeList': active})
 
 
@@ -626,14 +646,14 @@ def api_lister_new():
     source_type = body.get('sourceType')
     source_id = body.get('sourceId')
 
-    data = _lister_load()
+    data = lister_store.load()
     found = _lister_find_source(data, source_type, source_id)
     if not found:
         return jsonify({'success': False, 'error': 'Unknown list source'}), 400
     name, emoji, items = found
 
     data['activeList'] = _lister_list_from_items(items, name, emoji, source_type, source_id)
-    _lister_save(data)
+    lister_store.save(data)
     return jsonify({'success': True, 'activeList': data['activeList']})
 
 
@@ -646,7 +666,7 @@ def api_lister_save_as():
     if not name:
         return jsonify({'success': False, 'error': 'Name is required'}), 400
 
-    data = _lister_load()
+    data = lister_store.load()
     items = _lister_sanitize_items(data['activeList'].get('items', []))
     for it in items:
         it['checked'] = False  # a saved list is a reusable template, not a snapshot
@@ -659,19 +679,19 @@ def api_lister_save_as():
         'items': items
     }
     data['savedLists'].append(saved)
-    _lister_save(data)
+    lister_store.save(data)
     return jsonify({'success': True, 'saved': saved, 'savedLists': data['savedLists']})
 
 
 @app.route('/api/lister/saved/<saved_id>', methods=['DELETE'])
 def api_lister_delete_saved(saved_id):
     """Delete a saved reusable list."""
-    data = _lister_load()
+    data = lister_store.load()
     before = len(data['savedLists'])
     data['savedLists'] = [s for s in data['savedLists'] if s['id'] != saved_id]
     if len(data['savedLists']) == before:
         return jsonify({'success': False, 'error': 'Not found'}), 404
-    _lister_save(data)
+    lister_store.save(data)
     return jsonify({'success': True, 'savedLists': data['savedLists']})
 
 
@@ -685,7 +705,7 @@ def api_lister_generate():
     if not prompt:
         return jsonify({'success': False, 'error': 'Prompt is required'}), 400
 
-    data = _lister_load()
+    data = lister_store.load()
     current_items = _lister_sanitize_items(body.get('currentItems', data['activeList'].get('items', [])))
 
     library = [
@@ -714,7 +734,6 @@ def api_lister_generate():
 # ============================================================================
 
 DISNEY_DATA_FILE = os.path.join(DIRECTORY, 'disney_data.json')
-disney_lock = threading.Lock()
 
 DISNEY_GIRLS = ['noga', 'dana', 'ella']
 DISNEY_TIERS = ['cozy', 'peril', 'preview']
@@ -814,43 +833,21 @@ def _disney_default_data():
             'updatedAt': int(time.time() * 1000)}
 
 
-def _disney_write_unlocked(data):
-    tmp_path = DISNEY_DATA_FILE + '.tmp'
-    with open(tmp_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp_path, DISNEY_DATA_FILE)
+def _disney_repair(data):
+    if not isinstance(data, dict) or 'films' not in data:
+        raise ValueError('malformed disney data')
+    data['films'] = _disney_sanitize_films(data.get('films', []))
+    return data
 
 
-def _disney_load():
-    with disney_lock:
-        if not os.path.exists(DISNEY_DATA_FILE):
-            data = _disney_default_data()
-            _disney_write_unlocked(data)
-            return data
-        try:
-            with open(DISNEY_DATA_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if not isinstance(data, dict) or 'films' not in data:
-                raise ValueError('malformed disney data')
-            data['films'] = _disney_sanitize_films(data.get('films', []))
-            return data
-        except Exception as e:
-            logger.error(f"Failed to read disney data, resetting: {e}")
-            data = _disney_default_data()
-            _disney_write_unlocked(data)
-            return data
-
-
-def _disney_save(data):
-    with disney_lock:
-        _disney_write_unlocked(data)
+disney_store = JsonStore(DISNEY_DATA_FILE, _disney_default_data, _disney_repair, 'disney')
 
 
 @app.route('/api/disney/state', methods=['GET'])
 def api_disney_state():
     """Everything the Disney Watch tab needs on load: the persisted per-film
     state list. The client merges this with its built-in film catalogue."""
-    data = _disney_load()
+    data = disney_store.load()
     return jsonify({
         'success': True,
         'films': data['films'],
@@ -866,7 +863,7 @@ def api_disney_save_state():
     body = request.get_json(silent=True) or {}
     films = _disney_sanitize_films(body.get('films', []))
     data = {'films': films, 'updatedAt': int(time.time() * 1000)}
-    _disney_save(data)
+    disney_store.save(data)
     return jsonify({'success': True, 'films': films, 'updatedAt': data['updatedAt']})
 
 
@@ -886,7 +883,6 @@ def api_disney_save_state():
 # ============================================================================
 
 CHEFS_DATA_FILE = os.path.join(DIRECTORY, 'chefs_data.json')
-chefs_lock = threading.Lock()
 
 # Recipes the tab ships with (seed chefs_data.json on first run).
 CHEFS_SEED = [
@@ -997,43 +993,21 @@ def _chefs_default_data():
             'updatedAt': int(time.time() * 1000)}
 
 
-def _chefs_write_unlocked(data):
-    tmp_path = CHEFS_DATA_FILE + '.tmp'
-    with open(tmp_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp_path, CHEFS_DATA_FILE)
+def _chefs_repair(data):
+    if not isinstance(data, dict) or 'recipes' not in data:
+        raise ValueError('malformed chefs data')
+    data['recipes'] = _chefs_sanitize_recipes(data.get('recipes', []))
+    return data
 
 
-def _chefs_load():
-    with chefs_lock:
-        if not os.path.exists(CHEFS_DATA_FILE):
-            data = _chefs_default_data()
-            _chefs_write_unlocked(data)
-            return data
-        try:
-            with open(CHEFS_DATA_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if not isinstance(data, dict) or 'recipes' not in data:
-                raise ValueError('malformed chefs data')
-            data['recipes'] = _chefs_sanitize_recipes(data.get('recipes', []))
-            return data
-        except Exception as e:
-            logger.error(f"Failed to read chefs data, resetting: {e}")
-            data = _chefs_default_data()
-            _chefs_write_unlocked(data)
-            return data
-
-
-def _chefs_save(data):
-    with chefs_lock:
-        _chefs_write_unlocked(data)
+chefs_store = JsonStore(CHEFS_DATA_FILE, _chefs_default_data, _chefs_repair, 'chefs')
 
 
 @app.route('/api/chefs/state', methods=['GET'])
 def api_chefs_state():
     """Everything the Grandma's Little Chefs tab needs on load: the full recipe
     list with per-recipe checklist state."""
-    data = _chefs_load()
+    data = chefs_store.load()
     return jsonify({
         'success': True,
         'recipes': data['recipes'],
@@ -1048,7 +1022,7 @@ def api_chefs_save_state():
     body = request.get_json(silent=True) or {}
     recipes = _chefs_sanitize_recipes(body.get('recipes', []))
     data = {'recipes': recipes, 'updatedAt': int(time.time() * 1000)}
-    _chefs_save(data)
+    chefs_store.save(data)
     return jsonify({'success': True, 'recipes': recipes, 'updatedAt': data['updatedAt']})
 
 

@@ -28,7 +28,7 @@ step and no `git pull`. What you edit is what gets served:
 
 | You edit…                         | What happens                                            |
 | --------------------------------- | ------------------------------------------------------- |
-| `index.html`, `styles.css`, `js/*`, `pages/*` | Served **live** from disk — just **refresh the browser**. No restart. |
+| `index.html`, `css/*`, `js/*`, `pages/*` | Served **live** from disk — just **refresh the browser**. No restart. |
 | `server.py` or `.env`             | The service **auto-restarts within ~1–2 s** to pick it up. |
 | `requirements.txt`                | Re-run `./deploy-linux.sh` to install the new dependencies. |
 

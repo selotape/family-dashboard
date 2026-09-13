@@ -3,6 +3,57 @@
 (function() {
     'use strict';
 
+    // Every tab: which global module owns it, which method to call on open, and
+    // any guard/defer quirk. Adding a tab = one row here + a button in index.html.
+    var PAGES = {
+        // Update countdown immediately when page loads
+        'grandma': { module: 'CountdownTimer', method: 'update' },
+
+        // Game initializes automatically when DOM exists
+        'game': { module: 'Game', method: 'init' },
+
+        // Warm-up initializes automatically when DOM exists
+        'warmup': { module: 'WarmUp', method: 'init' },
+
+        // Fully client-side; guards its own re-init on repeat visits
+        'prek-math': { module: 'PreKMath', method: 'init' },
+
+        // Math game needs to be initialized when page loads
+        'math-game': {
+            module: 'MathGame', method: 'init', defer: 100,
+            skipIf: function(m) { return !!m.canvas; }
+        },
+
+        // Reading game initializes when page loads
+        'reading-game': {
+            module: 'ReadingGame', method: 'init', defer: 100,
+            skipIf: function(m) { return !!m.initialized; }
+        },
+
+        // Render/refresh the routines timeline immediately on open
+        'routines': { module: 'RoutineTimer', method: 'update' },
+
+        // Re-fetch from the server on every visit so changes made
+        // from another device on the LAN show up here too.
+        'lister': { module: 'Lister', method: 'init' },
+
+        // Builds the slot machine on first open, then just refreshes stats
+        'game-roulette': { module: 'GameRoulette', method: 'init' },
+
+        // Same machine, bath-time games
+        'bathtub-roulette': { module: 'BathtubRoulette', method: 'init' },
+
+        // Same machine, calm-down-before-sleep activities
+        'bedtime-roulette': { module: 'BedtimeRoulette', method: 'init' },
+
+        // Re-fetch watch-list state from the server on every visit
+        // so changes from another LAN device show up here too.
+        'disney-watch': { module: 'DisneyWatch', method: 'init' },
+
+        // Renders the recipe cards (all data lives in the module)
+        'grandma-chefs': { module: 'GrandmaChefs', method: 'init' }
+    };
+
     window.Router = {
         // Load page template dynamically
         loadPageTemplate: async function(pageName) {
@@ -30,87 +81,20 @@
 
         // Initialize page-specific features
         initializePage: function(pageName) {
-            switch(pageName) {
-                case 'grandma':
-                    // Update countdown immediately when page loads
-                    if (typeof CountdownTimer !== 'undefined') {
-                        CountdownTimer.update();
-                    }
-                    break;
-                case 'game':
-                    // Game initializes automatically when DOM exists
-                    if (typeof Game !== 'undefined' && Game.init) {
-                        Game.init();
-                    }
-                    break;
-                case 'warmup':
-                    // Warm-up initializes automatically when DOM exists
-                    if (typeof WarmUp !== 'undefined' && WarmUp.init) {
-                        WarmUp.init();
-                    }
-                    break;
-                case 'prek-math':
-                    // Fully client-side; guards its own re-init on repeat visits
-                    if (typeof PreKMath !== 'undefined' && PreKMath.init) {
-                        PreKMath.init();
-                    }
-                    break;
-                case 'math-game':
-                    // Math game needs to be initialized when page loads
-                    if (typeof MathGame !== 'undefined' && MathGame.init && !MathGame.canvas) {
-                        setTimeout(() => MathGame.init(), 100);
-                    }
-                    break;
-                case 'reading-game':
-                    // Reading game initializes when page loads
-                    if (typeof ReadingGame !== 'undefined' && ReadingGame.init && !ReadingGame.initialized) {
-                        setTimeout(() => ReadingGame.init(), 100);
-                    }
-                    break;
-                case 'routines':
-                    // Render/refresh the routines timeline immediately on open
-                    if (typeof RoutineTimer !== 'undefined' && RoutineTimer.update) {
-                        RoutineTimer.update();
-                    }
-                    break;
-                case 'lister':
-                    // Re-fetch from the server on every visit so changes made
-                    // from another device on the LAN show up here too.
-                    if (typeof Lister !== 'undefined' && Lister.init) {
-                        Lister.init();
-                    }
-                    break;
-                case 'game-roulette':
-                    // Builds the slot machine on first open, then just refreshes stats
-                    if (typeof GameRoulette !== 'undefined' && GameRoulette.init) {
-                        GameRoulette.init();
-                    }
-                    break;
-                case 'bathtub-roulette':
-                    // Same machine, bath-time games
-                    if (typeof BathtubRoulette !== 'undefined' && BathtubRoulette.init) {
-                        BathtubRoulette.init();
-                    }
-                    break;
-                case 'bedtime-roulette':
-                    // Same machine, calm-down-before-sleep activities
-                    if (typeof BedtimeRoulette !== 'undefined' && BedtimeRoulette.init) {
-                        BedtimeRoulette.init();
-                    }
-                    break;
-                case 'disney-watch':
-                    // Re-fetch watch-list state from the server on every visit
-                    // so changes from another LAN device show up here too.
-                    if (typeof DisneyWatch !== 'undefined' && DisneyWatch.init) {
-                        DisneyWatch.init();
-                    }
-                    break;
-                case 'grandma-chefs':
-                    // Renders the recipe cards (all data lives in the module)
-                    if (typeof GrandmaChefs !== 'undefined' && GrandmaChefs.init) {
-                        GrandmaChefs.init();
-                    }
-                    break;
+            var spec = PAGES[pageName];
+            if (!spec) return;
+
+            // Mirrors the old switch's `typeof X !== 'undefined'` tolerance:
+            // a missing module (or missing method) is silently a no-op.
+            var mod = window[spec.module];
+            if (!mod || typeof mod[spec.method] !== 'function') return;
+
+            if (spec.skipIf && spec.skipIf(mod)) return;
+
+            if (spec.defer) {
+                setTimeout(function() { mod[spec.method](); }, spec.defer);
+            } else {
+                mod[spec.method]();
             }
         },
 
